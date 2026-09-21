@@ -16,7 +16,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Mở `http://localhost:3000`. Khi chưa cấu hình Supabase, ứng dụng hiển thị **hai thiệp demo chỉ để xem giao diện** tại `/thiep/tho-va-tham` và `/thiep/lan-va-huy`. Biểu mẫu RSVP/lời chúc được tắt trong chế độ demo; chúng không giả vờ lưu dữ liệu. Tên Thọ & Thắm, ảnh cưới và ngày 29/11/2026 trong thiệp đầu theo thông tin bạn cung cấp; giờ, địa điểm, hạn RSVP và lời mời vẫn là nội dung mẫu cần xác nhận.
+Mở `http://localhost:3000`. Khi chưa cấu hình Supabase, ứng dụng hiển thị **hai thiệp demo chỉ để xem giao diện** tại `/thiep/tho-va-tham` và `/thiep/lan-va-huy`. Biểu mẫu RSVP/lời chúc được tắt trong chế độ demo; chúng không giả vờ lưu dữ liệu. Tên Văn Thọ & Hồng Thắm, ảnh cưới và ngày 29/11/2026 trong thiệp đầu theo thông tin bạn cung cấp; giờ, địa điểm, hạn RSVP và lời mời vẫn là nội dung mẫu cần xác nhận.
 
 ## Kết nối Supabase
 

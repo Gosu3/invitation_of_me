@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowDown, ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, Copy, Gift, Heart, MapPin, Send, X } from 'lucide-react';
-import type { Invitation, WeddingMedia } from '@/lib/types';
+import { ArrowDown, ArrowLeft, ArrowRight, CalendarDays, Check, Copy, Gift, Heart, MapPin, Send } from 'lucide-react';
+import type { Invitation } from '@/lib/types';
 import { dateParts, formatDate, formatTime } from '@/lib/utils';
+import { GiftBox, GiftDialog, PhotoLightbox, WeddingAlbum } from './invitation-interactions';
 
 function Ornament({ className = '' }: { className?: string }) {
   return <svg className={className} viewBox="0 0 270 150" fill="none" aria-hidden="true"><path d="M8 140c40-19 57-61 85-98M65 94c25-28 58-37 91-30M117 64c-13-25-7-41 4-55M153 63c34-17 72-2 109-37" stroke="currentColor" strokeWidth="1.5"/><path d="M82 53c-16-24-42-22-46-7 11 17 29 18 46 7ZM94 43c-4-22 7-36 22-39 7 16 1 31-22 39ZM144 62c9-31 31-34 42-23-3 16-19 27-42 23ZM199 48c9-23 27-31 39-24-1 16-18 25-39 24Z" stroke="currentColor" strokeWidth="1.5"/><path d="M170 99c11-19 27-27 43-21 5-16 23-18 34-8 8 13 2 26-11 33 5 17-6 30-21 31-10 13-28 10-37-1-17 1-26-16-19-31 3-2 7-3 11-3Z" stroke="currentColor" strokeWidth="1.5"/><path d="M183 100c8-11 20-13 30-9 11-9 27-4 30 8-8 5-13 13-13 22-8 4-16 3-24-3-10 4-19-2-23-18Z" stroke="currentColor" strokeWidth="1.2"/><path d="M210 95c-8 12-8 19-4 23m4-23c10 7 15 14 20 26" stroke="currentColor" strokeWidth="1.2"/></svg>;
@@ -46,28 +47,31 @@ function Calendar({ date }: { date: string }) {
   return <div className="mini-calendar"><div className="mini-calendar-title">Tháng {month} · {year}</div><div className="mini-calendar-grid">{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((x) => <b key={x}>{x}</b>)}{Array.from({ length: offset }, (_, i) => <span key={`p${i}`} />)}{Array.from({ length: count }, (_, i) => <span className={i + 1 === selected ? 'selected' : ''} key={i}>{i + 1 === selected ? <><Heart className="calendar-heart" size={15} fill="currentColor" aria-hidden="true" /><span className="calendar-day-number">{i + 1}</span></> : i + 1}</span>)}</div></div>;
 }
 
-function Lightbox({ media, initial, close }: { media: WeddingMedia[]; initial: number; close: () => void }) {
-  const [index, setIndex] = useState(initial);
-  useEffect(() => { const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') setIndex((n) => (n - 1 + media.length) % media.length); if (e.key === 'ArrowRight') setIndex((n) => (n + 1) % media.length); }; document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey); }, [close, media.length]);
-  return <div className="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh cưới" onClick={close}><button className="lightbox-close" onClick={close} aria-label="Đóng"><X /></button><div className="lightbox-inner" onClick={(e) => e.stopPropagation()}><Image src={media[index].url} alt={media[index].alt} width={900} height={1200} unoptimized={media[index].url.startsWith('/api/')} /><div className="lightbox-controls"><button onClick={() => setIndex((n) => (n - 1 + media.length) % media.length)} aria-label="Ảnh trước"><ChevronLeft /></button><span>{index + 1} / {media.length}</span><button onClick={() => setIndex((n) => (n + 1) % media.length)} aria-label="Ảnh tiếp"><ChevronRight /></button></div></div></div>;
-}
-
 export function InvitationExperience({ invitation, connected }: { invitation: Invitation; connected: boolean }) {
   const [opened, setOpened] = useState(false);
   const [opening, setOpening] = useState(false);
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
-  const [copiedGift, setCopiedGift] = useState<string | null>(null);
+  const [shareStatus, setShareStatus] = useState('');
+  const openTimer = useRef<number | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
   const [rsvpState, setRsvpState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [rsvpError, setRsvpError] = useState('');
   const [wishState, setWishState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [wishError, setWishError] = useState('');
   const primaryEvent = invitation.events.find((e) => e.title.toLowerCase().includes('tiệc')) || invitation.events[0];
   const names = `${invitation.partnerOne} & ${invitation.partnerTwo}`;
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const [rsvpClosed, setRsvpClosed] = useState(false);
   useEffect(() => { if (!invitation.rsvpDeadline) return; const id = setTimeout(() => setRsvpClosed(new Date(invitation.rsvpDeadline!).getTime() < Date.now()), 0); return () => clearTimeout(id); }, [invitation.rsvpDeadline]);
   const photos = useMemo(() => invitation.media.length ? invitation.media : invitation.coverImage ? [{ id: 'cover', url: invitation.coverImage, alt: invitation.coverAlt || names, sortOrder: 0 }] : [], [invitation.media, invitation.coverImage, invitation.coverAlt, names]);
+
+  useEffect(() => () => { if (openTimer.current) clearTimeout(openTimer.current); }, []);
+  useEffect(() => { if (opened) { window.scrollTo({ top: 0, behavior: 'instant' }); heading.current?.focus({ preventScroll: true }); } }, [opened]);
+
+  async function copyLink() {
+    try { await navigator.clipboard.writeText(window.location.href); setShareStatus('Đã sao chép liên kết'); }
+    catch { setShareStatus('Bạn có thể sao chép địa chỉ từ thanh trình duyệt.'); }
+  }
 
   useEffect(() => {
     if (!opened || !('IntersectionObserver' in window)) return;
@@ -91,16 +95,16 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
   }, [opened]);
 
   function openInvitation() {
-    if (opening) return;
+    if (opening || openTimer.current) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setOpened(true);
       return;
     }
     setOpening(true);
-    window.setTimeout(() => {
+    openTimer.current = window.setTimeout(() => {
       setOpened(true);
-      window.requestAnimationFrame(() => window.scrollTo(0, 0));
-    }, 780);
+      openTimer.current = null;
+    }, 1500);
   }
 
   async function submitRsvp(event: FormEvent<HTMLFormElement>) {
@@ -121,12 +125,13 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
     catch (error) { setWishError(error instanceof Error ? error.message : 'Đã có lỗi xảy ra.'); setWishState('error'); }
   }
 
-  return <main className="invitation-page">
+  return <main className="invitation-page botanical-theme">
     <FallingPieces />
     {!opened && <section className={`cover-gate${opening ? ' is-opening' : ''}`} aria-label="Mở thiệp cưới">
       <div className="cover-card">
-        <Image className="cover-flower cover-flower-left" src="/decor/burgundy-peonies.webp" alt="" width={240} height={360} priority />
-        <Image className="cover-flower cover-flower-right" src="/decor/burgundy-peonies.webp" alt="" width={240} height={360} priority />
+        <Image className="cover-flower cover-flower-left" src="/decor/hoa-moc-xanh/flower.webp" alt="" width={360} height={360} preload />
+        <Image className="cover-flower cover-flower-right" src="/decor/hoa-moc-xanh/flower.webp" alt="" width={360} height={360} preload />
+        <div className="bloom-burst" aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <Image key={index} className={`bloom-petal bloom-petal-${index}`} src="/decor/hoa-moc-xanh/flower.webp" alt="" width={360} height={360} />)}</div>
         <div className="cover-card-content">
           <span className="cover-heart" aria-hidden="true"><Heart size={24} fill="currentColor" /></span>
           <span className="cover-eyebrow">THE WEDDING OF</span>
@@ -134,37 +139,37 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
           <div className="cover-divider" aria-hidden="true"><i />✦<i /></div>
           <p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p>
           <span className="cover-invite">Thân mời</span>
-          <button className="cover-open-button" onClick={openInvitation} disabled={opening}>{opening ? 'Đang mở…' : 'Mở thiệp'} <ArrowRight size={16} /></button>
+          <button className="cover-open-button" onClick={openInvitation} disabled={opening} aria-busy={opening}>{opening ? 'Đang mở…' : 'Mở thiệp'} <ArrowRight size={16} /></button>
         </div>
       </div>
     </section>}
     <div className={`invitation-content ${opened ? 'is-opened' : ''}`}>
       <section className="letter-story" aria-label={`Thiệp cưới ${names}`}>
         <div className="letter-composition">
-          <div className="letter-envelope-back" aria-hidden="true" />
+          <Image className="letter-envelope-image" src="/decor/hoa-moc-xanh/boho_floral_green.webp" alt="" width={420} height={604} loading="eager" />
           <div className="letter-note" aria-hidden="true"><span>THƯ MỜI</span><i>✦</i><small>Ngày chung đôi</small></div>
           <div className="letter-photo">{invitation.coverImage ? <Image src={invitation.coverImage} alt={invitation.coverAlt || names} fill sizes="(max-width: 650px) 55vw, 320px" priority unoptimized={invitation.coverImage.startsWith('/api/')} /> : <div className="envelope-initials">{invitation.partnerOne[0]} & {invitation.partnerTwo[0]}</div>}</div>
-          <Image className="letter-bouquet" src="/decor/burgundy-peonies.webp" alt="" width={400} height={600} priority />
-          <div className="letter-pocket" aria-hidden="true"><div className="letter-pocket-front" /></div>
+          <Image className="letter-bouquet" src="/decor/hoa-moc-xanh/flower.webp" alt="" width={500} height={500} loading="eager" />
           <div className="letter-seal" aria-hidden="true"><Heart size={25} strokeWidth={1.7} /></div>
         </div>
-        <div className="letter-caption"><span>TRÂN TRỌNG KÍNH MỜI</span><h1>{invitation.partnerOne} <em>&</em> {invitation.partnerTwo}</h1><p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p></div>
+        <div className="letter-caption"><span>TRÂN TRỌNG KÍNH MỜI</span><h1 ref={heading} tabIndex={-1}>{invitation.partnerOne} <em>&</em> {invitation.partnerTwo}</h1><p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p></div>
         <a href="#loi-moi" className="letter-scroll">Cuộn để đọc lời mời <ArrowDown size={16} /></a>
       </section>
-      <nav className="invite-nav"><Link href="/" aria-label="Về trang chủ"><ArrowLeft size={18} /></Link><span>Nét Duyên <i>✧</i></span><button onClick={() => navigator.clipboard?.writeText(shareUrl)} aria-label="Sao chép liên kết"><Copy size={17} /></button></nav>
+      <nav className="invite-nav"><Link href="/" aria-label="Về trang chủ"><ArrowLeft size={18} /></Link><span>Nét Duyên <i>✧</i></span><button onClick={copyLink} aria-label="Sao chép liên kết"><Copy size={17} /></button></nav><span role="status" className="share-status">{shareStatus}</span>
       <section id="loi-moi" className="invite-section invitation-message"><Ornament className="section-ornament" /><span className="eyebrow">LỜI MỜI CHÂN THÀNH</span><h2>{invitation.headline}</h2><p className="leading-message">{invitation.message}</p><div className="heart-divider">✦</div><p className="script-names">{names}</p></section>
       {(invitation.partnerOneParents || invitation.partnerTwoParents || invitation.partnerOneFullName || invitation.partnerTwoFullName) && <section className="invite-section family-section"><span className="eyebrow light">NGÀY VUI HAI GIA ĐÌNH</span><h2>Trân trọng báo tin</h2><div className="family-grid"><div><span>Gia đình chú rể</span><p>{invitation.partnerOneParents}</p><small>{invitation.partnerOneAddress}</small></div><div className="family-divider">&</div><div><span>Gia đình cô dâu</span><p>{invitation.partnerTwoParents}</p><small>{invitation.partnerTwoAddress}</small></div></div><p className="family-announcement">Lễ thành hôn của</p><h3>{invitation.partnerOneFullName || invitation.partnerOne}<em>&</em>{invitation.partnerTwoFullName || invitation.partnerTwo}</h3></section>}
       {invitation.events.length > 0 && <section className="invite-section events-section"><span className="eyebrow">CÙNG CHUNG VUI</span><h2>Ngày hạnh phúc</h2><div className="event-grid">{invitation.events.map((event) => { const d = dateParts(event.dateTime); return <article className="event-card" key={event.id}><span className="event-card-label">{event.title}</span><div className="event-date"><div><span>{d.weekday}</span><strong>{d.day}</strong><span>THÁNG {d.month} · {d.year}</span></div></div><p className="event-time">{formatTime(event.dateTime)}{event.arrivalTime && ` · Đón khách ${event.arrivalTime}`}</p>{event.lunarDate && <p className="lunar-date">{event.lunarDate}</p>}<div className="event-location"><strong>{event.venue}</strong><span>{event.address}</span></div>{event.mapUrl && <a className="text-link" href={event.mapUrl} target="_blank" rel="noopener noreferrer">Chỉ đường <ArrowRight size={15} /></a>}</article>; })}</div></section>}
       {primaryEvent && <section className="invite-section countdown-section"><span className="eyebrow light">SAVE THE DATE</span><h2>Hẹn bạn ngày ấy</h2><div className="date-and-countdown"><Calendar date={primaryEvent.dateTime} /><div className="countdown-side"><p>Ngày vui sẽ trọn vẹn hơn<br />khi có bạn ở bên.</p><Countdown target={primaryEvent.dateTime} /><a className="calendar-link" href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Đám cưới ${names}`)}&dates=${new Date(primaryEvent.dateTime).toISOString().replace(/[-:]|\.\d{3}/g, '')}/${new Date(new Date(primaryEvent.dateTime).getTime() + 3 * 3600000).toISOString().replace(/[-:]|\.\d{3}/g, '')}&details=${encodeURIComponent(primaryEvent.venue + ', ' + primaryEvent.address)}`} target="_blank" rel="noopener noreferrer"><CalendarDays size={17} /> Thêm vào lịch</a></div></div></section>}
-      {photos.length > 0 && <section className="invite-section gallery-section"><span className="eyebrow">KHOẢNH KHẮC CỦA CHÚNG MÌNH</span><h2>Album yêu thương</h2><div className={`gallery-grid gallery-count-${Math.min(photos.length, 4)}`}>{photos.map((photo, index) => <button key={photo.id} className="gallery-item" onClick={() => setPhotoIndex(index)} aria-label={`Xem ảnh ${index + 1}`}><Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 46vw, 300px" unoptimized={photo.url.startsWith('/api/')} /></button>)}</div>{invitation.story && <p className="gallery-story">“{invitation.story}”</p>}</section>}
+      {photos.length > 0 && <section className="invite-section gallery-section" id="album"><span className="eyebrow">KHOẢNH KHẮC CỦA CHÚNG MÌNH</span><h2>Album yêu thương</h2>{opened && <WeddingAlbum photos={photos} open={setPhotoIndex} suspended={photoIndex !== null || giftOpen} />}{invitation.story && <p className="gallery-story">“{invitation.story}”</p>}</section>}
       {primaryEvent && <section className="invite-section location-section"><span className="eyebrow light">ĐỊA ĐIỂM</span><h2>Hẹn gặp tại</h2><MapPin size={30} strokeWidth={1.2} /><h3>{primaryEvent.venue}</h3><p>{primaryEvent.address}</p>{primaryEvent.mapUrl && <a className="outline-light" href={primaryEvent.mapUrl} target="_blank" rel="noopener noreferrer">Mở chỉ đường <ArrowRight size={16} /></a>}</section>}
       {(invitation.dressCode || invitation.timeline.length > 0) && <section className="invite-section details-section">{invitation.dressCode && <div className="dress-code"><span className="eyebrow">TRANG PHỤC</span><h2>Dress code</h2><p>{invitation.dressCode}</p><div className="color-swatches" aria-hidden="true"><i /><i /><i /><i /></div></div>}{invitation.timeline.length > 0 && <div className="timeline-block"><span className="eyebrow">CHƯƠNG TRÌNH</span><h2>Lịch trình ngày cưới</h2><ol className="timeline-list">{invitation.timeline.map((item) => <li key={item.id}><time>{item.time}</time><div><strong>{item.title}</strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol></div>}</section>}
       {invitation.rsvpEnabled && <section className="invite-section rsvp-section" id="rsvp"><span className="eyebrow">LỜI HẸN</span><h2>Xác nhận tham dự</h2><p>Cho chúng mình biết bạn có thể đến chung vui nhé.</p>{rsvpClosed ? <div className="form-notice">Thời hạn xác nhận đã kết thúc. Cảm ơn bạn đã quan tâm!</div> : !connected ? <div className="form-notice">Thiệp mẫu đang ở chế độ xem trước. Kết nối Supabase để nhận phản hồi.</div> : rsvpState === 'success' ? <div className="form-success"><Check size={22} /> Cảm ơn bạn! Chúng mình đã nhận được phản hồi.</div> : <form className="invite-form" onSubmit={submitRsvp}><label>Họ và tên<input name="guestName" minLength={2} maxLength={100} required placeholder="Tên của bạn" /></label><fieldset><legend>Bạn sẽ tham dự chứ?</legend><label className="radio-label"><input type="radio" name="attendance" value="yes" required /> Rất vui được tham dự</label><label className="radio-label"><input type="radio" name="attendance" value="no" required /> Tiếc là mình không thể đến</label></fieldset><label>Số người tham dự<select name="guestCount" defaultValue="1">{[1,2,3,4,5].map((n) => <option key={n} value={n}>{n} người</option>)}</select></label><label>Lời nhắn (tùy chọn)<textarea name="message" maxLength={500} rows={3} placeholder="Gửi đôi lời đến chúng mình" /></label><input className="honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />{rsvpError && <p className="form-error" role="alert">{rsvpError}</p>}<button className="submit-button" type="submit" disabled={rsvpState === 'sending'}>{rsvpState === 'sending' ? 'Đang gửi…' : 'Gửi xác nhận'} <Send size={16} /></button></form>}</section>}
       {invitation.wishesEnabled && <section className="invite-section wishes-section"><span className="eyebrow light">SỔ LƯU BÚT</span><h2>Gửi lời chúc</h2><p>Một lời nhắn nhỏ sẽ ở lại cùng chúng mình thật lâu.</p>{connected && (wishState === 'success' ? <div className="form-success light-success"><Check size={22} /> Cảm ơn bạn! Lời chúc sẽ hiện sau khi được duyệt.</div> : <form className="wish-form" onSubmit={submitWish}><input name="guestName" minLength={2} maxLength={100} required placeholder="Tên của bạn" aria-label="Tên của bạn" /><textarea name="message" minLength={3} maxLength={1000} required rows={3} placeholder="Lời chúc của bạn…" aria-label="Lời chúc" /><input className="honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />{wishError && <p className="form-error" role="alert">{wishError}</p>}<button type="submit" disabled={wishState === 'sending'}>{wishState === 'sending' ? 'Đang gửi…' : 'Gửi lời chúc'} <ArrowRight size={16} /></button></form>)}{!connected && <div className="form-notice dark-notice">Kết nối Supabase để nhận lời chúc.</div>}{invitation.wishes.length > 0 && <div className="wish-list">{invitation.wishes.map((wish) => <blockquote key={wish.id}><p>“{wish.message}”</p><cite>— {wish.guestName}</cite></blockquote>)}</div>}</section>}
-      {invitation.giftsEnabled && invitation.gifts.length > 0 && <section className="invite-section gift-section"><span className="eyebrow">TẤM LÒNG CỦA BẠN</span><h2>Hộp quà mừng</h2><p>Sự hiện diện của bạn đã là món quà rất quý.</p><button className="gift-button" onClick={() => setGiftOpen(true)}><Gift size={20} /> Mở hộp quà</button></section>}
+      {invitation.giftsEnabled && <section className="invite-section gift-section" id="qua-mung"><span className="eyebrow">TẤM LÒNG CỦA BẠN</span><h2>Hộp quà mừng</h2><p>Sự hiện diện của bạn đã là món quà rất quý.</p><GiftBox open={() => setGiftOpen(true)} /></section>}
       <footer className="invite-footer"><Ornament className="footer-flower" /><Heart size={19} fill="currentColor" /><h2>{invitation.partnerOne} <em>&</em> {invitation.partnerTwo}</h2><p>{invitation.closingMessage}</p><span>Nét Duyên · Một ngày để nhớ mãi</span></footer>
     </div>
-    {photoIndex !== null && <Lightbox media={photos} initial={photoIndex} close={() => setPhotoIndex(null)} />}
-    {giftOpen && <div className="gift-modal" role="dialog" aria-modal="true" aria-label="Hộp quà mừng" onClick={() => setGiftOpen(false)}><div className="gift-modal-card" onClick={(e) => e.stopPropagation()}><button className="modal-close" onClick={() => setGiftOpen(false)} aria-label="Đóng"><X /></button><Gift size={26} /><h2>Hộp quà mừng</h2><p>Cảm ơn tấm lòng của bạn.</p><div className="gift-accounts">{invitation.gifts.map((gift) => <div key={gift.id} className="gift-account"><strong>{gift.recipient}</strong>{gift.qrUrl && <Image src={gift.qrUrl} alt={`Mã QR tài khoản ${gift.recipient}`} width={170} height={170} unoptimized={gift.qrUrl.startsWith('/api/')} />}<span>{gift.bankName}</span><span>{gift.accountHolder}</span><button onClick={async () => { await navigator.clipboard.writeText(gift.accountNumber); setCopiedGift(gift.id); }}>{gift.accountNumber} {copiedGift === gift.id ? <Check size={15} /> : <Copy size={15} />}</button></div>)}</div></div></div>}
+    {opened && <nav className="invitation-dock" aria-label="Điều hướng thiệp"><a href="#loi-moi" aria-label="Lời mời"><Heart size={18} /></a>{photos.length > 0 && <a href="#album" aria-label="Album ảnh"><span>Ảnh</span></a>}{invitation.rsvpEnabled && <a href="#rsvp" aria-label="Xác nhận tham dự"><CalendarDays size={18} /></a>}{invitation.giftsEnabled && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}</nav>}
+    {photoIndex !== null && <PhotoLightbox media={photos} initial={photoIndex} close={() => setPhotoIndex(null)} />}
+    {giftOpen && <GiftDialog gifts={invitation.gifts} close={() => setGiftOpen(false)} />}
   </main>;
 }

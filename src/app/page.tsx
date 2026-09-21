@@ -13,7 +13,7 @@ export default async function Home() {
     <section className="home-hero">
       <span className="eyebrow">MỘT MẪU THIỆP · MUÔN CÂU CHUYỆN</span>
       <h1>Lưu giữ lời mời<br /><em>ngày chung đôi.</em></h1>
-      <p>Mỗi tấm thiệp là một câu chuyện riêng, được kể bằng sự tinh giản, sắc đỏ trầm và những khoảnh khắc đáng nhớ.</p>
+      <p>Mỗi tấm thiệp là một câu chuyện riêng, được kể bằng sự tinh giản, hoa trắng và sắc xanh mộc và những khoảnh khắc đáng nhớ.</p>
       {invitations[0] && <Link className="primary-link" href={`/thiep/${invitations[0].slug}`}>Xem thiệp mẫu <ArrowUpRight size={18} /></Link>}
       <div className="home-mark" aria-hidden="true"><Heart size={18} strokeWidth={1} /></div>
     </section>
