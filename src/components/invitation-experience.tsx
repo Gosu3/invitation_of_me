@@ -11,23 +11,6 @@ function Ornament({ className = '' }: { className?: string }) {
   return <svg className={className} viewBox="0 0 270 150" fill="none" aria-hidden="true"><path d="M8 140c40-19 57-61 85-98M65 94c25-28 58-37 91-30M117 64c-13-25-7-41 4-55M153 63c34-17 72-2 109-37" stroke="currentColor" strokeWidth="1.5"/><path d="M82 53c-16-24-42-22-46-7 11 17 29 18 46 7ZM94 43c-4-22 7-36 22-39 7 16 1 31-22 39ZM144 62c9-31 31-34 42-23-3 16-19 27-42 23ZM199 48c9-23 27-31 39-24-1 16-18 25-39 24Z" stroke="currentColor" strokeWidth="1.5"/><path d="M170 99c11-19 27-27 43-21 5-16 23-18 34-8 8 13 2 26-11 33 5 17-6 30-21 31-10 13-28 10-37-1-17 1-26-16-19-31 3-2 7-3 11-3Z" stroke="currentColor" strokeWidth="1.5"/><path d="M183 100c8-11 20-13 30-9 11-9 27-4 30 8-8 5-13 13-13 22-8 4-16 3-24-3-10 4-19-2-23-18Z" stroke="currentColor" strokeWidth="1.2"/><path d="M210 95c-8 12-8 19-4 23m4-23c10 7 15 14 20 26" stroke="currentColor" strokeWidth="1.2"/></svg>;
 }
 
-function FloralCluster() {
-  return <svg className="letter-bouquet" viewBox="0 0 300 330" fill="none" aria-hidden="true">
-    <defs>
-      <radialGradient id="rose-red"><stop stopColor="#aa5360" /><stop offset=".55" stopColor="#79283b" /><stop offset="1" stopColor="#4d1428" /></radialGradient>
-      <radialGradient id="rose-ivory"><stop stopColor="#fff9e7" /><stop offset=".65" stopColor="#ead9bb" /><stop offset="1" stopColor="#bda987" /></radialGradient>
-      <linearGradient id="leaf-gold" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#e1c893" /><stop offset="1" stopColor="#82744f" /></linearGradient>
-    </defs>
-    <g stroke="#746b4f" strokeWidth="2" strokeLinecap="round"><path d="M165 300C136 218 117 105 145 8M154 283C189 210 220 145 237 48M155 276C112 234 74 195 24 154M151 275C179 249 218 237 281 226"/><path d="M135 115 99 82M142 156 174 119M207 169 249 148M98 223 54 221" /></g>
-    <g fill="url(#leaf-gold)" stroke="#9d8b65" strokeWidth="1.5"><path d="M103 87C74 79 70 48 80 32c24 8 35 29 23 55ZM168 122c-4-29 18-47 39-49 1 24-14 43-39 49ZM231 121c2-29 24-40 41-38-2 23-16 36-41 38ZM59 213c-28-6-43-24-39-44 26 2 42 20 39 44ZM233 239c14-25 38-29 56-22-11 21-29 29-56 22ZM137 53c-19-16-19-35-11-48 18 10 24 28 11 48Z"/></g>
-    <g fill="#672033"><circle cx="142" cy="15" r="5"/><circle cx="154" cy="31" r="4"/><circle cx="123" cy="47" r="4"/><circle cx="249" cy="62" r="4"/><circle cx="263" cy="77" r="5"/><circle cx="270" cy="58" r="3"/><circle cx="29" cy="144" r="4"/><circle cx="43" cy="132" r="3"/></g>
-    <g transform="translate(124 186) rotate(-12)">{[0,45,90,135,180,225,270,315].map((a) => <ellipse key={a} cx="0" cy="-39" rx="25" ry="47" transform={`rotate(${a})`} fill="url(#rose-red)" stroke="#4d182a" strokeWidth="2" />)}<circle r="32" fill="#832b3f"/><path d="M-25 4c9-20 30-25 46-10C34 8 14 27-2 21c-16-6-13-19-2-25 10-6 22 1 20 10" stroke="#d49a8c" strokeWidth="3" strokeLinecap="round"/></g>
-    <g transform="translate(213 216) scale(.77)">{[0,60,120,180,240,300].map((a) => <ellipse key={a} cy="-33" rx="23" ry="40" transform={`rotate(${a})`} fill="url(#rose-ivory)" stroke="#bca782" strokeWidth="2" />)}<circle r="23" fill="#f5e9cf"/><path d="M-17 4c7-16 28-17 35-4 3 13-14 21-22 13-6-6 4-14 12-9" stroke="#b99d73" strokeWidth="3" strokeLinecap="round"/></g>
-    <g transform="translate(68 263) scale(.63)">{[0,72,144,216,288].map((a) => <ellipse key={a} cy="-36" rx="22" ry="42" transform={`rotate(${a})`} fill="url(#rose-ivory)" stroke="#bca782" strokeWidth="2" />)}<circle r="19" fill="#e8d3ae"/></g>
-    <g transform="translate(194 285) scale(.48)">{[0,60,120,180,240,300].map((a) => <ellipse key={a} cy="-35" rx="24" ry="43" transform={`rotate(${a})`} fill="url(#rose-red)" stroke="#4d182a" strokeWidth="2" />)}<circle r="21" fill="#7d2a40"/></g>
-  </svg>;
-}
-
 const fallingPieces = [
   { left: 4, delay: -2, duration: 15, kind: 'petal' }, { left: 13, delay: -9, duration: 19, kind: 'heart' },
   { left: 24, delay: -5, duration: 17, kind: 'petal' }, { left: 36, delay: -13, duration: 21, kind: 'petal' },
@@ -140,22 +123,35 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
 
   return <main className="invitation-page">
     <FallingPieces />
-    {!opened && <section className={`envelope-screen letter-opening${opening ? ' is-opening' : ''}`} aria-label="Mở thiệp cưới">
-      <div className="letter-composition">
-        <div className="letter-envelope-back" aria-hidden="true" />
-        <div className="letter-note" aria-hidden="true"><span>THƯ MỜI</span><i>✦</i><small>Ngày chung đôi</small></div>
-        <div className="letter-photo">{invitation.coverImage ? <Image src={invitation.coverImage} alt={invitation.coverAlt || names} fill sizes="(max-width: 650px) 55vw, 320px" priority unoptimized={invitation.coverImage.startsWith('/api/')} /> : <div className="envelope-initials">{invitation.partnerOne[0]} & {invitation.partnerTwo[0]}</div>}</div>
-        <FloralCluster />
-        <div className="letter-pocket" aria-hidden="true"><div className="letter-pocket-front" /></div>
-        <div className="letter-seal" aria-hidden="true"><Heart size={25} strokeWidth={1.7} /></div>
+    {!opened && <section className={`cover-gate${opening ? ' is-opening' : ''}`} aria-label="Mở thiệp cưới">
+      <div className="cover-card">
+        <Image className="cover-flower cover-flower-left" src="/decor/burgundy-peonies.webp" alt="" width={240} height={360} priority />
+        <Image className="cover-flower cover-flower-right" src="/decor/burgundy-peonies.webp" alt="" width={240} height={360} priority />
+        <div className="cover-card-content">
+          <span className="cover-heart" aria-hidden="true"><Heart size={24} fill="currentColor" /></span>
+          <span className="cover-eyebrow">THE WEDDING OF</span>
+          <h1>{invitation.partnerOne}<em>&</em>{invitation.partnerTwo}</h1>
+          <div className="cover-divider" aria-hidden="true"><i />✦<i /></div>
+          <p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p>
+          <span className="cover-invite">Thân mời</span>
+          <button className="cover-open-button" onClick={openInvitation} disabled={opening}>{opening ? 'Đang mở…' : 'Mở thiệp'} <ArrowRight size={16} /></button>
+        </div>
       </div>
-      <div className="letter-caption"><span>TRÂN TRỌNG KÍNH MỜI</span><h1>{invitation.partnerOne} <em>&</em> {invitation.partnerTwo}</h1><p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p></div>
-      <button className="letter-open-button" onClick={openInvitation} disabled={opening}>{opening ? 'Đang mở thiệp…' : 'Mở thiệp của chúng mình'} <ArrowRight size={18} /></button>
-      <span className="envelope-hint">Chạm để mở lời mời dành riêng cho bạn</span>
     </section>}
     <div className={`invitation-content ${opened ? 'is-opened' : ''}`}>
+      <section className="letter-story" aria-label={`Thiệp cưới ${names}`}>
+        <div className="letter-composition">
+          <div className="letter-envelope-back" aria-hidden="true" />
+          <div className="letter-note" aria-hidden="true"><span>THƯ MỜI</span><i>✦</i><small>Ngày chung đôi</small></div>
+          <div className="letter-photo">{invitation.coverImage ? <Image src={invitation.coverImage} alt={invitation.coverAlt || names} fill sizes="(max-width: 650px) 55vw, 320px" priority unoptimized={invitation.coverImage.startsWith('/api/')} /> : <div className="envelope-initials">{invitation.partnerOne[0]} & {invitation.partnerTwo[0]}</div>}</div>
+          <Image className="letter-bouquet" src="/decor/burgundy-peonies.webp" alt="" width={400} height={600} priority />
+          <div className="letter-pocket" aria-hidden="true"><div className="letter-pocket-front" /></div>
+          <div className="letter-seal" aria-hidden="true"><Heart size={25} strokeWidth={1.7} /></div>
+        </div>
+        <div className="letter-caption"><span>TRÂN TRỌNG KÍNH MỜI</span><h1>{invitation.partnerOne} <em>&</em> {invitation.partnerTwo}</h1><p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p></div>
+        <a href="#loi-moi" className="letter-scroll">Cuộn để đọc lời mời <ArrowDown size={16} /></a>
+      </section>
       <nav className="invite-nav"><Link href="/" aria-label="Về trang chủ"><ArrowLeft size={18} /></Link><span>Nét Duyên <i>✧</i></span><button onClick={() => navigator.clipboard?.writeText(shareUrl)} aria-label="Sao chép liên kết"><Copy size={17} /></button></nav>
-      <section className="invite-hero"><div className="invite-hero-photo">{invitation.coverImage ? <Image src={invitation.coverImage} alt={invitation.coverAlt || names} fill sizes="(max-width: 800px) 100vw, 580px" priority unoptimized={invitation.coverImage.startsWith('/api/')} /> : <div className="hero-monogram">{invitation.partnerOne[0]} & {invitation.partnerTwo[0]}</div>}</div><div className="invite-hero-copy"><span className="eyebrow light">SAVE OUR DATE</span><h1>{invitation.partnerOne}<span>&</span>{invitation.partnerTwo}</h1><div className="hero-rule" /><p>{primaryEvent ? formatDate(primaryEvent.dateTime, { weekday: 'long' }) : 'Ngày chung đôi'}</p><a href="#loi-moi" className="hero-scroll">Cuộn để khám phá <ArrowDown size={16} /></a></div></section>
       <section id="loi-moi" className="invite-section invitation-message"><Ornament className="section-ornament" /><span className="eyebrow">LỜI MỜI CHÂN THÀNH</span><h2>{invitation.headline}</h2><p className="leading-message">{invitation.message}</p><div className="heart-divider">✦</div><p className="script-names">{names}</p></section>
       {(invitation.partnerOneParents || invitation.partnerTwoParents || invitation.partnerOneFullName || invitation.partnerTwoFullName) && <section className="invite-section family-section"><span className="eyebrow light">NGÀY VUI HAI GIA ĐÌNH</span><h2>Trân trọng báo tin</h2><div className="family-grid"><div><span>Gia đình chú rể</span><p>{invitation.partnerOneParents}</p><small>{invitation.partnerOneAddress}</small></div><div className="family-divider">&</div><div><span>Gia đình cô dâu</span><p>{invitation.partnerTwoParents}</p><small>{invitation.partnerTwoAddress}</small></div></div><p className="family-announcement">Lễ thành hôn của</p><h3>{invitation.partnerOneFullName || invitation.partnerOne}<em>&</em>{invitation.partnerTwoFullName || invitation.partnerTwo}</h3></section>}
       {invitation.events.length > 0 && <section className="invite-section events-section"><span className="eyebrow">CÙNG CHUNG VUI</span><h2>Ngày hạnh phúc</h2><div className="event-grid">{invitation.events.map((event) => { const d = dateParts(event.dateTime); return <article className="event-card" key={event.id}><span className="event-card-label">{event.title}</span><div className="event-date"><div><span>{d.weekday}</span><strong>{d.day}</strong><span>THÁNG {d.month} · {d.year}</span></div></div><p className="event-time">{formatTime(event.dateTime)}{event.arrivalTime && ` · Đón khách ${event.arrivalTime}`}</p>{event.lunarDate && <p className="lunar-date">{event.lunarDate}</p>}<div className="event-location"><strong>{event.venue}</strong><span>{event.address}</span></div>{event.mapUrl && <a className="text-link" href={event.mapUrl} target="_blank" rel="noopener noreferrer">Chỉ đường <ArrowRight size={15} /></a>}</article>; })}</div></section>}
