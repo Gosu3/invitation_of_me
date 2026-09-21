@@ -25,6 +25,7 @@ export type WeddingMedia = {
   url: string;
   alt: string;
   sortOrder: number;
+  position?: { x: number; y: number };
 };
 
 export type GiftAccount = {
@@ -34,7 +35,29 @@ export type GiftAccount = {
   accountNumber: string;
   accountHolder: string;
   qrUrl?: string;
+  bankBin?: string;
+  bankCode?: string;
+  bankLogo?: string;
+  role?: 'groom' | 'bride';
   sortOrder: number;
+};
+
+export type InvitationFeatures = {
+  showMap: boolean;
+  showBank: boolean;
+  showQRInline: boolean;
+  showRsvp: boolean;
+  showGuestbook: boolean;
+  showTimeline: boolean;
+  showThankYou: boolean;
+  showFamilyInfo: boolean;
+};
+
+export type WeddingMusic = {
+  enabled: boolean;
+  title: string;
+  src?: string;
+  volume: number;
 };
 
 export type Wish = {
@@ -72,6 +95,10 @@ export type Invitation = {
   media: WeddingMedia[];
   gifts: GiftAccount[];
   wishes: Wish[];
+  timezone?: string;
+  themeId?: 'boho-floral-green';
+  music?: WeddingMusic;
+  features?: Partial<InvitationFeatures>;
   createdAt?: string;
   updatedAt?: string;
 };
