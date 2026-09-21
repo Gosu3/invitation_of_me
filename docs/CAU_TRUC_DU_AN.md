@@ -13,6 +13,7 @@ Project_Invitation/
 │  │  ├─ globals.css              Design tokens và toàn bộ style hiện tại
 │  │  ├─ layout.tsx                HTML layout và metadata mặc định
 │  │  ├─ page.tsx                  Trang chủ, danh sách thiệp đã xuất bản
+│  │  ├─ invitation-motion.css     Phong bì mở thiệp, hiệu ứng rơi/cuộn, lịch và đếm ngược
 │  │  ├─ thiep/[slug]/             Thiệp công khai và ảnh Open Graph
 │  │  ├─ quan-tri/                Đăng nhập, danh sách và biên tập thiệp
 │  │  └─ api/                     RSVP, lời chúc, ảnh và thao tác quản trị

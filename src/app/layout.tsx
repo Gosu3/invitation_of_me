@@ -8,6 +8,7 @@ import '@fontsource/be-vietnam-pro/500.css';
 import '@fontsource/be-vietnam-pro/600.css';
 import '@fontsource/be-vietnam-pro/700.css';
 import './globals.css';
+import './invitation-motion.css';
 
 export const metadata: Metadata = {
   title: { default: 'Nét Duyên — Thiệp cưới lưu giữ yêu thương', template: '%s | Nét Duyên' },

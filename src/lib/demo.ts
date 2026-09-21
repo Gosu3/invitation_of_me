@@ -15,17 +15,17 @@ export const demoInvitations: Invitation[] = [
     dressCode: 'Trang phục lịch sự · Ưu tiên kem, nâu và đỏ trầm',
     closingMessage: 'Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình.',
     rsvpEnabled: true,
-    rsvpDeadline: '2027-01-17T23:59:00+07:00',
+    rsvpDeadline: '2026-11-23T23:59:00+07:00',
     wishesEnabled: true,
     giftsEnabled: false,
     events: [
       {
-        id: 'demo-ceremony', title: 'Lễ thành hôn', dateTime: '2027-01-23T09:00:00+07:00',
+        id: 'demo-ceremony', title: 'Lễ thành hôn', dateTime: '2026-11-29T09:00:00+07:00',
         lunarDate: 'Ngày âm lịch sẽ được gia đình xác nhận', venue: 'Tư gia nhà gái',
         address: 'Hà Nội', sortOrder: 0,
       },
       {
-        id: 'demo-reception', title: 'Tiệc cưới', dateTime: '2027-01-23T18:00:00+07:00',
+        id: 'demo-reception', title: 'Tiệc cưới', dateTime: '2026-11-29T18:00:00+07:00',
         arrivalTime: '17:30', venue: 'Trung tâm tiệc cưới', address: 'Hà Nội', sortOrder: 1,
       },
     ],

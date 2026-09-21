@@ -11,16 +11,46 @@ function Ornament({ className = '' }: { className?: string }) {
   return <svg className={className} viewBox="0 0 270 150" fill="none" aria-hidden="true"><path d="M8 140c40-19 57-61 85-98M65 94c25-28 58-37 91-30M117 64c-13-25-7-41 4-55M153 63c34-17 72-2 109-37" stroke="currentColor" strokeWidth="1.5"/><path d="M82 53c-16-24-42-22-46-7 11 17 29 18 46 7ZM94 43c-4-22 7-36 22-39 7 16 1 31-22 39ZM144 62c9-31 31-34 42-23-3 16-19 27-42 23ZM199 48c9-23 27-31 39-24-1 16-18 25-39 24Z" stroke="currentColor" strokeWidth="1.5"/><path d="M170 99c11-19 27-27 43-21 5-16 23-18 34-8 8 13 2 26-11 33 5 17-6 30-21 31-10 13-28 10-37-1-17 1-26-16-19-31 3-2 7-3 11-3Z" stroke="currentColor" strokeWidth="1.5"/><path d="M183 100c8-11 20-13 30-9 11-9 27-4 30 8-8 5-13 13-13 22-8 4-16 3-24-3-10 4-19-2-23-18Z" stroke="currentColor" strokeWidth="1.2"/><path d="M210 95c-8 12-8 19-4 23m4-23c10 7 15 14 20 26" stroke="currentColor" strokeWidth="1.2"/></svg>;
 }
 
+function FloralCluster() {
+  return <svg className="letter-bouquet" viewBox="0 0 300 330" fill="none" aria-hidden="true">
+    <defs>
+      <radialGradient id="rose-red"><stop stopColor="#aa5360" /><stop offset=".55" stopColor="#79283b" /><stop offset="1" stopColor="#4d1428" /></radialGradient>
+      <radialGradient id="rose-ivory"><stop stopColor="#fff9e7" /><stop offset=".65" stopColor="#ead9bb" /><stop offset="1" stopColor="#bda987" /></radialGradient>
+      <linearGradient id="leaf-gold" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#e1c893" /><stop offset="1" stopColor="#82744f" /></linearGradient>
+    </defs>
+    <g stroke="#746b4f" strokeWidth="2" strokeLinecap="round"><path d="M165 300C136 218 117 105 145 8M154 283C189 210 220 145 237 48M155 276C112 234 74 195 24 154M151 275C179 249 218 237 281 226"/><path d="M135 115 99 82M142 156 174 119M207 169 249 148M98 223 54 221" /></g>
+    <g fill="url(#leaf-gold)" stroke="#9d8b65" strokeWidth="1.5"><path d="M103 87C74 79 70 48 80 32c24 8 35 29 23 55ZM168 122c-4-29 18-47 39-49 1 24-14 43-39 49ZM231 121c2-29 24-40 41-38-2 23-16 36-41 38ZM59 213c-28-6-43-24-39-44 26 2 42 20 39 44ZM233 239c14-25 38-29 56-22-11 21-29 29-56 22ZM137 53c-19-16-19-35-11-48 18 10 24 28 11 48Z"/></g>
+    <g fill="#672033"><circle cx="142" cy="15" r="5"/><circle cx="154" cy="31" r="4"/><circle cx="123" cy="47" r="4"/><circle cx="249" cy="62" r="4"/><circle cx="263" cy="77" r="5"/><circle cx="270" cy="58" r="3"/><circle cx="29" cy="144" r="4"/><circle cx="43" cy="132" r="3"/></g>
+    <g transform="translate(124 186) rotate(-12)">{[0,45,90,135,180,225,270,315].map((a) => <ellipse key={a} cx="0" cy="-39" rx="25" ry="47" transform={`rotate(${a})`} fill="url(#rose-red)" stroke="#4d182a" strokeWidth="2" />)}<circle r="32" fill="#832b3f"/><path d="M-25 4c9-20 30-25 46-10C34 8 14 27-2 21c-16-6-13-19-2-25 10-6 22 1 20 10" stroke="#d49a8c" strokeWidth="3" strokeLinecap="round"/></g>
+    <g transform="translate(213 216) scale(.77)">{[0,60,120,180,240,300].map((a) => <ellipse key={a} cy="-33" rx="23" ry="40" transform={`rotate(${a})`} fill="url(#rose-ivory)" stroke="#bca782" strokeWidth="2" />)}<circle r="23" fill="#f5e9cf"/><path d="M-17 4c7-16 28-17 35-4 3 13-14 21-22 13-6-6 4-14 12-9" stroke="#b99d73" strokeWidth="3" strokeLinecap="round"/></g>
+    <g transform="translate(68 263) scale(.63)">{[0,72,144,216,288].map((a) => <ellipse key={a} cy="-36" rx="22" ry="42" transform={`rotate(${a})`} fill="url(#rose-ivory)" stroke="#bca782" strokeWidth="2" />)}<circle r="19" fill="#e8d3ae"/></g>
+    <g transform="translate(194 285) scale(.48)">{[0,60,120,180,240,300].map((a) => <ellipse key={a} cy="-35" rx="24" ry="43" transform={`rotate(${a})`} fill="url(#rose-red)" stroke="#4d182a" strokeWidth="2" />)}<circle r="21" fill="#7d2a40"/></g>
+  </svg>;
+}
+
+const fallingPieces = [
+  { left: 4, delay: -2, duration: 15, kind: 'petal' }, { left: 13, delay: -9, duration: 19, kind: 'heart' },
+  { left: 24, delay: -5, duration: 17, kind: 'petal' }, { left: 36, delay: -13, duration: 21, kind: 'petal' },
+  { left: 48, delay: -7, duration: 16, kind: 'heart' }, { left: 59, delay: -15, duration: 20, kind: 'petal' },
+  { left: 70, delay: -3, duration: 18, kind: 'petal' }, { left: 80, delay: -11, duration: 22, kind: 'heart' },
+  { left: 91, delay: -6, duration: 17, kind: 'petal' }, { left: 97, delay: -17, duration: 23, kind: 'petal' },
+] as const;
+
+function FallingPieces() {
+  return <div className="falling-pieces" aria-hidden="true">{fallingPieces.map((piece, index) => <span key={index} className={`falling-piece ${piece.kind}`} style={{ left: `${piece.left}%`, animationDelay: `${piece.delay}s`, animationDuration: `${piece.duration}s` }}>{piece.kind === 'heart' ? <Heart fill="currentColor" /> : <svg viewBox="0 0 20 28" fill="currentColor"><path d="M10 0C23 8 23 21 10 28-3 21-3 8 10 0Z" /></svg>}</span>)}</div>;
+}
+
 function Countdown({ target }: { target: string }) {
   const [now, setNow] = useState(0);
-  useEffect(() => { const first = setTimeout(() => setNow(Date.now()), 0); const id = setInterval(() => setNow(Date.now()), 60000); return () => { clearTimeout(first); clearInterval(id); }; }, []);
+  useEffect(() => { const first = setTimeout(() => setNow(Date.now()), 0); const id = setInterval(() => setNow(Date.now()), 1000); return () => { clearTimeout(first); clearInterval(id); }; }, []);
   if (!now) return <div className="countdown-placeholder">Ngày vui đang đến gần</div>;
   const diff = new Date(target).getTime() - now;
   if (diff <= 0) return <div className="countdown-past">Một ngày đáng nhớ đã bắt đầu ♡</div>;
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
   const minutes = Math.floor((diff % 3600000) / 60000);
-  return <div className="countdown" aria-label={`Còn ${days} ngày ${hours} giờ ${minutes} phút`}><div><strong>{days}</strong><span>Ngày</span></div><i /> <div><strong>{hours}</strong><span>Giờ</span></div><i /> <div><strong>{minutes}</strong><span>Phút</span></div></div>;
+  const seconds = Math.floor((diff % 60000) / 1000);
+  return <div className="countdown" aria-label={`Còn ${days} ngày ${hours} giờ ${minutes} phút ${seconds} giây`}><div><strong>{days}</strong><span>Ngày</span></div><i /> <div><strong>{String(hours).padStart(2, '0')}</strong><span>Giờ</span></div><i /> <div><strong>{String(minutes).padStart(2, '0')}</strong><span>Phút</span></div><i /> <div><strong>{String(seconds).padStart(2, '0')}</strong><span>Giây</span></div></div>;
 }
 
 function Calendar({ date }: { date: string }) {
@@ -30,7 +60,7 @@ function Calendar({ date }: { date: string }) {
   const selected = Number(dateParts(date).day);
   const offset = (new Date(year, month - 1, 1).getDay() + 6) % 7;
   const count = new Date(year, month, 0).getDate();
-  return <div className="mini-calendar"><div className="mini-calendar-title">Tháng {month} · {year}</div><div className="mini-calendar-grid">{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((x) => <b key={x}>{x}</b>)}{Array.from({ length: offset }, (_, i) => <span key={`p${i}`} />)}{Array.from({ length: count }, (_, i) => <span className={i + 1 === selected ? 'selected' : ''} key={i}>{i + 1}</span>)}</div></div>;
+  return <div className="mini-calendar"><div className="mini-calendar-title">Tháng {month} · {year}</div><div className="mini-calendar-grid">{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((x) => <b key={x}>{x}</b>)}{Array.from({ length: offset }, (_, i) => <span key={`p${i}`} />)}{Array.from({ length: count }, (_, i) => <span className={i + 1 === selected ? 'selected' : ''} key={i}>{i + 1 === selected ? <><Heart className="calendar-heart" size={15} fill="currentColor" aria-hidden="true" /><span className="calendar-day-number">{i + 1}</span></> : i + 1}</span>)}</div></div>;
 }
 
 function Lightbox({ media, initial, close }: { media: WeddingMedia[]; initial: number; close: () => void }) {
@@ -41,6 +71,7 @@ function Lightbox({ media, initial, close }: { media: WeddingMedia[]; initial: n
 
 export function InvitationExperience({ invitation, connected }: { invitation: Invitation; connected: boolean }) {
   const [opened, setOpened] = useState(false);
+  const [opening, setOpening] = useState(false);
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
   const [copiedGift, setCopiedGift] = useState<string | null>(null);
@@ -54,6 +85,40 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
   const [rsvpClosed, setRsvpClosed] = useState(false);
   useEffect(() => { if (!invitation.rsvpDeadline) return; const id = setTimeout(() => setRsvpClosed(new Date(invitation.rsvpDeadline!).getTime() < Date.now()), 0); return () => clearTimeout(id); }, [invitation.rsvpDeadline]);
   const photos = useMemo(() => invitation.media.length ? invitation.media : invitation.coverImage ? [{ id: 'cover', url: invitation.coverImage, alt: invitation.coverAlt || names, sortOrder: 0 }] : [], [invitation.media, invitation.coverImage, invitation.coverAlt, names]);
+
+  useEffect(() => {
+    if (!opened || !('IntersectionObserver' in window)) return;
+    const content = document.querySelector('.invitation-content');
+    const sections = content?.querySelectorAll('.invite-section, .event-card, .gallery-item');
+    if (!content || !sections) return;
+    content.classList.add('motion-ready');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px 40px 0px' });
+    sections.forEach((section) => {
+      section.classList.add('reveal-on-scroll');
+      observer.observe(section);
+    });
+    return () => observer.disconnect();
+  }, [opened]);
+
+  function openInvitation() {
+    if (opening) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setOpened(true);
+      return;
+    }
+    setOpening(true);
+    window.setTimeout(() => {
+      setOpened(true);
+      window.requestAnimationFrame(() => window.scrollTo(0, 0));
+    }, 780);
+  }
 
   async function submitRsvp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!connected) return;
@@ -74,7 +139,20 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
   }
 
   return <main className="invitation-page">
-    {!opened && <section className="envelope-screen" aria-label="Mở thiệp cưới"><Ornament className="envelope-flower envelope-flower-left" /><Ornament className="envelope-flower envelope-flower-right" /><div className="envelope-card"><div className="envelope-photo">{invitation.coverImage ? <Image src={invitation.coverImage} alt={invitation.coverAlt || names} fill sizes="(max-width: 500px) 70vw, 320px" priority unoptimized={invitation.coverImage.startsWith('/api/')} /> : <div className="envelope-initials">{invitation.partnerOne[0]} & {invitation.partnerTwo[0]}</div>}</div><div className="envelope-copy"><span>THE WEDDING OF</span><h1>{invitation.partnerOne}<em>&</em>{invitation.partnerTwo}</h1><p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p></div><div className="wax-seal" aria-hidden="true"><Heart size={21} fill="currentColor" /></div></div><button className="open-button" onClick={() => setOpened(true)}>Mở thiệp <ArrowRight size={19} /></button><span className="envelope-hint">Một lời mời dành riêng cho bạn</span></section>}
+    <FallingPieces />
+    {!opened && <section className={`envelope-screen letter-opening${opening ? ' is-opening' : ''}`} aria-label="Mở thiệp cưới">
+      <div className="letter-composition">
+        <div className="letter-envelope-back" aria-hidden="true" />
+        <div className="letter-note" aria-hidden="true"><span>THƯ MỜI</span><i>✦</i><small>Ngày chung đôi</small></div>
+        <div className="letter-photo">{invitation.coverImage ? <Image src={invitation.coverImage} alt={invitation.coverAlt || names} fill sizes="(max-width: 650px) 55vw, 320px" priority unoptimized={invitation.coverImage.startsWith('/api/')} /> : <div className="envelope-initials">{invitation.partnerOne[0]} & {invitation.partnerTwo[0]}</div>}</div>
+        <FloralCluster />
+        <div className="letter-pocket" aria-hidden="true"><div className="letter-pocket-front" /></div>
+        <div className="letter-seal" aria-hidden="true"><Heart size={25} strokeWidth={1.7} /></div>
+      </div>
+      <div className="letter-caption"><span>TRÂN TRỌNG KÍNH MỜI</span><h1>{invitation.partnerOne} <em>&</em> {invitation.partnerTwo}</h1><p>{primaryEvent ? formatDate(primaryEvent.dateTime) : 'Một ngày thật đẹp'}</p></div>
+      <button className="letter-open-button" onClick={openInvitation} disabled={opening}>{opening ? 'Đang mở thiệp…' : 'Mở thiệp của chúng mình'} <ArrowRight size={18} /></button>
+      <span className="envelope-hint">Chạm để mở lời mời dành riêng cho bạn</span>
+    </section>}
     <div className={`invitation-content ${opened ? 'is-opened' : ''}`}>
       <nav className="invite-nav"><Link href="/" aria-label="Về trang chủ"><ArrowLeft size={18} /></Link><span>Nét Duyên <i>✧</i></span><button onClick={() => navigator.clipboard?.writeText(shareUrl)} aria-label="Sao chép liên kết"><Copy size={17} /></button></nav>
       <section className="invite-hero"><div className="invite-hero-photo">{invitation.coverImage ? <Image src={invitation.coverImage} alt={invitation.coverAlt || names} fill sizes="(max-width: 800px) 100vw, 580px" priority unoptimized={invitation.coverImage.startsWith('/api/')} /> : <div className="hero-monogram">{invitation.partnerOne[0]} & {invitation.partnerTwo[0]}</div>}</div><div className="invite-hero-copy"><span className="eyebrow light">SAVE OUR DATE</span><h1>{invitation.partnerOne}<span>&</span>{invitation.partnerTwo}</h1><div className="hero-rule" /><p>{primaryEvent ? formatDate(primaryEvent.dateTime, { weekday: 'long' }) : 'Ngày chung đôi'}</p><a href="#loi-moi" className="hero-scroll">Cuộn để khám phá <ArrowDown size={16} /></a></div></section>
