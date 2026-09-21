@@ -1,0 +1,10 @@
+node_modules
+.next
+.vercel
+.npm-cache
+.env*
+!.env.example
+*.tsbuildinfo
+out
+coverage
+photo-contact-sheet.webp
