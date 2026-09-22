@@ -3,15 +3,14 @@
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowDown, ArrowLeft, ArrowRight, Check, Copy, Heart, MapPin, Send } from 'lucide-react';
+import { ArrowLeft, Copy, Heart, Navigation, Send } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
-import { weddingSubmissions } from '@/lib/wedding-submissions';
-import { dateParts, formatDate, formatTime } from '@/lib/utils';
+import { dateParts, formatTime } from '@/lib/utils';
 import { FloralDecoration, FloralDivider, SectionTitle } from './shared';
 import { ArchitectureSection, CardFlower, weddingArtwork } from './decorations';
 
-export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLHeadingElement | null> }) {
-  const { theme, couple, content, weddingDate } = config;
+export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLDivElement | null> }) {
+  const { theme, couple, content } = config;
   return <section className="letter-story" aria-label={`Thiệp cưới ${couple.names}`}>
     <div className="letter-composition">
       <Image className="letter-flower-crown" src={theme.assets.flower} alt="" aria-hidden="true" width={420} height={420} loading="eager" />
@@ -22,8 +21,11 @@ export function WeddingHero({ config, headingRef }: { config: WeddingInvitationC
       <Image className="letter-flower-trail" src={theme.assets.flower} alt="" aria-hidden="true" width={340} height={340} loading="eager" />
       <div className="letter-seal" aria-hidden="true"><Heart size={25} strokeWidth={1.7} /></div>
     </div>
-    <div className="letter-caption"><span>TRÂN TRỌNG KÍNH MỜI</span><h1 ref={headingRef} tabIndex={-1}>{couple.groom} <em>&</em> {couple.bride}</h1><p>{weddingDate ? formatDate(weddingDate) : 'Một ngày thật đẹp'}</p></div>
-    <a href="#loi-moi" className="letter-scroll">Cuộn để đọc lời mời <ArrowDown size={16} /></a>
+    <div className="letter-names" ref={headingRef} tabIndex={-1} role="heading" aria-level={1} aria-label={`${couple.groom} và ${couple.bride}`}>
+      <p>{couple.groom}</p>
+      <span aria-hidden="true">&</span>
+      <p>{couple.bride}</p>
+    </div>
   </section>;
 }
 
@@ -109,7 +111,6 @@ export function ReceptionSection({ config }: { config: WeddingInvitationConfig }
       <div className="reception-calendar"><MiniCalendar date={event.dateTime} timezone={config.timezone} /></div>
       <a className="calendar-link" href={calendarUrlFor(config)} target="_blank" rel="noopener noreferrer">Thêm vào lịch</a>
       <Countdown target={event.dateTime} />
-      <a className="reception-rsvp-link" href="#rsvp">XÁC NHẬN THAM DỰ</a>
     </div>
   </WeddingInfoCard></>;
 }
@@ -134,29 +135,21 @@ function Countdown({ target }: { target: string }) {
   return <div className="countdown" aria-label={`Còn ${values[0]} ngày ${values[1]} giờ ${values[2]} phút ${values[3]} giây`}>{values.map((value, index) => <div key={index}><strong>{index ? String(value).padStart(2, '0') : value}</strong><span>{['Ngày', 'Giờ', 'Phút', 'Giây'][index]}</span></div>)}</div>;
 }
 
-export function RsvpSection({ config, connected }: { config: WeddingInvitationConfig; connected: boolean }) {
-  const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [error, setError] = useState('');
-  const [closed, setClosed] = useState(false);
-  useEffect(() => {
-    const deadline = config.content.rsvpDeadline;
-    if (!deadline) return;
-    const timer = window.setTimeout(() => setClosed(new Date(deadline).getTime() < Date.now()), 0);
-    return () => window.clearTimeout(timer);
-  }, [config.content.rsvpDeadline]);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!connected) return;
-    setState('sending'); setError(''); const form = new FormData(event.currentTarget);
-    try { await weddingSubmissions.rsvp({ invitationId: config.id, guestName: String(form.get('guestName') || ''), attendance: String(form.get('attendance') || ''), guestCount: Number(form.get('guestCount') || 1), message: String(form.get('message') || ''), website: String(form.get('website') || '') }); setState('success'); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : 'Đã có lỗi xảy ra.'); setState('error'); }
-  }
-  return <section className="invite-section rsvp-section" id="rsvp"><SectionTitle eyebrow="LỜI HẸN">Xác nhận tham dự</SectionTitle><p>Cho chúng mình biết bạn có thể đến chung vui nhé.</p>{closed ? <div className="form-notice">Thời hạn xác nhận đã kết thúc. Cảm ơn bạn đã quan tâm!</div> : !connected ? <div className="form-notice">Thiệp mẫu đang ở chế độ xem trước. Kết nối Supabase để nhận phản hồi.</div> : state === 'success' ? <div className="form-success"><Check size={22} /> Cảm ơn bạn! Chúng mình đã nhận được phản hồi.</div> : <form className="invite-form" onSubmit={submit}><label>Họ và tên<input name="guestName" minLength={2} maxLength={100} required placeholder="Tên của bạn" /></label><fieldset><legend>Bạn sẽ tham dự chứ?</legend><label className="radio-label"><input type="radio" name="attendance" value="yes" required /> Rất vui được tham dự</label><label className="radio-label"><input type="radio" name="attendance" value="no" required /> Tiếc là mình không thể đến</label></fieldset><label>Số người tham dự<select name="guestCount" defaultValue="1">{[1,2,3,4,5].map((number) => <option key={number} value={number}>{number} người</option>)}</select></label><label>Lời nhắn (tùy chọn)<textarea name="message" maxLength={500} rows={3} placeholder="Gửi đôi lời đến chúng mình" /></label><input className="honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />{state === 'error' && <p className="form-error" role="alert">{error}</p>}<button className="submit-button" type="submit" disabled={state === 'sending'}>{state === 'sending' ? 'Đang gửi…' : 'Gửi xác nhận'} <Send size={16} /></button></form>}</section>;
-}
-
 export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   if (!config.venue) return null;
-  const embed = `https://www.google.com/maps?q=${encodeURIComponent(`${config.venue.title}, ${config.venue.address}`)}&output=embed`;
-  return <section className="invite-section location-section"><SectionTitle eyebrow="ĐỊA ĐIỂM" light>Hẹn gặp tại</SectionTitle><MapPin size={30} strokeWidth={1.2} /><h3>{config.venue.title}</h3><p>{config.venue.address}</p>{config.features.showMap && <div className="map-frame"><iframe title={`Bản đồ ${config.venue.title}`} src={embed} loading="lazy" referrerPolicy="no-referrer-when-downgrade" /></div>}{config.venue.mapUrl && <a className="outline-light" href={config.venue.mapUrl} target="_blank" rel="noopener noreferrer">Mở chỉ đường <ArrowRight size={16} /></a>}</section>;
+  const destination = `${config.venue.title}, ${config.venue.address}`;
+  const embed = `https://www.google.com/maps?q=${encodeURIComponent(destination)}&output=embed`;
+  const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+  return <section className="venue-invitation-section" data-landing-screenshot-id="invite-map">
+    <div className="venue-invitation-copy">
+      <h3><span dir="auto">Tiệc cưới sẽ tổ chức tại</span></h3>
+      <p><span dir="auto">{destination}</span></p>
+    </div>
+    <div className="venue-map-actions">
+      {config.features.showMap && <iframe className="venue-map" title={`Bản đồ ${config.venue.title}`} src={embed} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" />}
+      <a className="venue-directions" href={directions} target="_blank" rel="noopener noreferrer"><Navigation size={16} aria-hidden="true" /><span>Chỉ đường</span></a>
+    </div>
+  </section>;
 }
 
 export function TimelineSection({ config }: { config: WeddingInvitationConfig }) {

@@ -9,27 +9,23 @@
   --text-accent: #f8efe7;
   font-family: var(--font-body);
 }
-.botanical-theme .cover-eyebrow,
-.botanical-theme .letter-caption>span {
+.botanical-theme .cover-eyebrow {
   font: 500 clamp(.8rem, 2.2vw, 1rem)/1.5 var(--font-heading);
   letter-spacing: .18em;
   text-transform: uppercase;
   text-align: center;
 }
-.botanical-theme .cover-card h1,
-.botanical-theme .letter-caption h1 {
+.botanical-theme .cover-card h1 {
   font: 400 clamp(2.4rem, 8vw, 4rem)/1.08 var(--font-display);
   letter-spacing: -.02em;
   text-align: center;
 }
-.botanical-theme .cover-card h1 em,
-.botanical-theme .letter-caption h1 em {
+.botanical-theme .cover-card h1 em {
   font: normal 400 35px/1 'Ms Madi', cursive;
   letter-spacing: 0;
 }
 .botanical-theme .cover-card p,
-.botanical-theme .cover-invite,
-.botanical-theme .letter-caption p {font-family:var(--font-body);line-height:1.5}
+.botanical-theme .cover-invite {font-family:var(--font-body);line-height:1.5}
 .botanical-theme .cover-open-button {font:600 clamp(1rem,2.8vw,1.1rem)/1 var(--font-body);letter-spacing:.02em}
 .botanical-theme .invite-section h2,
 .botanical-theme .section-heading h2 {font-family:var(--font-heading);font-weight:600;letter-spacing:.04em;line-height:1.2}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { useSwipe } from '@/hooks/use-swipe';
@@ -8,27 +8,33 @@ import type { WeddingMedia } from '@/lib/types';
 import { Modal, SectionTitle } from './shared';
 import { ArchitectureSection } from './decorations';
 
+function circularOffset(index: number, activeIndex: number, length: number) {
+  let offset = index - activeIndex;
+  if (offset > length / 2) offset -= length;
+  if (offset < -length / 2) offset += length;
+  return offset;
+}
+
 export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]; story?: string; open: (index: number) => void }) {
   const [current, setCurrent] = useState(0);
   const move = useCallback((step: number) => setCurrent((value) => (value + step + photos.length) % photos.length), [photos.length]);
   const swipe = useSwipe(() => move(1), () => move(-1));
   return <ArchitectureSection><section className="invite-section gallery-section" id="album">
     <SectionTitle eyebrow="KHOẢNH KHẮC CỦA CHÚNG MÌNH">Album yêu thương</SectionTitle>
-    <div className="album-carousel" {...swipe}>
+    <div className="album-carousel" aria-label="Album ảnh cưới dạng vòng xoay 3D" {...swipe}>
       <div className="album-carousel-track">
         {photos.map((photo, index) => {
-          let offset = (index - current + photos.length) % photos.length;
-          if (offset > photos.length / 2) offset -= photos.length;
+          const offset = circularOffset(index, current, photos.length);
           const distance = Math.abs(offset);
-          return <button style={{ '--slide-offset': offset, '--slide-scale': distance === 0 ? 1 : distance === 1 ? .87 : .74, '--slide-opacity': distance === 0 ? 1 : distance === 1 ? .6 : distance === 2 ? .25 : 0, '--slide-blur': (distance === 0 ? 0 : distance === 1 ? 1.6 : 3) + 'px', '--slide-angle': (offset === 0 ? 0 : offset > 0 ? -7 : 7) + 'deg', zIndex: 10 - distance } as CSSProperties} tabIndex={distance > 2 ? -1 : 0} aria-hidden={distance > 2} key={photo.id} className={`album-carousel-slide${index === current ? ' is-active' : ''}`} onClick={() => index === current ? open(index) : setCurrent(index)} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
-          <Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 40vw, 240px" style={{ objectPosition: `${(photo.position?.x ?? .5) * 100}% ${(photo.position?.y ?? .5) * 100}%` }} unoptimized={photo.url.startsWith('/api/')} />
+          const position = distance > 3 ? (offset < 0 ? 'far-left' : 'far-right') : String(offset);
+          return <button key={photo.id} type="button" data-coverflow-position={position} tabIndex={distance > 3 ? -1 : 0} aria-hidden={distance > 3} className={`album-carousel-slide${index === current ? ' is-active' : ''}`} onClick={() => index === current ? open(index) : setCurrent(index)} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
+          <Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 78vw, 342px" style={{ objectPosition: `${(photo.position?.x ?? .5) * 100}% ${(photo.position?.y ?? .5) * 100}%` }} unoptimized={photo.url.startsWith('/api/')} />
           {index === current && <span className="gallery-hover"><Maximize2 size={17} /></span>}
         </button>; })}
       </div>
       {photos.length > 1 && <><button className="album-carousel-arrow previous" onClick={() => move(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><button className="album-carousel-arrow next" onClick={() => move(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></>}
     </div>
     {photos.length > 1 && <div className="album-carousel-dots" aria-label="Chọn ảnh">{photos.map((photo, index) => <button key={photo.id} className={index === current ? 'is-active' : ''} onClick={() => setCurrent(index)} aria-label={`Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined} />)}</div>}
-    <span className="album-carousel-count" aria-live="polite">{String(current + 1).padStart(2, '0')} / {String(photos.length).padStart(2, '0')}</span>
     {story && <p className="gallery-story">“{story}”</p>}
   </section></ArchitectureSection>;
 }

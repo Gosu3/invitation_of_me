@@ -46,13 +46,21 @@
 .guestbook-wishes>p{margin:0;text-align:center}
 .guestbook-wishes blockquote{margin:0 0 14px;padding:0;background:transparent;border:0}
 .guestbook-wishes blockquote p{margin:3px 0 0}
-/* Layered carousel: all slides share a stable center, so changing images never shifts the section. */
-.album-carousel{max-width:650px;padding:20px 0 28px;perspective:1200px}
-.album-carousel-track{position:relative;display:block;width:100%;height:clamp(290px,49vw,410px);transform:none!important;perspective:1200px}
-.album-carousel .album-carousel-slide{position:absolute;top:0;left:50%;width:42%;height:100%;aspect-ratio:auto;border:0;border-radius:16px;opacity:var(--slide-opacity);filter:blur(var(--slide-blur));transform:translateX(calc(-50% + var(--slide-offset)*65%)) rotateY(var(--slide-angle)) scale(var(--slide-scale));box-shadow:0 14px 30px #203a0d20;transition:transform 650ms cubic-bezier(.22,1,.36,1),opacity 650ms ease,filter 650ms ease}
+/* Each photo occupies one place in a circular 3D coverflow. */
+.album-carousel{max-width:650px;padding:20px 0 28px;perspective:1000px}
+.album-carousel-track{position:relative;display:flex;width:100%;height:520px;align-items:center;justify-content:center;transform:none!important;perspective:1000px}
+.album-carousel .album-carousel-slide{position:absolute;inset:0;margin:auto;width:auto;height:92%;aspect-ratio:342/478;padding:0;border:0;border-radius:16px;overflow:hidden;cursor:pointer;opacity:0;z-index:96;background:#e5eadc;box-shadow:0 20px 30px -10px #203a0d59;transform:translateX(240%) translateZ(-600px) rotateY(150deg) scale(.65);transition:all 1100ms ease-in-out;will-change:transform,opacity}
+.album-carousel .album-carousel-slide[data-coverflow-position="0"]{transform:translateX(0%) translateZ(0px) rotateY(0deg) scale(1);opacity:1;z-index:100;box-shadow:0 0 0 2px #ffffff4d,0 20px 30px -10px #203a0d73}
+.album-carousel .album-carousel-slide[data-coverflow-position="-1"]{transform:translateX(-60%) translateZ(-150px) rotateY(-45deg) scale(.85);opacity:.75;z-index:99}
+.album-carousel .album-carousel-slide[data-coverflow-position="1"]{transform:translateX(60%) translateZ(-150px) rotateY(45deg) scale(.85);opacity:.75;z-index:99}
+.album-carousel .album-carousel-slide[data-coverflow-position="-2"]{transform:translateX(-120%) translateZ(-300px) rotateY(-90deg) scale(.7);opacity:.5;z-index:98}
+.album-carousel .album-carousel-slide[data-coverflow-position="2"]{transform:translateX(120%) translateZ(-300px) rotateY(90deg) scale(.7);opacity:.5;z-index:98}
+.album-carousel .album-carousel-slide[data-coverflow-position="-3"]{transform:translateX(-180%) translateZ(-450px) rotateY(-135deg) scale(.7);opacity:.3;z-index:97}
+.album-carousel .album-carousel-slide[data-coverflow-position="3"]{transform:translateX(180%) translateZ(-450px) rotateY(135deg) scale(.7);opacity:.3;z-index:97}
+.album-carousel .album-carousel-slide[data-coverflow-position="far-left"]{transform:translateX(-240%) translateZ(-600px) rotateY(-150deg) scale(.65)}
+.album-carousel .album-carousel-slide[data-coverflow-position="far-right"]{transform:translateX(240%) translateZ(-600px) rotateY(150deg) scale(.65)}
 .album-carousel-slide[aria-hidden=true]{pointer-events:none}
-.album-carousel .album-carousel-arrow{z-index:15}
-.album-carousel-slide.is-active{box-shadow:0 18px 32px #203a0d26}
+.album-carousel .album-carousel-arrow{z-index:101}
 .album-carousel-dots button{width:7px;height:7px}
 .album-carousel-dots button.is-active{width:22px}
 .botanical-theme .invite-footer{position:relative;overflow:visible;background:transparent;border:0;box-shadow:none;padding:12px 32px 110px;color:#30530f}
@@ -92,13 +100,20 @@
  .guestbook-form button{font-size:8px;padding:6px 10px;min-height:28px}
  .guestbook-status{font-size:8px;margin-top:4px}
  .guestbook-wishes{font-size:10px;line-height:1.4;margin-top:8px;margin-left:16%}
- .album-carousel .album-carousel-slide{width:48%}
- .album-carousel-track{height:clamp(270px,76vw,390px)}
+ .album-carousel-track{height:clamp(360px,119vw,520px)}
  .wedding-music-player{right:12px;bottom:20px}
  .music-player-trigger{width:40px;height:40px}
  .botanical-theme .invite-footer p{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){.card-flower-art{animation:none}.album-carousel .album-carousel-slide{transition:none}}
+.venue-invitation-section{position:relative;z-index:1;display:flex;width:100%;flex-direction:column;align-items:center;padding:32px 24px;color:var(--w-primary);text-align:center}
+.venue-invitation-copy h3{margin:0;font:700 18px/1.35 'Times New Roman',serif;letter-spacing:.03em;text-transform:uppercase;color:var(--w-primary)}
+.venue-invitation-copy p{max-width:440px;margin:8px auto 0;font:400 14px/1.65 Baskerville,'Times New Roman',serif;color:#30530fcc;white-space:pre-line}
+.venue-map-actions{position:relative;display:flex;width:100%;flex-direction:column;align-items:center;gap:20px}
+.venue-map{width:100%;max-width:560px;height:380px;margin-top:12px;overflow:hidden;border:1px solid #30530f;border-radius:15px;background:#e9eee0}
+.venue-directions{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:transparent;color:#30530fcc;font:600 16px/1.4 Baskerville,'Times New Roman',serif;transition:transform .2s ease,background-color .2s ease}
+.venue-directions:hover{transform:scale(1.03);background:#30530f0a}
+@media(max-width:650px){.venue-invitation-section{padding:32px 24px}.venue-invitation-copy h3{font-size:16px}.venue-invitation-copy p{max-width:260px;font-size:12px}.venue-map-actions{gap:16px}.venue-map{max-width:338px;height:268px}.venue-directions{font-size:14px}}
 @media(max-width:380px){
  .botanical-theme .wedding-info-card.family-section{padding-left:8px!important;padding-right:8px!important}
  .botanical-theme .family-section .wedding-couple-names h3{letter-spacing:-.02em!important}

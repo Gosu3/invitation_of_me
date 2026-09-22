@@ -2,7 +2,7 @@
 
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, Gift, Heart, Images } from 'lucide-react';
+import { Gift, Heart, Images } from 'lucide-react';
 import type { Invitation } from '@/lib/types';
 import { createWeddingConfig } from '@/lib/wedding-config';
 import { themeVariables } from '@/lib/wedding-theme';
@@ -11,16 +11,16 @@ import { EnvelopeIntro, type OpeningPhase } from './wedding/envelope-intro';
 import { GalleryLightbox, WeddingGallery } from './wedding/gallery';
 import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
-import { CoupleSection, FamilyCeremonySection, GuestbookSection, InvitationNav, ReceptionSection, RsvpSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
+import { CoupleSection, FamilyCeremonySection, GuestbookSection, InvitationNav, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
-export function InvitationExperience({ invitation, connected }: { invitation: Invitation; connected: boolean }) {
+export function InvitationExperience({ invitation }: { invitation: Invitation; connected: boolean }) {
   const config = useMemo(() => createWeddingConfig(invitation), [invitation]);
   const [phase, setPhase] = useState<OpeningPhase>('closed');
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState('');
   const timers = useRef<number[]>([]);
-  const heading = useRef<HTMLHeadingElement>(null);
+  const heading = useRef<HTMLDivElement>(null);
   const music = useWeddingMusic(config.music);
   const contentVisible = phase === 'revealing' || phase === 'opened';
 
@@ -67,7 +67,6 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
       <FamilyCeremonySection config={config} />
       {config.gallery.length > 0 && <WeddingGallery photos={config.gallery} story={config.content.story} open={setPhotoIndex} />}
       <ReceptionSection config={config} />
-      {config.features.showRsvp && <RsvpSection config={config} connected={connected} />}
       {config.venue && <VenueSection config={config} />}
       {config.features.showTimeline && <TimelineSection config={config} />}
       {config.features.showGuestbook && <GuestbookSection />}
@@ -75,7 +74,7 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
       {config.features.showThankYou && <ThankYouSection />}
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} title={config.music.title} />}
-    {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp"><a href="#loi-moi" aria-label="Lời mời"><Heart size={18} /></a>{config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh"><Images size={18} /></a>}{config.features.showRsvp && <a href="#rsvp" aria-label="Xác nhận tham dự"><CalendarDays size={18} /></a>}{config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}</nav>}
+    {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp"><a href="#loi-moi" aria-label="Lời mời"><Heart size={18} /></a>{config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh"><Images size={18} /></a>}{config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}</nav>}
     {photoIndex !== null && <GalleryLightbox photos={config.gallery} initial={photoIndex} close={() => setPhotoIndex(null)} />}
     {giftOpen && <GiftModal accounts={config.bankAccounts} close={() => setGiftOpen(false)} />}
   </main>;
