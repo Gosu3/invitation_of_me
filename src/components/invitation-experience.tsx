@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, Gift, Heart, Images } from 'lucide-react';
 import type { Invitation } from '@/lib/types';
@@ -69,9 +70,9 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
       {config.features.showRsvp && <RsvpSection config={config} connected={connected} />}
       {config.venue && <VenueSection config={config} />}
       {config.features.showTimeline && <TimelineSection config={config} />}
-      {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
+      {config.features.showGuestbook && <GuestbookSection />}
       {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} />}
-      {config.features.showThankYou && <ThankYouSection config={config} />}
+      {config.features.showThankYou && <ThankYouSection />}
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} title={config.music.title} />}
     {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp"><a href="#loi-moi" aria-label="Lời mời"><Heart size={18} /></a>{config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh"><Images size={18} /></a>}{config.features.showRsvp && <a href="#rsvp" aria-label="Xác nhận tham dự"><CalendarDays size={18} /></a>}{config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}</nav>}

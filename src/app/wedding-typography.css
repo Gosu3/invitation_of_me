@@ -1,0 +1,371 @@
+/* Invitation typography. Keep the botanical artwork and existing section layout. */
+.botanical-theme {
+  --font-display: 'Viaoda Libre', 'Times New Roman', serif;
+  --font-heading: 'EB Garamond', 'Noto Serif', 'Times New Roman', serif;
+  --font-body: 'Lora', 'Noto Serif', 'Times New Roman', serif;
+  --text-primary: #f3e8de;
+  --text-secondary: rgba(243, 232, 222, .82);
+  --text-muted: rgba(243, 232, 222, .68);
+  --text-accent: #f8efe7;
+  font-family: var(--font-body);
+}
+.botanical-theme .cover-eyebrow,
+.botanical-theme .letter-caption>span {
+  font: 500 clamp(.8rem, 2.2vw, 1rem)/1.5 var(--font-heading);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.botanical-theme .cover-card h1,
+.botanical-theme .letter-caption h1 {
+  font: 400 clamp(2.4rem, 8vw, 4rem)/1.08 var(--font-display);
+  letter-spacing: -.02em;
+  text-align: center;
+}
+.botanical-theme .cover-card h1 em,
+.botanical-theme .letter-caption h1 em {
+  font: normal 400 35px/1 'Ms Madi', cursive;
+  letter-spacing: 0;
+}
+.botanical-theme .cover-card p,
+.botanical-theme .cover-invite,
+.botanical-theme .letter-caption p {font-family:var(--font-body);line-height:1.5}
+.botanical-theme .cover-open-button {font:600 clamp(1rem,2.8vw,1.1rem)/1 var(--font-body);letter-spacing:.02em}
+.botanical-theme .invite-section h2,
+.botanical-theme .section-heading h2 {font-family:var(--font-heading);font-weight:600;letter-spacing:.04em;line-height:1.2}
+.botanical-theme .gallery-section h2 {text-transform:uppercase;font-size:clamp(1.3rem,4vw,1.85rem);text-align:center}
+.botanical-theme .wedding-info-card .wedding-info-title {
+  font: 600 clamp(1.4rem,4vw,2rem)/1.2 var(--font-heading)!important;
+  letter-spacing:.04em!important;
+  color:var(--text-accent);
+  text-transform:uppercase;
+  text-align:center;
+  margin-bottom:30px!important;
+}
+.botanical-theme .wedding-family-grid span {font:500 clamp(.78rem,2vw,.92rem)/1.4 var(--font-body);letter-spacing:.01em;color:var(--text-secondary)}
+.botanical-theme .wedding-family-grid p {font:600 clamp(1rem,2.8vw,1.2rem)/1.45 var(--font-heading);letter-spacing:.01em;color:var(--text-accent);margin:7px 0 4px}
+.botanical-theme .wedding-family-grid small {font:400 clamp(.72rem,1.9vw,.85rem)/1.45 var(--font-body);letter-spacing:.01em;color:var(--text-muted)}
+.botanical-theme .wedding-invitation-copy {font:600 clamp(.95rem,2.5vw,1.15rem)/1.5 var(--font-heading);letter-spacing:.05em;color:var(--text-accent);margin-bottom:22px;text-align:center}
+.botanical-theme .wedding-couple-names h3,
+.botanical-theme .wedding-info-card .wedding-couple-names h3 {
+  display:flex;
+  width:80%;
+  min-height:80px;
+  align-items:center;
+  justify-content:center;
+  margin-inline:auto;
+  font:400 46px/52px 'Viaoda Libre','The Nautigal',cursive!important;
+  letter-spacing:0!important;
+  color:rgb(236,228,216);
+  text-align:center;
+  white-space:nowrap;
+}
+.botanical-theme .wedding-info-card .wedding-couple-names .bride-name {width:100%;white-space:normal;text-wrap:balance}
+@media(min-width:768px) {.botanical-theme .wedding-info-card .wedding-couple-names h3 {line-height:60px!important}}
+.botanical-theme .wedding-couple-names>span {font:400 10px/1.4 Uchen,Baskerville,serif;letter-spacing:.14em;color:rgba(236,228,216,.7);text-transform:uppercase;margin-top:7px}
+.botanical-theme .wedding-couple-names>em {font:normal 400 35px/1 'Ms Madi',cursive;color:rgb(236,228,216);margin:12px 0}
+.botanical-theme .wedding-event-details>p:not(.wedding-lunar-date) {font:600 clamp(1rem,2.6vw,1.2rem)/1.5 var(--font-heading);letter-spacing:.03em;color:var(--text-secondary)}
+.botanical-theme .wedding-event-details>strong {font:600 clamp(1.2rem,3vw,1.45rem)/1.35 var(--font-heading);letter-spacing:.05em;color:var(--text-accent)}
+.botanical-theme .wedding-event-details>small {font:400 clamp(.92rem,2.3vw,1.02rem)/1.65 var(--font-body);color:var(--text-muted)}
+.botanical-theme .wedding-date-display>p {font:600 clamp(.95rem,2.3vw,1.08rem)/1.45 var(--font-heading);letter-spacing:.03em;color:var(--text-secondary)}
+.botanical-theme .wedding-date-display strong {font:600 clamp(2.4rem,7vw,3.8rem)/1 var(--font-heading);letter-spacing:-.03em;color:var(--text-accent)}
+.botanical-theme .wedding-date-display>div>span:last-child {font:600 clamp(1rem,2.6vw,1.25rem)/1.3 var(--font-heading);letter-spacing:.03em;color:var(--text-accent)}
+.botanical-theme .wedding-lunar-date {font:400 clamp(.75rem,1.9vw,.88rem)/1.6 var(--font-body);letter-spacing:.01em;color:var(--text-muted)}
+.botanical-theme .events-section .reception-times span {font:500 clamp(.78rem,2vw,.88rem)/1.4 var(--font-heading);color:var(--text-secondary)}
+.botanical-theme .events-section .reception-times strong {font:600 clamp(1rem,2.6vw,1.2rem)/1.4 var(--font-heading);color:var(--text-accent)}
+.botanical-theme .wedding-card-closing,
+.botanical-theme .wedding-reception-venue>a {font:500 clamp(.85rem,2.2vw,.98rem)/1.5 var(--font-heading);color:var(--text-secondary)}
+.botanical-theme .reception-calendar .countdown strong {font:600 clamp(1.6rem,4.8vw,2.6rem)/1 var(--font-heading);font-variant-numeric:tabular-nums;color:var(--burgundy)}
+.botanical-theme .reception-calendar .countdown span {font:500 clamp(.72rem,1.8vw,.82rem)/1.3 var(--font-heading);letter-spacing:.16em;text-transform:uppercase}
+.botanical-theme .mini-calendar-title,
+.botanical-theme .mini-calendar-grid {font-family:var(--font-heading)}
+.botanical-theme .timeline-section .wedding-timeline time {font:600 clamp(1rem,2.7vw,1.15rem)/1.2 var(--font-heading);letter-spacing:.02em;color:var(--text-accent)}
+.botanical-theme .timeline-section .wedding-timeline strong {font:500 clamp(.95rem,2.4vw,1.05rem)/1.5 var(--font-body);letter-spacing:.01em;color:var(--text-secondary)}
+.botanical-theme .timeline-section .wedding-timeline p {font:400 clamp(.85rem,2.2vw,.95rem)/1.55 var(--font-body);color:var(--text-muted)}
+.botanical-theme .guestbook-content h2 {font:600 clamp(1.3rem,4vw,1.8rem)/1.2 var(--font-heading);letter-spacing:.04em}
+.botanical-theme .guestbook-form input,
+.botanical-theme .guestbook-form textarea {font:400 clamp(.92rem,2.3vw,1rem)/1.5 var(--font-body)}
+.botanical-theme .guestbook-wishes {font:400 clamp(.92rem,2.3vw,1rem)/1.7 var(--font-body)}
+.botanical-theme .guestbook-wishes strong {font:600 clamp(.95rem,2.4vw,1.05rem)/1.35 var(--font-heading)}
+.botanical-theme .guestbook-form button {font:600 .95rem/1 var(--font-body);letter-spacing:.01em}
+.botanical-theme .gift-section h2,
+.botanical-theme .gift-dialog h2 {font:600 clamp(1.15rem,3vw,1.35rem)/1.3 var(--font-heading);letter-spacing:.03em}
+.botanical-theme .gift-dialog .eyebrow,
+.botanical-theme .bank-role {font:600 clamp(.78rem,2vw,.88rem)/1.3 var(--font-heading);letter-spacing:.08em}
+.botanical-theme .bank-card strong,
+.botanical-theme .bank-card>span:not(.bank-role) {font-family:var(--font-body)}
+.botanical-theme .bank-actions button {font:600 .95rem/1.3 var(--font-body)}
+.botanical-theme .album-hint,
+.botanical-theme .gift-dialog p,
+.botanical-theme .gift-section>p {font-family:var(--font-body);line-height:1.6}
+@media(max-width:650px) {
+  .botanical-theme .wedding-info-card .wedding-info-title {font-size:clamp(1.3rem,4vw,1.6rem)!important;letter-spacing:.04em!important}
+  .botanical-theme .wedding-info-card .wedding-couple-names h3 {font-size:clamp(30px,10vw,38px)!important}
+  .botanical-theme .wedding-family-grid p {font-size:clamp(.95rem,3.2vw,1.12rem)}
+  .botanical-theme .guestbook-content h2 {font-size:clamp(1.15rem,4vw,1.4rem)}
+  .botanical-theme .guestbook-form input,
+  .botanical-theme .guestbook-form textarea {font-size:clamp(.75rem,2.7vw,.92rem)}
+  .botanical-theme .guestbook-form button {font-size:clamp(.7rem,2.5vw,.88rem)}
+  .botanical-theme .guestbook-wishes {font-size:clamp(.7rem,2.5vw,.9rem)}
+}
+.botanical-theme .wedding-info-card.family-section .wedding-info-title {
+  position:relative;
+  z-index:10;
+  font:700 20px/1.5 'Times New Roman',serif!important;
+  letter-spacing:.03em!important;
+  color:rgb(236,228,216);
+  text-align:center;
+  text-transform:uppercase;
+}
+.botanical-theme .family-section .wedding-family-grid {
+  grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);
+  grid-template-rows:repeat(4,auto);
+  justify-content:center;
+  column-gap:32px;
+  row-gap:3px;
+  max-width:390px;
+  color:rgb(236,228,216);
+  font-family:Baskerville,'Times New Roman',serif;
+  text-align:center;
+}
+.botanical-theme .family-section .wedding-parents-column {
+  display:grid;
+  grid-row:span 4;
+  grid-template-rows:subgrid;
+  min-width:0;
+  justify-items:center;
+}
+.botanical-theme .family-section .wedding-family-grid>i {
+  grid-row:span 4;
+  width:1px;
+  height:50px;
+  align-self:center;
+  background:rgba(236,228,216,.4);
+}
+.botanical-theme .family-section .wedding-parents-label {
+  font:400 12px/1.25 Baskerville,'Times New Roman',serif;
+  letter-spacing:0;
+  color:rgba(236,228,216,.7);
+}
+.botanical-theme .family-section .wedding-parent-name {
+  max-width:100%;
+  font:600 14px/1.25 Baskerville,'Times New Roman',serif;
+  color:rgb(236,228,216);
+  overflow-wrap:anywhere;
+}
+.botanical-theme .family-section .wedding-parent-address {
+  width:100%;
+  margin-top:4px;
+  font:400 10px/1.2 Baskerville,'Times New Roman',serif;
+  color:rgba(236,228,216,.7);
+  white-space:pre-line;
+}
+.botanical-theme .family-section .wedding-invitation-copy {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-width:560px;
+  margin-inline:auto;
+  font:400 12px/1.5 Baskerville,'Times New Roman',serif;
+  letter-spacing:0;
+  color:rgb(236,228,216);
+  text-align:center;
+  white-space:pre-line;
+}
+@media(min-width:768px) {
+  .botanical-theme .family-section .wedding-invitation-copy {font-size:13px}
+}
+@media(max-width:650px) {
+  .botanical-theme .family-section .wedding-family-grid {column-gap:clamp(12px,5vw,24px);padding:0 12px}
+}
+.botanical-theme .family-section .ceremony-event-details {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+  max-width:340px;
+  margin:24px auto 0;
+  padding:0;
+  border:0;
+  font-family:Baskerville,'Times New Roman',serif;
+  text-align:center;
+}
+.botanical-theme .ceremony-venue {display:flex;flex-direction:column;align-items:center;color:rgba(236,228,216,.7)}
+.botanical-theme .ceremony-venue>span {
+  font:400 16px/1.45 Baskerville,'Times New Roman',serif;
+  color:rgba(236,228,216,.7);
+  white-space:pre-line;
+  text-align:center;
+}
+.botanical-theme .ceremony-date-display {display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;margin:0}
+.botanical-theme .ceremony-time-row {
+  display:flex;
+  width:100%;
+  max-width:190px;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  font:400 13px/1.3 Baskerville,'Times New Roman',serif;
+  color:rgba(236,228,216,.7);
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.botanical-theme .ceremony-date-display>.ceremony-time-row>span,
+.botanical-theme .ceremony-date-display>.ceremony-time-row>span:last-child {
+  width:auto;
+  height:auto;
+  margin:0;
+  background:none;
+  font:inherit;
+  letter-spacing:inherit;
+  color:inherit;
+  text-align:center;
+}
+.botanical-theme .ceremony-date-numbers {display:flex;align-items:center;justify-content:center;gap:16px;color:rgb(236,228,216)}
+.botanical-theme .ceremony-date-numbers>strong {font:400 40px/1 'Times New Roman',serif;letter-spacing:0;color:rgb(236,228,216)}
+.botanical-theme .ceremony-date-numbers>span {width:1px;height:46px;background:rgba(236,228,216,.45)}
+.botanical-theme .ceremony-month-year {display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;text-align:left}
+.botanical-theme .ceremony-month-year>span {font:400 14px/1.2 'Times New Roman',serif;color:rgb(236,228,216);text-transform:uppercase}
+.botanical-theme .ceremony-event-details .wedding-lunar-date {
+  margin:0;
+  font:400 12px/1.5 Baskerville,'Times New Roman',serif;
+  letter-spacing:.12em;
+  color:rgba(236,228,216,.7);
+  text-transform:uppercase;
+}
+@media(min-width:768px) {
+  .botanical-theme .family-section .ceremony-event-details,
+  .botanical-theme .ceremony-date-display {gap:20px}
+  .botanical-theme .ceremony-venue>span {font-size:18px}
+  .botanical-theme .ceremony-time-row {max-width:230px;font-size:15px}
+  .botanical-theme .ceremony-date-numbers>strong {font-size:46px}
+  .botanical-theme .ceremony-month-year>span {font-size:18px}
+  .botanical-theme .ceremony-event-details .wedding-lunar-date {font-size:14px}
+}
+
+/* Green reception card; retain the selected-day heart animation. */
+.botanical-theme .wedding-info-card.events-section {
+  color:rgb(236,228,216);
+}
+.botanical-theme .wedding-info-card.events-section>.flower-left {left:-15%;top:58%;width:23%}
+.botanical-theme .wedding-info-card.events-section .wedding-info-title {
+  position:relative;
+  z-index:10;
+  margin:0 0 24px!important;
+  font:700 20px/1.5 'Times New Roman',serif!important;
+  letter-spacing:.03em!important;
+  color:rgb(236,228,216);
+  text-align:center;
+  text-transform:uppercase;
+}
+.botanical-theme .events-section .reception-content {
+  position:relative;
+  z-index:10;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+  width:100%;
+  font-family:Baskerville,'Times New Roman',serif;
+  color:rgb(236,228,216);
+  text-align:center;
+}
+.botanical-theme .events-section .reception-intro {
+  margin:0;
+  font:400 clamp(14px,4.65vw,20px)/1.35 Baskerville,'Times New Roman',serif;
+  color:rgb(236,228,216);
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.botanical-theme .events-section .reception-day-time {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+  max-width:165px;
+  font:400 13px/1.3 Baskerville,'Times New Roman',serif;
+  color:rgba(236,228,216,.7);
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.botanical-theme .events-section .reception-date-numbers {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  color:rgb(236,228,216);
+  font-family:'Times New Roman',serif;
+}
+.botanical-theme .events-section .reception-date-numbers>strong {font:400 40px/1 'Times New Roman',serif;color:rgb(236,228,216)}
+.botanical-theme .events-section .reception-date-numbers>span {width:1px;height:46px;background:rgba(236,228,216,.45)}
+.botanical-theme .events-section .reception-date-numbers>div {display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;text-align:left}
+.botanical-theme .events-section .reception-date-numbers>div>span:first-child {font:400 12px/1.2 'Times New Roman',serif;color:rgb(236,228,216);text-transform:uppercase}
+.botanical-theme .events-section .reception-date-numbers>div>span:last-child {font:400 18px/1.1 'Times New Roman',serif;color:rgb(236,228,216)}
+.botanical-theme .events-section .wedding-lunar-date {margin:0;font:400 10px/1.5 Baskerville,'Times New Roman',serif;letter-spacing:.06em;color:rgba(236,228,216,.7);text-transform:uppercase;white-space:nowrap}
+.botanical-theme .wedding-info-card.events-section .reception-times {display:flex;justify-content:center;gap:32px;margin:4px 0 0}
+.botanical-theme .wedding-info-card.events-section .reception-times>span {display:flex;flex-direction:column;align-items:center;gap:4px;font:400 12px/1.3 Baskerville,'Times New Roman',serif;letter-spacing:.08em;color:rgba(236,228,216,.7);text-transform:uppercase}
+.botanical-theme .wedding-info-card.events-section .reception-times strong {font:500 18px/1.3 Baskerville,'Times New Roman',serif;letter-spacing:0;color:rgb(236,228,216)}
+.botanical-theme .wedding-info-card.events-section .reception-calendar {
+  width:min(100%,340px);
+  max-width:none;
+  margin:4px auto 0;
+  padding:8px 16px 16px;
+  border:0;
+  border-radius:10px;
+  background:#f7f4e9;
+  overflow:hidden;
+}
+.botanical-theme .events-section .reception-calendar .mini-calendar {
+  width:100%;
+  padding:0;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  color:#30530f;
+}
+.botanical-theme .events-section .mini-calendar-title {
+  margin:0 0 6px;
+  padding:5px 0 9px;
+  border-bottom:1px solid rgba(48,83,15,.27);
+  font:400 25px/1 'The Nautigal',cursive;
+  color:#30530f;
+  text-align:center;
+}
+.botanical-theme .events-section .mini-calendar-weekdays {
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  border-bottom:2px solid #30530f;
+}
+.botanical-theme .events-section .mini-calendar-weekdays b {padding:5px 0;font:500 10px/1.2 Baskerville,'Times New Roman',serif;color:rgba(48,83,15,.6);text-align:center}
+.botanical-theme .events-section .mini-calendar-grid {display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px 0;padding:8px 2px 0;font-family:Baskerville,'Times New Roman',serif}
+.botanical-theme .events-section .mini-calendar-grid>span {display:grid;place-items:center;height:30px;aspect-ratio:auto;font:400 12px/1 Baskerville,'Times New Roman',serif;color:#30530f}
+.botanical-theme .events-section .mini-calendar-grid>.selected {position:relative;background:none;border-radius:50%;color:#fff;animation:reception-calendar-pulse 2.8s infinite}
+.botanical-theme .events-section .calendar-heart {position:absolute;top:50%;left:50%;right:auto;width:26px;height:24px;color:#30530f;transform:translate(-50%,-50%);animation:reception-heart-beat 1.5s infinite}
+@keyframes reception-calendar-pulse {50% {box-shadow:0 0 0 6px rgba(48,83,15,.14)}}
+@keyframes reception-heart-beat {50% {transform:translate(-50%,-50%) scale(1.2)}}
+.botanical-theme .events-section .calendar-day-number {position:relative;z-index:2;font:700 11px/1 Baskerville,'Times New Roman',serif;color:#fff}
+.botanical-theme .events-section .calendar-link {display:inline-flex;align-items:center;justify-content:center;margin:0;padding:0;border:0;border-radius:0;background:none;font:400 14px/1.4 'Times New Roman',serif;color:rgb(236,228,216);text-decoration:underline;text-underline-offset:4px;letter-spacing:0}
+.botanical-theme .events-section .calendar-link:hover {background:none;opacity:.8}
+.botanical-theme .events-section .countdown {width:min(100%,310px);margin:0;gap:6px}
+.botanical-theme .events-section .countdown div {padding:6px 2px;border:1px solid rgba(236,228,216,.25);background:rgba(236,228,216,.06)}
+.botanical-theme .events-section .countdown strong {font:400 20px/1 'Times New Roman',serif;color:rgb(236,228,216)}
+.botanical-theme .events-section .countdown span {font:400 8px/1.3 Baskerville,'Times New Roman',serif;letter-spacing:.12em;color:rgba(236,228,216,.7)}
+.botanical-theme .events-section .reception-rsvp-link {display:inline-flex;align-items:center;justify-content:center;margin-top:4px;padding:10px 24px;border-radius:999px;background:rgb(236,228,216);font:400 14px/1.3 Baskerville,'Times New Roman',serif;letter-spacing:.04em;color:#30530f;transition:transform .2s}
+.botanical-theme .events-section .reception-rsvp-link:hover {transform:scale(1.03)}
+@media(min-width:768px) {
+  .botanical-theme .events-section .reception-content {gap:24px}
+  .botanical-theme .events-section .reception-intro {font-size:24px}
+  .botanical-theme .events-section .reception-day-time {max-width:185px;font-size:15px}
+  .botanical-theme .events-section .reception-date-numbers>strong {font-size:46px}
+  .botanical-theme .events-section .reception-date-numbers>div>span:first-child {font-size:16px}
+  .botanical-theme .events-section .reception-date-numbers>div>span:last-child {font-size:24px}
+  .botanical-theme .events-section .wedding-lunar-date {font-size:14px;letter-spacing:.08em}
+  .botanical-theme .wedding-info-card.events-section .reception-times strong {font-size:20px}
+  .botanical-theme .events-section .mini-calendar-weekdays b {font-size:11px}
+  .botanical-theme .events-section .mini-calendar-grid>span {height:34px;font-size:13px}
+  .botanical-theme .events-section .calendar-day-number {font-size:12px}
+}

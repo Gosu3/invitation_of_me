@@ -3,11 +3,12 @@
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowDown, ArrowLeft, ArrowRight, CalendarDays, Check, Copy, Heart, MapPin, Send, Sparkles } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, Check, Copy, Heart, MapPin, Send } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { weddingSubmissions } from '@/lib/wedding-submissions';
 import { dateParts, formatDate, formatTime } from '@/lib/utils';
 import { FloralDecoration, FloralDivider, SectionTitle } from './shared';
+import { ArchitectureSection, CardFlower, weddingArtwork } from './decorations';
 
 export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLHeadingElement | null> }) {
   const { theme, couple, content, weddingDate } = config;
@@ -41,26 +42,48 @@ const cardPetals = [
   { left: '91%', delay: '-10s', duration: '14s', size: '10px' },
 ];
 
-function WeddingInfoCard({ title, flowerSide, flower, className, children }: { title: string; flowerSide: 'left' | 'right'; flower: string; className: string; children: ReactNode }) {
-  return <section className={`invite-section paper-info-card wedding-info-card ${className}`}>
+function WeddingInfoCard({ title, flowerSide, className, children }: { title: string; flowerSide: 'left' | 'right'; className: string; children: ReactNode }) {
+  return <ArchitectureSection><section className={`invite-section paper-info-card wedding-info-card ${className}`}>
     <div className="wedding-card-petals" aria-hidden="true">{cardPetals.map((petal, index) => <span key={index} className="falling-piece petal" style={{ left: petal.left, animationDelay: petal.delay, animationDuration: petal.duration, width: petal.size, height: `calc(${petal.size} * 1.5)` } as CSSProperties}><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c2-8 7-15 18-18-1 11-8 17-18 18Z" /></svg></span>)}</div>
     <div className="wedding-info-content"><h2 className="wedding-info-title">{title}</h2>{children}</div>
-    <Image className={`wedding-info-flower wedding-info-flower-${flowerSide}`} src={flower} alt="" aria-hidden="true" width={360} height={360} />
-  </section>;
+    <CardFlower side={flowerSide} />
+  </section></ArchitectureSection>;
 }
 
-function WeddingDateDisplay({ dateTime }: { dateTime: string }) {
+function WeddingDateDisplay({ dateTime, ceremony = false }: { dateTime: string; ceremony?: boolean }) {
   const date = dateParts(dateTime);
+  if (ceremony) return <div className="wedding-date-display ceremony-date-display">
+    <div className="ceremony-time-row"><span>VÀO LÚC {formatTime(dateTime)}</span><span>{date.weekday}</span></div>
+    <div className="ceremony-date-numbers"><strong>{date.day}</strong><span aria-hidden="true" /><div className="ceremony-month-year"><span>THÁNG {date.month}</span><span>{date.year}</span></div></div>
+  </div>;
   return <div className="wedding-date-display"><p>VÀO LÚC {formatTime(dateTime)} <span>·</span> {date.weekday}</p><div><strong>{date.day}</strong><span aria-hidden="true" /><span>THÁNG {date.month}<br />{date.year}</span></div></div>;
+}
+
+function ParentsColumn({ parents, address, side }: { parents?: string; address?: string; side: string }) {
+  const names = parents?.split(/\s*[·•;\n]+\s*/).filter(Boolean) || [];
+  return <div className="wedding-parents-column" aria-label={side}>
+    <span className="wedding-parents-label">Ông Bà</span>
+    <strong className="wedding-parent-name">{names[0] || '\u00a0'}</strong>
+    <strong className="wedding-parent-name">{names.slice(1).join(' · ') || '\u00a0'}</strong>
+    <small className="wedding-parent-address">{address || '\u00a0'}</small>
+  </div>;
 }
 
 export function FamilyCeremonySection({ config }: { config: WeddingInvitationConfig }) {
   const event = config.ceremony;
-  return <WeddingInfoCard title="THÔNG TIN LỄ CƯỚI" flowerSide="right" flower={config.theme.assets.flower} className="family-section">
-    {config.features.showFamilyInfo && (config.family.groomParents || config.family.brideParents || config.family.groomAddress || config.family.brideAddress) && <div className="wedding-family-grid"><div><span>NHÀ TRAI</span>{config.family.groomParents && <p>{config.family.groomParents}</p>}{config.family.groomAddress && <small>{config.family.groomAddress}</small>}</div><i aria-hidden="true" /><div><span>NHÀ GÁI</span>{config.family.brideParents && <p>{config.family.brideParents}</p>}{config.family.brideAddress && <small>{config.family.brideAddress}</small>}</div></div>}
-    <p className="wedding-invitation-copy">TRÂN TRỌNG BÁO TIN<br />LỄ THÀNH HÔN CỦA CON CHÚNG TÔI</p>
-    <div className="wedding-couple-names"><h3>{config.couple.groomFullName}</h3><span>{config.couple.groomRole}</span><em>&</em><h3>{config.couple.brideFullName}</h3><span>{config.couple.brideRole}</span></div>
-    {event && <div className="wedding-event-details"><p>LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI</p><strong>{event.venue}</strong><small>{event.address}</small><WeddingDateDisplay dateTime={event.dateTime} />{event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}</div>}
+  return <WeddingInfoCard title="THÔNG TIN LỄ CƯỚI" flowerSide="right" className="family-section">
+    {config.features.showFamilyInfo && (config.family.groomParents || config.family.brideParents || config.family.groomAddress || config.family.brideAddress) && <div className="wedding-family-grid">
+      <ParentsColumn parents={config.family.groomParents} address={config.family.groomAddress} side="Nhà trai" />
+      <i aria-hidden="true" />
+      <ParentsColumn parents={config.family.brideParents} address={config.family.brideAddress} side="Nhà gái" />
+    </div>}
+    <p className="wedding-invitation-copy"><span dir="auto">{'TRÂN TRỌNG BÁO TIN\nLỄ THÀNH HÔN CỦA CON CHÚNG TÔI'}</span></p>
+    <div className="wedding-couple-names"><h3 className="groom-name">{config.couple.groomFullName}</h3><span>{config.couple.groomRole}</span><em>&</em><h3 className="bride-name">{config.couple.brideFullName}</h3><span>{config.couple.brideRole}</span></div>
+    {event && <div className="wedding-event-details ceremony-event-details">
+      <div className="ceremony-venue"><span dir="auto">{'LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI\nTƯ GIA'}</span></div>
+      <WeddingDateDisplay dateTime={event.dateTime} ceremony />
+      {event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}
+    </div>}
   </WeddingInfoCard>;
 }
 
@@ -75,14 +98,19 @@ function calendarUrlFor(config: WeddingInvitationConfig) {
 export function ReceptionSection({ config }: { config: WeddingInvitationConfig }) {
   const event = config.reception;
   if (!event) return null;
-  return <><FloralDivider /><WeddingInfoCard title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" flower={config.theme.assets.flower} className="events-section">
-    <p className="wedding-invitation-copy">TRÂN TRỌNG KÍNH MỜI<br />ĐẾN DỰ BỮA TIỆC CHUNG VUI<br />CÙNG GIA ĐÌNH CHÚNG TÔI</p>
-    <WeddingDateDisplay dateTime={event.dateTime} />
-    {event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}
-    <div className="reception-times"><span>ĐÓN KHÁCH<strong>{event.arrivalTime || formatTime(event.dateTime)}</strong></span><span>KHAI TIỆC<strong>{formatTime(event.dateTime)}</strong></span></div>
-    <div className="wedding-event-details wedding-reception-venue"><p>TẠI</p><strong>{event.venue}</strong><small>{event.address}</small>{event.mapUrl && <a href={event.mapUrl} target="_blank" rel="noopener noreferrer">XEM CHỈ ĐƯỜNG <ArrowRight size={13} /></a>}</div>
-    <p className="wedding-card-closing">RẤT HÂN HẠNH ĐƯỢC ĐÓN TIẾP</p>
-    <div className="reception-calendar"><MiniCalendar date={event.dateTime} timezone={config.timezone} /><Countdown target={event.dateTime} /><a className="calendar-link" href={calendarUrlFor(config)} target="_blank" rel="noopener noreferrer"><CalendarDays size={15} /> Thêm vào lịch</a></div>
+  const date = dateParts(event.dateTime);
+  return <><FloralDivider /><WeddingInfoCard title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" className="events-section">
+    <div className="reception-content">
+      <h3 className="reception-intro">Tiệc cưới sẽ diễn ra vào lúc:</h3>
+      <div className="reception-day-time"><span>{date.weekday}</span><span>{formatTime(event.dateTime)}</span></div>
+      <div className="reception-date-numbers"><strong>{date.day}</strong><span aria-hidden="true" /><div><span>THÁNG {date.month}</span><span>{date.year}</span></div></div>
+      {event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}
+      <div className="reception-times"><span>ĐÓN KHÁCH<strong>{event.arrivalTime || formatTime(event.dateTime)}</strong></span><span>KHAI TIỆC<strong>{formatTime(event.dateTime)}</strong></span></div>
+      <div className="reception-calendar"><MiniCalendar date={event.dateTime} timezone={config.timezone} /></div>
+      <a className="calendar-link" href={calendarUrlFor(config)} target="_blank" rel="noopener noreferrer">Thêm vào lịch</a>
+      <Countdown target={event.dateTime} />
+      <a className="reception-rsvp-link" href="#rsvp">XÁC NHẬN THAM DỰ</a>
+    </div>
   </WeddingInfoCard></>;
 }
 
@@ -93,7 +121,7 @@ function MiniCalendar({ date, timezone }: { date: string; timezone: string }) {
   const selected = Number(new Intl.DateTimeFormat('en-US', { timeZone: timezone, day: 'numeric' }).format(instant));
   const offset = (new Date(year, month - 1, 1).getDay() + 6) % 7;
   const count = new Date(year, month, 0).getDate();
-  return <div className="mini-calendar"><div className="mini-calendar-title">Tháng {month} · {year}</div><div className="mini-calendar-grid">{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((value) => <b key={value}>{value}</b>)}{Array.from({ length: offset }, (_, index) => <span key={`blank-${index}`} />)}{Array.from({ length: count }, (_, index) => <span className={index + 1 === selected ? 'selected' : ''} key={index}>{index + 1 === selected ? <><Heart className="calendar-heart" size={15} fill="currentColor" aria-hidden="true" /><span className="calendar-day-number">{index + 1}</span></> : index + 1}</span>)}</div></div>;
+  return <div className="mini-calendar"><div className="mini-calendar-title">Tháng {month} / {year}</div><div className="mini-calendar-weekdays">{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((value) => <b key={value}>{value}</b>)}</div><div className="mini-calendar-grid">{Array.from({ length: offset }, (_, index) => <span key={`blank-${index}`} />)}{Array.from({ length: count }, (_, index) => <span className={index + 1 === selected ? 'selected' : ''} key={index}>{index + 1 === selected ? <><Heart className="calendar-heart" size={26} fill="currentColor" aria-hidden="true" /><span className="calendar-day-number">{index + 1}</span></> : index + 1}</span>)}</div></div>;
 }
 
 function Countdown({ target }: { target: string }) {
@@ -132,21 +160,44 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
 }
 
 export function TimelineSection({ config }: { config: WeddingInvitationConfig }) {
-  return <section className="invite-section timeline-section paper-note-card"><Image className="frame-flower timeline-frame-flower" src={config.theme.assets.flower} alt="" aria-hidden="true" width={270} height={270} /><SectionTitle eyebrow="CHƯƠNG TRÌNH">Lịch trình ngày cưới</SectionTitle><ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong>{item.title}</strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol></section>;
+  return <ArchitectureSection><section className="invite-section paper-info-card wedding-info-card timeline-section">
+    <div className="wedding-info-content"><h2 className="wedding-info-title">LỊCH TRÌNH NGÀY CƯỚI</h2>
+      <ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong>{item.title}</strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
+    </div><CardFlower timeline />
+  </section></ArchitectureSection>;
 }
 
-export function GuestbookSection({ config, connected }: { config: WeddingInvitationConfig; connected: boolean }) {
-  const [state, setState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [error, setError] = useState('');
-  const [wish, setWish] = useState('');
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!connected) return; setState('sending'); setError(''); const form = new FormData(event.currentTarget);
-    try { await weddingSubmissions.wish({ invitationId: config.id, guestName: String(form.get('guestName') || ''), message: wish, website: String(form.get('website') || '') }); setState('success'); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : 'Đã có lỗi xảy ra.'); setState('error'); }
+export function GuestbookSection() {
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+  const [wishes, setWishes] = useState<{ id: string; guestName: string; message: string }[]>([]);
+  const [status, setStatus] = useState('');
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (name.trim().length < 2 || message.trim().length < 3) {
+      setStatus('Vui lòng nhập tên và lời chúc của bạn.');
+      return;
+    }
+    setWishes((current) => [{ id: crypto.randomUUID(), guestName: name.trim(), message: message.trim() }, ...current]);
+    setName(''); setMessage(''); setStatus('Đã thêm lời chúc của bạn ♡');
   }
-  return <section className="invite-section wishes-section"><SectionTitle eyebrow="SỔ LƯU BÚT" light>Gửi lời chúc</SectionTitle><p>Một lời nhắn nhỏ sẽ ở lại cùng chúng mình thật lâu.</p>{connected && state !== 'success' && <form className="wish-form" onSubmit={submit}><input name="guestName" minLength={2} maxLength={100} required placeholder="Tên của bạn" aria-label="Tên của bạn" /><div className="wish-compose"><textarea name="message" value={wish} onChange={(event) => setWish(event.target.value)} minLength={3} maxLength={1000} required rows={3} placeholder="Lời chúc của bạn…" aria-label="Lời chúc" /><button type="button" className="ai-wish" onClick={() => setWish(`Chúc ${config.couple.groom} và ${config.couple.bride} trăm năm hạnh phúc, luôn yêu thương và đồng hành cùng nhau trên mọi chặng đường!`)} aria-label="Gợi ý lời chúc"><Sparkles size={17} /> Gợi ý</button></div><input className="honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />{state === 'error' && <p className="form-error" role="alert">{error}</p>}<button type="submit" disabled={state === 'sending'}>{state === 'sending' ? 'Đang gửi…' : 'Gửi lời chúc'} <ArrowRight size={16} /></button></form>}{state === 'success' && <div className="form-success light-success"><Check size={22} /> Cảm ơn bạn! Lời chúc sẽ hiện sau khi được duyệt.</div>}{!connected && <div className="form-notice dark-notice">Kết nối Supabase để nhận lời chúc.</div>}{config.content.wishes.length ? <div className="wish-list">{config.content.wishes.map((item) => <blockquote key={item.id}><p>“{item.message}”</p><cite>— {item.guestName}</cite></blockquote>)}</div> : <p className="guestbook-empty">Chưa có lời chúc nào. Hãy là người đầu tiên gửi yêu thương ♡</p>}</section>;
+  return <section className="invite-section guestbook-wrapper" id="so-luu-but">
+    <Image className="guestbook-background" src={weddingArtwork.guestbook} alt="" aria-hidden="true" width={1314} height={1197} unoptimized />
+    <div className="guestbook-content">
+      <h2>SỔ LƯU BÚT</h2>
+      <form className="guestbook-form" onSubmit={submit}>
+        <input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={100} required placeholder="Tên của bạn" aria-label="Tên của bạn" />
+        <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={1000} required rows={2} placeholder="Lời chúc của bạn…" aria-label="Lời chúc" />
+        <button type="submit">GỬI LỜI CHÚC <Send size={13} /></button>
+      </form>
+      <span className="guestbook-status" role="status">{status}</span>
+      <div className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
+        {wishes.length ? wishes.map((wish) => <blockquote key={wish.id}><strong>{wish.guestName}</strong><p>{wish.message}</p></blockquote>) : <p>Hãy là người đầu tiên gửi yêu thương ♡</p>}
+      </div>
+    </div>
+  </section>;
 }
 
-export function ThankYouSection({ config }: { config: WeddingInvitationConfig }) {
-  return <footer className="invite-footer"><FloralDecoration position="right" className="footer-flower" /><Heart size={19} fill="currentColor" /><h2>{config.couple.groom} <em>&</em> {config.couple.bride}</h2><p>{config.content.closingMessage}</p><span>Nét Duyên · Một ngày để nhớ mãi</span></footer>;
+export function ThankYouSection() {
+  return <footer className="invite-footer"><Heart size={22} strokeWidth={1.3} /><p>Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình</p></footer>;
 }

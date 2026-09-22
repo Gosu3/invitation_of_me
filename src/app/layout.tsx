@@ -8,12 +8,20 @@ import '@fontsource/playfair-display/500.css';
 import '@fontsource/lora/400.css';
 import '@fontsource/lora/500.css';
 import '@fontsource/viaoda-libre/400.css';
+import '@fontsource/eb-garamond/400.css';
+import '@fontsource/eb-garamond/500.css';
+import '@fontsource/eb-garamond/600.css';
+import '@fontsource/ms-madi/400.css';
+import '@fontsource/uchen/400.css';
+import '@fontsource/the-nautigal/400.css';
 import '@fontsource/be-vietnam-pro/400.css';
 import '@fontsource/be-vietnam-pro/500.css';
 import '@fontsource/be-vietnam-pro/600.css';
 import '@fontsource/be-vietnam-pro/700.css';
 import './globals.css';
 import './invitation-motion.css';
+import './wedding-composition.css';
+import './wedding-typography.css';
 
 export const metadata: Metadata = {
   title: { default: 'Nét Duyên — Thiệp cưới lưu giữ yêu thương', template: '%s | Nét Duyên' },

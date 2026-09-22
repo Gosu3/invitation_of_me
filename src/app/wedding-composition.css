@@ -1,0 +1,106 @@
+/* Minimalism composition, retaining the Hoa Mộc Xanh palette. */
+.botanical-theme .architecture-section{position:relative;display:flow-root;overflow:visible}
+.botanical-theme .invitation-paper{overflow:hidden}
+.botanical-theme .invite-section::before{display:none}
+.botanical-theme .wedding-info-card{width:min(525px,calc(100% - 32px));border-radius:13px;padding:48px 30px 50px!important}
+.family-section>.wedding-info-content{width:100%;max-width:none}
+.family-section .wedding-family-grid{max-width:390px}
+.botanical-theme .wedding-info-card .wedding-info-title{font:700 20px/1.5 'Times New Roman',serif!important;letter-spacing:.03em!important}
+.botanical-theme .wedding-info-card .wedding-couple-names h3{font:400 clamp(32px,4vw,44px)/1.08 'Viaoda Libre','Noto Serif',serif!important;letter-spacing:0;text-wrap:balance;overflow-wrap:normal}
+.wedding-family-grid small{font-size:9px}
+.wedding-date-display strong{font-size:46px}
+.wedding-date-display>div>span:nth-child(2){height:46px}
+.wedding-date-display>div>span:last-child{font-size:12px}
+/* Decorations never participate in the text layout. Mirror the anchor, sway the image. */
+.paper-info-card>.card-flower-anchor{position:absolute!important;z-index:4!important;width:26%;height:auto;top:28%;right:-14%;pointer-events:none;transform:none}
+.paper-info-card>.flower-left{right:auto;left:-10%;top:29%;transform:scaleX(-1)}
+.card-flower-art{display:block;width:100%;height:auto;max-width:none;object-fit:contain;filter:none;transform-origin:50% 90%;animation:card-flower-sway 7s ease-in-out infinite}
+.flower-left .card-flower-art{animation-delay:-1.3s}
+.flower-timeline .card-flower-art{animation-delay:-2.1s}
+@keyframes card-flower-sway{0%,100%{transform:translateY(0) rotate(-.35deg)}50%{transform:translateY(-3px) rotate(.65deg)}}
+.botanical-theme .wedding-info-card.timeline-section{width:min(525px,calc(100% - 32px));padding:52px 48px 48px!important}
+.timeline-section>.wedding-info-content{width:100%;max-width:none}
+.paper-info-card>.flower-timeline{width:19%;top:22%;right:-2%}
+.timeline-section .wedding-timeline{max-width:410px;margin:32px auto 0}
+.timeline-section .wedding-timeline li{grid-template-columns:58px 16px 1fr;gap:14px;min-height:66px;padding-bottom:22px}
+.timeline-section .wedding-timeline time{color:#eaf0df;font:400 18px/1.4 var(--display-font)}
+.timeline-section .wedding-timeline strong{color:#fffaf7;font:400 14px/1.6 'Noto Serif',serif}
+.timeline-section .wedding-timeline p{color:#dce9c7}
+.timeline-section .wedding-timeline li>span{border-color:#30530f}
+.timeline-section .wedding-timeline li:not(:last-child)>span::after{bottom:auto;height:52px}
+.timeline-section .wedding-timeline li:last-child{min-height:0;padding-bottom:0}
+/* A single original paper artwork, with a scrollable wish list in its safe area. */
+.botanical-theme .guestbook-wrapper{width:min(710px,100%);padding:0!important;margin:12px auto 24px;border:0;background:transparent;box-shadow:none;aspect-ratio:1314/1197}
+.botanical-theme .guestbook-wrapper::before,.botanical-theme .guestbook-wrapper::after{display:none}
+.guestbook-background{display:block;width:100%;height:auto;pointer-events:none}
+.guestbook-content{position:absolute;inset:21% 16% 17% 24%;display:flex;flex-direction:column;min-height:0;background:transparent;border:0;outline:0;box-shadow:none;color:#30530f}
+.botanical-theme .guestbook-content h2{flex:none;margin:0 0 16px;font:700 20px/1.5 'Times New Roman',serif;letter-spacing:.03em}
+.guestbook-form{display:grid;gap:12px;flex:none}
+.guestbook-form input,.guestbook-form textarea{width:100%;min-width:0;margin:0;padding:9px 0;border:0;border-bottom:1px solid #6b804060;border-radius:0;outline-offset:2px;background:transparent;box-shadow:none;color:#30530f;font:13px/1.5 var(--w-body)}
+.guestbook-form textarea{resize:none}
+.guestbook-form input::placeholder,.guestbook-form textarea::placeholder{color:#6b8040;opacity:.9}
+.guestbook-form button{justify-self:center;display:flex;gap:9px;align-items:center;border:0;border-radius:20px;background:#30530f;color:#fffaf7;padding:9px 16px;font:10px/1.5 var(--w-ui)}
+.guestbook-status{flex:none;font-size:10px;line-height:1.4;margin-top:8px}
+.guestbook-status:empty{display:none}
+.guestbook-wishes{flex:1;min-height:30px;margin-top:16px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;text-align:left;font:12px/1.6 var(--w-body);overflow-wrap:anywhere}
+.guestbook-wishes>p{margin:0;text-align:center}
+.guestbook-wishes blockquote{margin:0 0 14px;padding:0;background:transparent;border:0}
+.guestbook-wishes blockquote p{margin:3px 0 0}
+/* Layered carousel: all slides share a stable center, so changing images never shifts the section. */
+.album-carousel{max-width:650px;padding:20px 0 28px;perspective:1200px}
+.album-carousel-track{position:relative;display:block;width:100%;height:clamp(290px,49vw,410px);transform:none!important;perspective:1200px}
+.album-carousel .album-carousel-slide{position:absolute;top:0;left:50%;width:42%;height:100%;aspect-ratio:auto;border:0;border-radius:16px;opacity:var(--slide-opacity);filter:blur(var(--slide-blur));transform:translateX(calc(-50% + var(--slide-offset)*65%)) rotateY(var(--slide-angle)) scale(var(--slide-scale));box-shadow:0 14px 30px #203a0d20;transition:transform 650ms cubic-bezier(.22,1,.36,1),opacity 650ms ease,filter 650ms ease}
+.album-carousel-slide[aria-hidden=true]{pointer-events:none}
+.album-carousel .album-carousel-arrow{z-index:15}
+.album-carousel-slide.is-active{box-shadow:0 18px 32px #203a0d26}
+.album-carousel-dots button{width:7px;height:7px}
+.album-carousel-dots button.is-active{width:22px}
+.botanical-theme .invite-footer{position:relative;overflow:visible;background:transparent;border:0;box-shadow:none;padding:12px 32px 110px;color:#30530f}
+.botanical-theme .invite-footer::before,.botanical-theme .invite-footer::after{display:none}
+.botanical-theme .invite-footer p{max-width:390px;margin:15px auto 0;color:#6b8040;font:italic 16px/1.8 var(--w-body)}
+/* Compact corner trigger; the mobile dock stays in its own lane. */
+.wedding-music-player{position:fixed;right:20px;bottom:22px;z-index:45;color:#30530f}
+.music-player-trigger{width:44px;height:44px;display:grid;place-items:center;border:1px solid #d9e1cc;border-radius:50%;background:#fffaf7;box-shadow:0 4px 18px #203a0d24;color:#30530f}
+.wedding-music-panel{position:absolute;right:0;bottom:56px;width:min(285px,calc(100vw - 32px));padding:18px;background:#fffaf7;border:1px solid #d9e1cc;border-radius:16px;box-shadow:0 14px 45px #203a0d2b;font-size:12px}
+.wedding-music-panel header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.wedding-music-panel header strong{line-height:1.5}
+.wedding-music-panel button{display:grid;place-items:center;padding:8px;border:0;background:transparent;color:#30530f;border-radius:8px}
+.wedding-music-panel button:disabled{opacity:.35;cursor:default}
+.wedding-music-panel ol{list-style:none;padding:0;max-height:130px;overflow:auto}
+.wedding-music-panel li button{width:100%;text-align:left;display:block}
+.wedding-music-panel button[aria-current=true],.wedding-music-panel button[aria-pressed=true]{background:#e4eddb}
+.music-transport,.music-volume{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
+.music-volume input{min-width:0;width:100%;accent-color:#30530f}
+@media(max-width:650px){
+ .botanical-theme .wedding-info-card{padding:40px 20px 44px!important}
+ .botanical-theme .wedding-info-card .wedding-info-title{font-size:17px!important;letter-spacing:.03em!important}
+ .botanical-theme .wedding-info-card .wedding-couple-names h3{font-size:clamp(32px,8vw,38px)!important}
+ .paper-info-card>.card-flower-anchor{width:19%;right:-3%;top:59%}
+ .paper-info-card>.flower-left{left:-3%;right:auto;top:26%}
+ .botanical-theme .wedding-info-card.timeline-section{padding:40px 26px!important}
+ .paper-info-card>.flower-timeline{width:17%;right:-2%;top:24%}
+ .timeline-section .wedding-timeline{margin-left:0;max-width:85%}
+ .timeline-section .wedding-timeline li{grid-template-columns:45px 12px 1fr;gap:10px}
+ .timeline-section .wedding-timeline time{font-size:18px}
+ .timeline-section .wedding-timeline strong{font-size:12px}
+ .wedding-date-display strong{font-size:44px}
+ .guestbook-content{inset:20% 15% 16% 24%}
+ .botanical-theme .guestbook-content h2{font-size:17px;margin-bottom:7px}
+ .guestbook-form{gap:5px}
+ .guestbook-form input,.guestbook-form textarea{font-size:11px;line-height:1.4;padding:5px 0}
+ .guestbook-form textarea{height:42px}
+ .guestbook-form button{font-size:8px;padding:6px 10px;min-height:28px}
+ .guestbook-status{font-size:8px;margin-top:4px}
+ .guestbook-wishes{font-size:10px;line-height:1.4;margin-top:8px;margin-left:16%}
+ .album-carousel .album-carousel-slide{width:48%}
+ .album-carousel-track{height:clamp(270px,76vw,390px)}
+ .wedding-music-player{right:12px;bottom:20px}
+ .music-player-trigger{width:40px;height:40px}
+ .botanical-theme .invite-footer p{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){.card-flower-art{animation:none}.album-carousel .album-carousel-slide{transition:none}}
+@media(max-width:380px){
+ .botanical-theme .wedding-info-card.family-section{padding-left:8px!important;padding-right:8px!important}
+ .botanical-theme .family-section .wedding-couple-names h3{letter-spacing:-.02em!important}
+ .family-section .wedding-family-grid{padding:0 12px}
+}
