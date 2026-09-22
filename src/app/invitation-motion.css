@@ -247,7 +247,6 @@
 .wedding-card-petals .falling-piece.petal{color:#d8e8ba;opacity:0;filter:drop-shadow(0 1px 2px #0c270b80)}
 .wedding-card-petals .falling-piece:nth-child(even){color:#fff8df}
 .wedding-info-card>.wedding-info-content{position:relative!important;z-index:3!important;width:min(100%,390px);margin:0 auto;background:transparent;border:0;outline:0;box-shadow:none}
-@media(min-width:651px){.wedding-info-card.family-section>.wedding-info-content{transform:translateX(-27px)}.wedding-info-card.events-section>.wedding-info-content{transform:translateX(12px)}}
 .wedding-info-card>.wedding-info-flower{position:absolute!important;z-index:4!important;width:200px;height:200px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 8px 12px #10280730)}
 .wedding-info-flower-right{right:-90px}
 .wedding-info-card>.wedding-info-flower-right{top:44%}
