@@ -7,6 +7,7 @@ import '@fontsource/playfair-display/400.css';
 import '@fontsource/playfair-display/500.css';
 import '@fontsource/lora/400.css';
 import '@fontsource/lora/500.css';
+import '@fontsource/viaoda-libre/400.css';
 import '@fontsource/be-vietnam-pro/400.css';
 import '@fontsource/be-vietnam-pro/500.css';
 import '@fontsource/be-vietnam-pro/600.css';

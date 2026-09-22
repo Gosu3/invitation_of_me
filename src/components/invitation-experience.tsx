@@ -10,7 +10,7 @@ import { EnvelopeIntro, type OpeningPhase } from './wedding/envelope-intro';
 import { GalleryLightbox, WeddingGallery } from './wedding/gallery';
 import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
-import { CoupleSection, FamilyCeremonySection, GuestbookSection, InvitationNav, ReceptionSection, RsvpSection, ThankYouSection, TimelineSection, VenueSection, WeddingCountdown, WeddingHero } from './wedding/sections';
+import { CoupleSection, FamilyCeremonySection, GuestbookSection, InvitationNav, ReceptionSection, RsvpSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
 export function InvitationExperience({ invitation, connected }: { invitation: Invitation; connected: boolean }) {
   const config = useMemo(() => createWeddingConfig(invitation), [invitation]);
@@ -66,7 +66,6 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
       <FamilyCeremonySection config={config} />
       {config.gallery.length > 0 && <WeddingGallery photos={config.gallery} story={config.content.story} open={setPhotoIndex} />}
       <ReceptionSection config={config} />
-      <WeddingCountdown config={config} />
       {config.features.showRsvp && <RsvpSection config={config} connected={connected} />}
       {config.venue && <VenueSection config={config} />}
       {config.features.showTimeline && <TimelineSection config={config} />}

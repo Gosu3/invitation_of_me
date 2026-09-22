@@ -14,9 +14,9 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
   return <section className="invite-section gallery-section" id="album">
     <SectionTitle eyebrow="KHOẢNH KHẮC CỦA CHÚNG MÌNH">Album yêu thương</SectionTitle>
     <div className="album-carousel" {...swipe}>
-      <div className="album-carousel-track" style={{ transform: `translateX(calc(15% - ${current * 70}% - ${current * 12}px))` }}>
+      <div className="album-carousel-track" style={{ transform: `translateX(calc(30% - ${current * 40}% - ${current * 10}px))` }}>
         {photos.map((photo, index) => <button key={photo.id} className={`album-carousel-slide${index === current ? ' is-active' : ''}`} onClick={() => index === current ? open(index) : setCurrent(index)} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
-          <Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 72vw, 390px" style={{ objectPosition: `${(photo.position?.x ?? .5) * 100}% ${(photo.position?.y ?? .5) * 100}%` }} unoptimized={photo.url.startsWith('/api/')} />
+          <Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 40vw, 240px" style={{ objectPosition: `${(photo.position?.x ?? .5) * 100}% ${(photo.position?.y ?? .5) * 100}%` }} unoptimized={photo.url.startsWith('/api/')} />
           {index === current && <span className="gallery-hover"><Maximize2 size={17} /></span>}
         </button>)}
       </div>

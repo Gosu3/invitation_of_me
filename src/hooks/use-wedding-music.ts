@@ -11,6 +11,7 @@ export function useWeddingMusic(config: WeddingMusic) {
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [blocked, setBlocked] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const createSynth = useCallback(() => {
     const context = new AudioContext();
@@ -38,32 +39,56 @@ export function useWeddingMusic(config: WeddingMusic) {
 
   const play = useCallback(async () => {
     if (!config.enabled) return;
+    setBusy(true);
     try {
+      if (engine.current.context?.state === 'closed') engine.current = {};
       if (!engine.current.audio && !engine.current.context) {
         if (config.src) {
           const audio = new Audio(config.src);
           audio.loop = true; audio.volume = config.volume;
+          audio.muted = muted;
           engine.current.audio = audio;
         } else createSynth();
       }
       if (engine.current.audio) await engine.current.audio.play();
       if (engine.current.context?.state === 'suspended') await engine.current.context.resume();
-      setPlaying(true); setBlocked(false);
-    } catch { setBlocked(true); setPlaying(false); }
-  }, [config.enabled, config.src, config.volume, createSynth]);
+      setPlaying(engine.current.audio ? !engine.current.audio.paused : engine.current.context?.state === 'running');
+      setBlocked(false);
+    } catch {
+      setBlocked(true);
+      setPlaying(false);
+    } finally {
+      setBusy(false);
+    }
+  }, [config.enabled, config.src, config.volume, createSynth, muted]);
 
   const pause = useCallback(async () => {
-    engine.current.audio?.pause();
-    if (engine.current.context?.state === 'running') await engine.current.context.suspend();
-    setPlaying(false);
+    setBusy(true);
+    try {
+      engine.current.audio?.pause();
+      if (engine.current.context && engine.current.context.state !== 'closed') {
+        await engine.current.context.suspend();
+      }
+    } finally {
+      setPlaying(false);
+      setBusy(false);
+    }
   }, []);
 
+  const togglePlaying = useCallback(async () => {
+    if (busy) return;
+    if (playing) await pause();
+    else await play();
+  }, [busy, pause, play, playing]);
+
   const toggleMuted = useCallback(() => {
-    const next = !muted;
-    if (engine.current.audio) engine.current.audio.muted = next;
-    if (engine.current.gain) engine.current.gain.gain.value = next ? 0 : config.volume;
-    setMuted(next);
-  }, [config.volume, muted]);
+    setMuted((current) => {
+      const next = !current;
+      if (engine.current.audio) engine.current.audio.muted = next;
+      if (engine.current.gain) engine.current.gain.gain.value = next ? 0 : config.volume;
+      return next;
+    });
+  }, [config.volume]);
 
   useEffect(() => () => {
     if (engine.current.timer) window.clearInterval(engine.current.timer);
@@ -71,5 +96,5 @@ export function useWeddingMusic(config: WeddingMusic) {
     void engine.current.context?.close();
   }, []);
 
-  return { playing, muted, blocked, play, pause, toggleMuted };
+  return { playing, muted, blocked, busy, play, pause, togglePlaying, toggleMuted };
 }

@@ -36,18 +36,31 @@ export function CoupleSection({ config }: { config: WeddingInvitationConfig }) {
 
 export function FamilyCeremonySection({ config }: { config: WeddingInvitationConfig }) {
   const event = config.ceremony;
-  return <section className="invite-section family-section"><SectionTitle eyebrow="NGÀY VUI HAI GIA ĐÌNH" light>Trân trọng báo tin</SectionTitle>
-    {config.features.showFamilyInfo && <div className="family-grid"><div><span>Gia đình chú rể</span><p>{config.family.groomParents || 'Gia đình Văn Thọ'}</p><small>{config.family.groomAddress}</small></div><div className="family-divider">&</div><div><span>Gia đình cô dâu</span><p>{config.family.brideParents || 'Gia đình Hồng Thắm'}</p><small>{config.family.brideAddress}</small></div></div>}
-    <p className="family-announcement">Lễ thành hôn của</p><h3>{config.couple.groomFullName}<em>&</em>{config.couple.brideFullName}</h3>
+  return <section className="invite-section family-section paper-info-card"><Image className="frame-flower ceremony-frame-flower" src={config.theme.assets.flower} alt="" aria-hidden="true" width={330} height={330} />
+    <SectionTitle eyebrow="THÔNG TIN LỄ CƯỚI" light>Trân trọng báo tin</SectionTitle>
+    {config.features.showFamilyInfo && <div className="family-grid"><div><span>Ông Bà</span><p>{config.family.groomParents || 'Ông A · Bà B'}</p><small>{config.family.groomAddress}</small></div><div className="family-divider">&</div><div><span>Ông Bà</span><p>{config.family.brideParents || 'Ông C · Bà D'}</p><small>{config.family.brideAddress}</small></div></div>}
+    <p className="family-announcement">Trân trọng báo tin<br />Lễ thành hôn của con chúng tôi</p><h3><span>{config.couple.groomFullName}</span><small>TRƯỞNG NAM</small><em>&</em><span>{config.couple.brideFullName}</span><small>ÚT NỮ</small></h3>
     {event && <div className="ceremony-summary"><span>{formatTime(event.dateTime)}</span><strong>{formatDate(event.dateTime)}</strong><p>{event.venue}<br />{event.address}</p>{event.lunarDate && <small>{event.lunarDate}</small>}</div>}
   </section>;
+}
+
+function calendarUrlFor(config: WeddingInvitationConfig) {
+  if (!config.weddingDate || !config.reception) return '#';
+  const start = new Date(config.weddingDate);
+  const end = new Date(start.getTime() + 3 * 3600000);
+  const googleDate = (date: Date) => date.toISOString().replace(/[-:]|\.\d{3}/g, '');
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Đám cưới ${config.couple.names}`)}&dates=${googleDate(start)}/${googleDate(end)}&ctz=${encodeURIComponent(config.timezone)}&details=${encodeURIComponent(`${config.reception.venue}, ${config.reception.address}`)}`;
 }
 
 export function ReceptionSection({ config }: { config: WeddingInvitationConfig }) {
   const event = config.reception;
   if (!event) return null;
   const date = dateParts(event.dateTime);
-  return <><FloralDivider /><section className="invite-section events-section"><SectionTitle eyebrow="THÔNG TIN TIỆC CƯỚI">Cùng chung vui</SectionTitle><article className="event-card featured-event"><span className="event-card-label">{event.title}</span><div className="event-date"><div><span>{date.weekday}</span><strong>{date.day}</strong><span>THÁNG {date.month} · {date.year}</span></div></div><p className="event-time">{formatTime(event.dateTime)}{event.arrivalTime && ` · Đón khách ${event.arrivalTime}`}</p>{event.lunarDate && <p className="lunar-date">{event.lunarDate}</p>}<div className="event-location"><strong>{event.venue}</strong><span>{event.address}</span></div></article></section></>;
+  return <><FloralDivider /><section className="invite-section events-section paper-info-card"><Image className="frame-flower reception-frame-flower" src={config.theme.assets.flower} alt="" aria-hidden="true" width={320} height={320} />
+    <SectionTitle eyebrow="THÔNG TIN TIỆC CƯỚI">Tiệc cưới sẽ diễn ra vào lúc</SectionTitle>
+    <article className="event-card featured-event"><span className="event-card-label">{event.title}</span><div className="event-date"><div><span>{date.weekday}</span><strong>{date.day}</strong><span>THÁNG {date.month} · {date.year}</span></div></div><p className="event-time">{formatTime(event.dateTime)}</p>{event.lunarDate && <p className="lunar-date">{event.lunarDate}</p>}<div className="reception-times"><span>ĐÓN KHÁCH<strong>{event.arrivalTime || '17:30'}</strong></span><span>KHAI TIỆC<strong>{formatTime(event.dateTime)}</strong></span></div><div className="event-location"><strong>{event.venue}</strong><span>{event.address}</span></div></article>
+    <div className="reception-calendar"><MiniCalendar date={event.dateTime} timezone={config.timezone} /><Countdown target={event.dateTime} /><a className="calendar-link" href={calendarUrlFor(config)} target="_blank" rel="noopener noreferrer"><CalendarDays size={15} /> Thêm vào lịch</a></div>
+  </section></>;
 }
 
 function MiniCalendar({ date, timezone }: { date: string; timezone: string }) {
@@ -68,15 +81,6 @@ function Countdown({ target }: { target: string }) {
   if (difference <= 0) return <div className="countdown-past">Ngày chung đôi đã đến ♡</div>;
   const values = [Math.floor(difference / 86400000), Math.floor((difference % 86400000) / 3600000), Math.floor((difference % 3600000) / 60000), Math.floor((difference % 60000) / 1000)];
   return <div className="countdown" aria-label={`Còn ${values[0]} ngày ${values[1]} giờ ${values[2]} phút ${values[3]} giây`}>{values.map((value, index) => <div key={index}><strong>{index ? String(value).padStart(2, '0') : value}</strong><span>{['Ngày', 'Giờ', 'Phút', 'Giây'][index]}</span></div>)}</div>;
-}
-
-export function WeddingCountdown({ config }: { config: WeddingInvitationConfig }) {
-  if (!config.weddingDate || !config.reception) return null;
-  const start = new Date(config.weddingDate);
-  const end = new Date(start.getTime() + 3 * 3600000);
-  const googleDate = (date: Date) => date.toISOString().replace(/[-:]|\.\d{3}/g, '');
-  const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Đám cưới ${config.couple.names}`)}&dates=${googleDate(start)}/${googleDate(end)}&ctz=${encodeURIComponent(config.timezone)}&details=${encodeURIComponent(`${config.reception.venue}, ${config.reception.address}`)}`;
-  return <section className="invite-section countdown-section"><SectionTitle eyebrow="SAVE THE DATE" light>Hẹn bạn ngày ấy</SectionTitle><div className="date-and-countdown"><MiniCalendar date={config.weddingDate} timezone={config.timezone} /><div className="countdown-side"><p>Ngày vui sẽ trọn vẹn hơn<br />khi có bạn ở bên.</p><Countdown target={config.weddingDate} /><a className="calendar-link" href={calendarUrl} target="_blank" rel="noopener noreferrer"><CalendarDays size={17} /> Thêm vào lịch</a></div></div></section>;
 }
 
 export function RsvpSection({ config, connected }: { config: WeddingInvitationConfig; connected: boolean }) {
@@ -105,7 +109,7 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
 }
 
 export function TimelineSection({ config }: { config: WeddingInvitationConfig }) {
-  return <section className="invite-section timeline-section"><SectionTitle eyebrow="CHƯƠNG TRÌNH">Lịch trình ngày cưới</SectionTitle><ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong>{item.title}</strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol></section>;
+  return <section className="invite-section timeline-section paper-note-card"><Image className="frame-flower timeline-frame-flower" src={config.theme.assets.flower} alt="" aria-hidden="true" width={270} height={270} /><SectionTitle eyebrow="CHƯƠNG TRÌNH">Lịch trình ngày cưới</SectionTitle><ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong>{item.title}</strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol></section>;
 }
 
 export function GuestbookSection({ config, connected }: { config: WeddingInvitationConfig; connected: boolean }) {

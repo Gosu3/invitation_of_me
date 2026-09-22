@@ -12,6 +12,8 @@ export const bohoFloralGreen = {
     flower: '/decor/hoa-moc-xanh/flower.webp',
     decorationBar: '/decor/hoa-moc-xanh/decoration_bar.webp',
     envelope: '/decor/hoa-moc-xanh/boho_floral_green.webp',
+    paper: '/decor/hoa-moc-xanh/paper.webp',
+    paperNote: '/decor/hoa-moc-xanh/papernote-background.webp',
   },
   fonts: {
     heading: "'Playfair Display','Noto Serif',Georgia,serif",
