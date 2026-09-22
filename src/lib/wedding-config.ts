@@ -31,6 +31,8 @@ export function createWeddingConfig(invitation: Invitation) {
       bride: invitation.partnerTwo,
       groomFullName: invitation.partnerOneFullName || invitation.partnerOne,
       brideFullName: invitation.partnerTwoFullName || invitation.partnerTwo,
+      groomRole: 'ÚT NAM',
+      brideRole: 'TRƯỞNG NỮ',
       names: `${invitation.partnerOne} & ${invitation.partnerTwo}`,
     },
     family: {

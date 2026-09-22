@@ -238,3 +238,77 @@
 .album-carousel-arrow.previous{left:18%}
 .album-carousel-arrow.next{right:18%}
 @media(max-width:650px){.botanical-theme .family-section h3{font-size:31px}.ceremony-frame-flower{width:165px;height:165px;right:-135px}.reception-calendar{max-width:270px}.album-carousel-slide{flex-basis:40%}.album-carousel-arrow.previous{left:17%}.album-carousel-arrow.next{right:17%}}
+
+/* The two information cards use the existing green paper surface as a single invitation. */
+.botanical-theme .wedding-info-card{position:relative;isolation:isolate;overflow:visible!important;padding:56px 46px 60px!important;border:0!important;outline:0!important}
+.botanical-theme .wedding-info-card::before{display:none!important}
+.botanical-theme .wedding-info-card::after{display:none!important}
+.wedding-info-card>.wedding-card-petals{position:absolute!important;z-index:2!important;inset:0!important;overflow:hidden;pointer-events:none}
+.wedding-card-petals .falling-piece.petal{color:#d8e8ba;opacity:0;filter:drop-shadow(0 1px 2px #0c270b80)}
+.wedding-card-petals .falling-piece:nth-child(even){color:#fff8df}
+.wedding-info-card>.wedding-info-content{position:relative!important;z-index:3!important;width:min(100%,390px);margin:0 auto;background:transparent;border:0;outline:0;box-shadow:none}
+@media(min-width:651px){.wedding-info-card.family-section>.wedding-info-content{transform:translateX(-27px)}.wedding-info-card.events-section>.wedding-info-content{transform:translateX(12px)}}
+.wedding-info-card>.wedding-info-flower{position:absolute!important;z-index:4!important;width:200px;height:200px;object-fit:contain;pointer-events:none;filter:drop-shadow(0 8px 12px #10280730)}
+.wedding-info-flower-right{right:-90px}
+.wedding-info-card>.wedding-info-flower-right{top:44%}
+.wedding-info-flower-left{left:-90px;transform:scaleX(-1)}
+.wedding-info-card>.wedding-info-flower-left{top:30%}
+.botanical-theme .wedding-info-card .wedding-info-title{margin:0 0 30px!important;color:#fffaf7;font:500 clamp(18px,2.8vw,21px)/1.4 'Noto Serif',serif!important;letter-spacing:.11em!important;text-transform:uppercase;text-wrap:balance}
+.wedding-family-grid{display:grid;grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);gap:18px;align-items:stretch;margin:0 auto 31px}
+.wedding-family-grid>div{min-width:0}
+.wedding-family-grid>i{display:block;width:1px;background:#dce9c750}
+.wedding-family-grid span,.wedding-family-grid p,.wedding-family-grid small{display:block;overflow-wrap:break-word}
+.wedding-family-grid span{font:500 10px 'Noto Serif',serif;letter-spacing:.16em;color:#dce9c7}
+.wedding-family-grid p{margin:10px 0 5px;font:400 13px/1.55 'Noto Serif',serif;color:#fffaf7}
+.wedding-family-grid small{font:10px/1.5 'Be Vietnam Pro',sans-serif;color:#dce9c7}
+.wedding-invitation-copy{margin:0 auto 22px;font:400 11px/1.9 'Noto Serif',serif;letter-spacing:.09em;color:#edf2e5;text-wrap:balance}
+.botanical-theme .wedding-info-card .wedding-couple-names h3{max-width:100%;margin:0;font:400 clamp(26px,4vw,37px)/1.17 'Noto Serif',serif!important;letter-spacing:-.035em;color:#fffaf7;text-wrap:balance;overflow-wrap:break-word}
+.wedding-couple-names>span{display:block;margin:10px 0 0;font:10px 'Noto Serif',serif;letter-spacing:.17em;color:#dce9c7}
+.wedding-couple-names>em{display:block;margin:15px 0;font:italic 30px/1 'Playfair Display',serif;color:#dce9c7}
+.wedding-event-details{max-width:340px;margin:31px auto 0;padding-top:23px;border-top:1px solid #dce9c750}
+.wedding-event-details>p:not(.wedding-lunar-date){margin:0 0 10px;font:10px/1.6 'Noto Serif',serif;letter-spacing:.1em;color:#e4eed3}
+.wedding-event-details>strong{display:block;font:400 clamp(18px,2.8vw,23px)/1.45 'Noto Serif',serif;color:#fffaf7;text-wrap:balance}
+.wedding-event-details>small{display:block;margin-top:6px;font:11px/1.6 'Be Vietnam Pro',sans-serif;color:#e0e9d2}
+.wedding-date-display{margin:22px auto 0}
+.wedding-date-display>p{margin:0 0 12px;font:11px 'Noto Serif',serif;letter-spacing:.08em;text-transform:uppercase;color:#e6eed9}
+.wedding-date-display>p span{margin:0 5px}
+.wedding-date-display>div{display:flex;align-items:center;justify-content:center;gap:18px}
+.wedding-date-display strong{font:400 58px/1 'Noto Serif',serif;letter-spacing:-.07em;color:#fffaf7}
+.wedding-date-display>div>span:nth-child(2){width:1px;height:58px;background:#dce9c780}
+.wedding-date-display>div>span:last-child{text-align:left;font:11px/1.8 'Noto Serif',serif;letter-spacing:.11em;color:#eaf0df}
+.wedding-lunar-date{margin:15px 0 0;font:10px/1.6 'Noto Serif',serif;color:#dce9c7}
+.botanical-theme .wedding-info-card.events-section{padding-bottom:54px!important}
+.wedding-info-card.events-section .wedding-invitation-copy{margin-top:5px;margin-bottom:27px}
+.wedding-info-card.events-section .wedding-date-display{margin-top:0}
+.wedding-info-card.events-section .reception-times{margin:22px 0 0;gap:35px}
+.wedding-info-card.events-section .reception-times span{font:9px 'Noto Serif',serif;letter-spacing:.12em}
+.wedding-info-card.events-section .reception-times strong{font:400 14px 'Noto Serif',serif;letter-spacing:0}
+.wedding-reception-venue{margin-top:23px}
+.wedding-reception-venue>a{display:inline-flex;align-items:center;gap:6px;margin-top:13px;padding-bottom:3px;border-bottom:1px solid #dce9c780;font:10px 'Noto Serif',serif;letter-spacing:.08em;color:#eaf0df}
+.wedding-card-closing{margin:25px 0 0;font:10px/1.6 'Noto Serif',serif;letter-spacing:.12em;color:#e4eed3}
+.wedding-info-card .reception-calendar{margin-top:29px}
+.album-carousel .album-carousel-arrow{width:40px;height:40px;margin-top:-20px;border:1px solid #dce9c7;background:#f8f7efed;color:#30530f;box-shadow:0 3px 12px #16330b26;backdrop-filter:none;transition:background .25s ease,transform .25s ease,opacity .25s ease}
+.album-carousel .album-carousel-arrow svg{width:18px;height:18px;stroke-width:1.7}
+.album-carousel .album-carousel-arrow.previous{left:6%}.album-carousel .album-carousel-arrow.next{right:6%}
+.album-carousel .album-carousel-arrow:hover{background:#e5edda;transform:scale(1.06)}
+.album-carousel .album-carousel-arrow:focus-visible{outline:2px solid #30530f;outline-offset:3px}
+@media(max-width:650px){
+  .botanical-theme .wedding-info-card{overflow:visible!important;padding:43px 31px 49px!important}
+  .botanical-theme .wedding-info-card.events-section{padding-bottom:45px!important}
+  .wedding-info-card>.wedding-info-content{width:100%}
+  .wedding-info-card>.wedding-info-flower{width:135px;height:135px}
+  .wedding-info-flower-right{right:-46px}.wedding-info-flower-left{left:-46px}
+  .wedding-info-card>.wedding-info-flower-right{top:43%}
+  .wedding-info-card>.wedding-info-flower-left{top:27%}
+  .botanical-theme .wedding-info-card .wedding-info-title{font-size:16px!important;margin-bottom:24px!important}
+  .wedding-family-grid{gap:9px;margin-bottom:24px}
+  .wedding-family-grid span{font-size:8px}.wedding-family-grid p{font-size:11px}.wedding-family-grid small{font-size:9px}
+  .wedding-invitation-copy{font-size:10px;margin-bottom:18px}
+  .botanical-theme .wedding-info-card .wedding-couple-names h3{font-size:clamp(24px,7vw,31px)!important}
+  .wedding-event-details{margin-top:25px;padding-top:19px}
+  .wedding-date-display strong{font-size:50px}
+  .album-carousel .album-carousel-arrow{width:36px;height:36px;margin-top:-18px}
+  .album-carousel .album-carousel-arrow.previous{left:4%}.album-carousel .album-carousel-arrow.next{right:4%}
+}
+@media(max-width:380px){.botanical-theme .wedding-info-card{padding-right:26px!important;padding-left:26px!important}.wedding-family-grid{gap:6px}.wedding-family-grid p{font-size:10px}.wedding-info-card>.wedding-info-flower{width:125px;height:125px}.wedding-info-flower-right{right:-46px}.wedding-info-flower-left{left:-46px}}
+@media(prefers-reduced-motion:reduce){.wedding-card-petals{display:none}.album-carousel .album-carousel-arrow{transition:none}}

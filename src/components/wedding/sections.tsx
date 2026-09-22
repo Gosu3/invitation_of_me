@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent, type RefObject } from 'react';
+import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowDown, ArrowLeft, ArrowRight, CalendarDays, Check, Copy, Heart, MapPin, Send, Sparkles } from 'lucide-react';
@@ -34,14 +34,34 @@ export function CoupleSection({ config }: { config: WeddingInvitationConfig }) {
   return <section id="loi-moi" className="invite-section invitation-message"><FloralDecoration /><SectionTitle eyebrow="LỜI MỜI CHÂN THÀNH">{config.content.headline}</SectionTitle><p className="leading-message">{config.content.message}</p><div className="heart-divider">✦</div><p className="script-names">{config.couple.names}</p></section>;
 }
 
+const cardPetals = [
+  { left: '9%', delay: '-3s', duration: '11s', size: '11px' },
+  { left: '23%', delay: '-8s', duration: '13s', size: '9px' },
+  { left: '76%', delay: '-5s', duration: '12s', size: '12px' },
+  { left: '91%', delay: '-10s', duration: '14s', size: '10px' },
+];
+
+function WeddingInfoCard({ title, flowerSide, flower, className, children }: { title: string; flowerSide: 'left' | 'right'; flower: string; className: string; children: ReactNode }) {
+  return <section className={`invite-section paper-info-card wedding-info-card ${className}`}>
+    <div className="wedding-card-petals" aria-hidden="true">{cardPetals.map((petal, index) => <span key={index} className="falling-piece petal" style={{ left: petal.left, animationDelay: petal.delay, animationDuration: petal.duration, width: petal.size, height: `calc(${petal.size} * 1.5)` } as CSSProperties}><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c2-8 7-15 18-18-1 11-8 17-18 18Z" /></svg></span>)}</div>
+    <div className="wedding-info-content"><h2 className="wedding-info-title">{title}</h2>{children}</div>
+    <Image className={`wedding-info-flower wedding-info-flower-${flowerSide}`} src={flower} alt="" aria-hidden="true" width={360} height={360} />
+  </section>;
+}
+
+function WeddingDateDisplay({ dateTime }: { dateTime: string }) {
+  const date = dateParts(dateTime);
+  return <div className="wedding-date-display"><p>VÀO LÚC {formatTime(dateTime)} <span>·</span> {date.weekday}</p><div><strong>{date.day}</strong><span aria-hidden="true" /><span>THÁNG {date.month}<br />{date.year}</span></div></div>;
+}
+
 export function FamilyCeremonySection({ config }: { config: WeddingInvitationConfig }) {
   const event = config.ceremony;
-  return <section className="invite-section family-section paper-info-card"><Image className="frame-flower ceremony-frame-flower" src={config.theme.assets.flower} alt="" aria-hidden="true" width={330} height={330} />
-    <SectionTitle eyebrow="THÔNG TIN LỄ CƯỚI" light>Trân trọng báo tin</SectionTitle>
-    {config.features.showFamilyInfo && <div className="family-grid"><div><span>Ông Bà</span><p>{config.family.groomParents || 'Ông A · Bà B'}</p><small>{config.family.groomAddress}</small></div><div className="family-divider">&</div><div><span>Ông Bà</span><p>{config.family.brideParents || 'Ông C · Bà D'}</p><small>{config.family.brideAddress}</small></div></div>}
-    <p className="family-announcement">Trân trọng báo tin<br />Lễ thành hôn của con chúng tôi</p><h3><span>{config.couple.groomFullName}</span><small>TRƯỞNG NAM</small><em>&</em><span>{config.couple.brideFullName}</span><small>ÚT NỮ</small></h3>
-    {event && <div className="ceremony-summary"><span>{formatTime(event.dateTime)}</span><strong>{formatDate(event.dateTime)}</strong><p>{event.venue}<br />{event.address}</p>{event.lunarDate && <small>{event.lunarDate}</small>}</div>}
-  </section>;
+  return <WeddingInfoCard title="THÔNG TIN LỄ CƯỚI" flowerSide="right" flower={config.theme.assets.flower} className="family-section">
+    {config.features.showFamilyInfo && (config.family.groomParents || config.family.brideParents || config.family.groomAddress || config.family.brideAddress) && <div className="wedding-family-grid"><div><span>NHÀ TRAI</span>{config.family.groomParents && <p>{config.family.groomParents}</p>}{config.family.groomAddress && <small>{config.family.groomAddress}</small>}</div><i aria-hidden="true" /><div><span>NHÀ GÁI</span>{config.family.brideParents && <p>{config.family.brideParents}</p>}{config.family.brideAddress && <small>{config.family.brideAddress}</small>}</div></div>}
+    <p className="wedding-invitation-copy">TRÂN TRỌNG BÁO TIN<br />LỄ THÀNH HÔN CỦA CON CHÚNG TÔI</p>
+    <div className="wedding-couple-names"><h3>{config.couple.groomFullName}</h3><span>{config.couple.groomRole}</span><em>&</em><h3>{config.couple.brideFullName}</h3><span>{config.couple.brideRole}</span></div>
+    {event && <div className="wedding-event-details"><p>LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI</p><strong>{event.venue}</strong><small>{event.address}</small><WeddingDateDisplay dateTime={event.dateTime} />{event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}</div>}
+  </WeddingInfoCard>;
 }
 
 function calendarUrlFor(config: WeddingInvitationConfig) {
@@ -55,12 +75,15 @@ function calendarUrlFor(config: WeddingInvitationConfig) {
 export function ReceptionSection({ config }: { config: WeddingInvitationConfig }) {
   const event = config.reception;
   if (!event) return null;
-  const date = dateParts(event.dateTime);
-  return <><FloralDivider /><section className="invite-section events-section paper-info-card"><Image className="frame-flower reception-frame-flower" src={config.theme.assets.flower} alt="" aria-hidden="true" width={320} height={320} />
-    <SectionTitle eyebrow="THÔNG TIN TIỆC CƯỚI">Tiệc cưới sẽ diễn ra vào lúc</SectionTitle>
-    <article className="event-card featured-event"><span className="event-card-label">{event.title}</span><div className="event-date"><div><span>{date.weekday}</span><strong>{date.day}</strong><span>THÁNG {date.month} · {date.year}</span></div></div><p className="event-time">{formatTime(event.dateTime)}</p>{event.lunarDate && <p className="lunar-date">{event.lunarDate}</p>}<div className="reception-times"><span>ĐÓN KHÁCH<strong>{event.arrivalTime || '17:30'}</strong></span><span>KHAI TIỆC<strong>{formatTime(event.dateTime)}</strong></span></div><div className="event-location"><strong>{event.venue}</strong><span>{event.address}</span></div></article>
+  return <><FloralDivider /><WeddingInfoCard title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" flower={config.theme.assets.flower} className="events-section">
+    <p className="wedding-invitation-copy">TRÂN TRỌNG KÍNH MỜI<br />ĐẾN DỰ BỮA TIỆC CHUNG VUI<br />CÙNG GIA ĐÌNH CHÚNG TÔI</p>
+    <WeddingDateDisplay dateTime={event.dateTime} />
+    {event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}
+    <div className="reception-times"><span>ĐÓN KHÁCH<strong>{event.arrivalTime || formatTime(event.dateTime)}</strong></span><span>KHAI TIỆC<strong>{formatTime(event.dateTime)}</strong></span></div>
+    <div className="wedding-event-details wedding-reception-venue"><p>TẠI</p><strong>{event.venue}</strong><small>{event.address}</small>{event.mapUrl && <a href={event.mapUrl} target="_blank" rel="noopener noreferrer">XEM CHỈ ĐƯỜNG <ArrowRight size={13} /></a>}</div>
+    <p className="wedding-card-closing">RẤT HÂN HẠNH ĐƯỢC ĐÓN TIẾP</p>
     <div className="reception-calendar"><MiniCalendar date={event.dateTime} timezone={config.timezone} /><Countdown target={event.dateTime} /><a className="calendar-link" href={calendarUrlFor(config)} target="_blank" rel="noopener noreferrer"><CalendarDays size={15} /> Thêm vào lịch</a></div>
-  </section></>;
+  </WeddingInfoCard></>;
 }
 
 function MiniCalendar({ date, timezone }: { date: string; timezone: string }) {
