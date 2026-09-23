@@ -2,7 +2,7 @@
 
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Gift, Heart, Images } from 'lucide-react';
+import { Gift, Images } from 'lucide-react';
 import type { Invitation } from '@/lib/types';
 import { createWeddingConfig } from '@/lib/wedding-config';
 import { themeVariables } from '@/lib/wedding-theme';
@@ -11,14 +11,13 @@ import { EnvelopeIntro, type OpeningPhase } from './wedding/envelope-intro';
 import { GalleryLightbox, WeddingGallery } from './wedding/gallery';
 import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
-import { CoupleSection, FamilyCeremonySection, GuestbookSection, InvitationNav, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
+import { FamilyCeremonySection, GuestbookSection, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
 export function InvitationExperience({ invitation }: { invitation: Invitation; connected: boolean }) {
   const config = useMemo(() => createWeddingConfig(invitation), [invitation]);
   const [phase, setPhase] = useState<OpeningPhase>('closed');
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
-  const [shareStatus, setShareStatus] = useState('');
   const timers = useRef<number[]>([]);
   const heading = useRef<HTMLDivElement>(null);
   const music = useWeddingMusic(config.music);
@@ -53,17 +52,10 @@ export function InvitationExperience({ invitation }: { invitation: Invitation; c
     ];
   }
 
-  async function copyLink() {
-    try { await navigator.clipboard.writeText(window.location.href); setShareStatus('Đã sao chép liên kết'); }
-    catch { setShareStatus('Bạn có thể sao chép địa chỉ từ thanh trình duyệt.'); }
-  }
-
   return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase}>
     {phase !== 'opened' && <EnvelopeIntro config={config} phase={phase} open={openInvitation} />}
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
-      <InvitationNav copyLink={copyLink} status={shareStatus} />
-      <CoupleSection config={config} />
       <FamilyCeremonySection config={config} />
       {config.gallery.length > 0 && <WeddingGallery photos={config.gallery} story={config.content.story} open={setPhotoIndex} />}
       <ReceptionSection config={config} />
@@ -74,7 +66,7 @@ export function InvitationExperience({ invitation }: { invitation: Invitation; c
       {config.features.showThankYou && <ThankYouSection />}
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} title={config.music.title} />}
-    {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp"><a href="#loi-moi" aria-label="Lời mời"><Heart size={18} /></a>{config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh"><Images size={18} /></a>}{config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}</nav>}
+    {phase === 'opened' && (config.gallery.length > 0 || (config.features.showBank && !config.features.showQRInline)) && <nav className="invitation-dock" aria-label="Điều hướng thiệp">{config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh"><Images size={18} /></a>}{config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}</nav>}
     {photoIndex !== null && <GalleryLightbox photos={config.gallery} initial={photoIndex} close={() => setPhotoIndex(null)} />}
     {giftOpen && <GiftModal accounts={config.bankAccounts} close={() => setGiftOpen(false)} />}
   </main>;

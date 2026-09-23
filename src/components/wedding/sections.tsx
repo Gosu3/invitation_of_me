@@ -2,11 +2,10 @@
 
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowLeft, Copy, Heart, Navigation, Send } from 'lucide-react';
+import { Heart, Navigation } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { dateParts, formatTime } from '@/lib/utils';
-import { FloralDecoration, FloralDivider, SectionTitle } from './shared';
+import { FloralDivider } from './shared';
 import { ArchitectureSection, CardFlower, weddingArtwork } from './decorations';
 
 export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLDivElement | null> }) {
@@ -27,14 +26,6 @@ export function WeddingHero({ config, headingRef }: { config: WeddingInvitationC
       <p>{couple.bride}</p>
     </div>
   </section>;
-}
-
-export function InvitationNav({ copyLink, status }: { copyLink: () => void; status: string }) {
-  return <><nav className="invite-nav"><Link href="/" aria-label="Về trang chủ"><ArrowLeft size={18} /></Link><span>Nét Duyên <i>✧</i></span><button onClick={copyLink} aria-label="Sao chép liên kết"><Copy size={17} /></button></nav><span role="status" className="share-status">{status}</span></>;
-}
-
-export function CoupleSection({ config }: { config: WeddingInvitationConfig }) {
-  return <section id="loi-moi" className="invite-section invitation-message"><FloralDecoration /><SectionTitle eyebrow="LỜI MỜI CHÂN THÀNH">{config.content.headline}</SectionTitle><p className="leading-message">{config.content.message}</p><div className="heart-divider">✦</div><p className="script-names">{config.couple.names}</p></section>;
 }
 
 const cardPetals = [
@@ -177,6 +168,16 @@ export function GuestbookSection() {
   const [message, setMessage] = useState('');
   const [wishes, setWishes] = useState<{ id: string; guestName: string; message: string }[]>([]);
   const [status, setStatus] = useState('');
+  const suggestedWishes = [
+    'Chúc hai bạn trăm năm hạnh phúc, luôn yêu thương và đồng hành cùng nhau trên mọi chặng đường.',
+    'Chúc mừng ngày vui của hai bạn! Mong tổ ấm nhỏ luôn ngập tràn tiếng cười và những điều dịu dàng.',
+    'Chúc cô dâu chú rể một đời viên mãn, bình an và mãi giữ được ánh mắt yêu thương dành cho nhau.',
+  ];
+  function suggestWish() {
+    const currentIndex = suggestedWishes.indexOf(message);
+    setMessage(suggestedWishes[(currentIndex + 1) % suggestedWishes.length]);
+    setStatus('');
+  }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (name.trim().length < 2 || message.trim().length < 3) {
@@ -189,16 +190,21 @@ export function GuestbookSection() {
   return <section className="invite-section guestbook-wrapper" id="so-luu-but">
     <Image className="guestbook-background" src={weddingArtwork.guestbook} alt="" aria-hidden="true" width={1314} height={1197} unoptimized />
     <div className="guestbook-content">
-      <h2>SỔ LƯU BÚT</h2>
+      <h2 className="guestbook-title"><span dir="auto">Sổ lưu bút</span></h2>
       <form className="guestbook-form" onSubmit={submit}>
-        <input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={100} required placeholder="Nhập tên*" aria-label="Tên của bạn" />
-        <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={1000} required rows={4} placeholder="Nhập lời chúc*" aria-label="Lời chúc" />
-        <div className="guestbook-form-actions"><button type="submit">GỬI LỜI CHÚC <Send size={13} /></button></div>
+        <div className="guestbook-form-panel">
+          <input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={500} required placeholder="Nhập tên*" aria-label="Tên của bạn" />
+          <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={10000} required rows={4} placeholder="Nhập lời chúc*" aria-label="Lời chúc" />
+          <div className="guestbook-form-actions">
+            <button type="button" className="guestbook-ai-button" title="Tạo lời chúc bằng AI" aria-label="Tạo lời chúc bằng AI" onClick={suggestWish}>🪄</button>
+            <button type="submit" className="guestbook-submit"><span dir="auto">GỬI LỜI CHÚC</span></button>
+          </div>
+        </div>
       </form>
       <span className="guestbook-status" role="status">{status}</span>
-      <div className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
-        {wishes.length ? wishes.map((wish) => <blockquote key={wish.id}><strong>{wish.guestName}</strong><p>{wish.message}</p></blockquote>) : <p>Hãy là người đầu tiên gửi yêu thương ♡</p>}
-      </div>
+      {wishes.length > 0 && <div className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
+        {wishes.map((wish) => <blockquote key={wish.id}><strong>{wish.guestName}</strong><p>{wish.message}</p></blockquote>)}
+      </div>}
     </div>
   </section>;
 }

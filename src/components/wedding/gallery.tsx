@@ -19,10 +19,11 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
   const [current, setCurrent] = useState(0);
   const [outgoing, setOutgoing] = useState<number | null>(null);
   const [isInView, setIsInView] = useState(false);
-  const [autoplayStopped, setAutoplayStopped] = useState(false);
+  const [autoplayPaused, setAutoplayPaused] = useState(false);
   const sectionRef = useRef<HTMLElement | null>(null);
   const currentRef = useRef(0);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const select = useCallback((next: number) => {
     const previous = currentRef.current;
     if (next === previous) return;
@@ -30,18 +31,26 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
     currentRef.current = next;
     setOutgoing(previous);
     setCurrent(next);
-    settleTimer.current = setTimeout(() => setOutgoing(null), 1100);
+    settleTimer.current = setTimeout(() => setOutgoing(null), 900);
   }, []);
   const move = useCallback((step: number) => select((currentRef.current + step + photos.length) % photos.length), [photos.length, select]);
-  const stopAutoplay = useCallback(() => setAutoplayStopped(true), []);
+  const pauseAutoplay = useCallback(() => {
+    setAutoplayPaused(true);
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    resumeTimer.current = setTimeout(() => setAutoplayPaused(false), 5000);
+  }, []);
+  const holdAutoplay = useCallback(() => {
+    setAutoplayPaused(true);
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+  }, []);
   const userMove = useCallback((step: number) => {
-    stopAutoplay();
+    pauseAutoplay();
     move(step);
-  }, [move, stopAutoplay]);
+  }, [move, pauseAutoplay]);
   const userSelect = useCallback((index: number) => {
-    stopAutoplay();
+    pauseAutoplay();
     select(index);
-  }, [select, stopAutoplay]);
+  }, [pauseAutoplay, select]);
   const swipe = useSwipe(() => userMove(1), () => userMove(-1));
   useEffect(() => {
     const section = sectionRef.current;
@@ -53,12 +62,13 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
     return () => observer.disconnect();
   }, []);
   useEffect(() => {
-    if (!isInView || autoplayStopped || photos.length < 2) return;
-    const timer = window.setInterval(() => move(1), 3200);
+    if (!isInView || autoplayPaused || photos.length < 2) return;
+    const timer = window.setInterval(() => move(1), 2800);
     return () => window.clearInterval(timer);
-  }, [autoplayStopped, isInView, move, photos.length]);
+  }, [autoplayPaused, isInView, move, photos.length]);
   useEffect(() => () => {
     if (settleTimer.current) clearTimeout(settleTimer.current);
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
   }, []);
   return <ArchitectureSection><section ref={sectionRef} className="invite-section gallery-section" id="album">
     <SectionTitle eyebrow="KHOẢNH KHẮC CỦA CHÚNG MÌNH">Album yêu thương</SectionTitle>
@@ -68,13 +78,13 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
           const offset = circularOffset(index, current, photos.length);
           const distance = Math.abs(offset);
           const position = distance > 3 ? (offset < 0 ? 'far-left' : 'far-right') : String(offset);
-          return <button key={photo.id} type="button" data-coverflow-position={position} tabIndex={distance > 3 ? -1 : 0} aria-hidden={distance > 3} className={`album-carousel-slide${index === current ? ' is-active' : ''}${index === outgoing ? ' is-outgoing' : ''}`} onPointerDown={stopAutoplay} onClick={() => { stopAutoplay(); index === current ? open(index) : select(index); }} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
+          return <button key={photo.id} type="button" data-coverflow-position={position} tabIndex={distance > 3 ? -1 : 0} aria-hidden={distance > 3} className={`album-carousel-slide${index === current ? ' is-active' : ''}${index === outgoing ? ' is-outgoing' : ''}`} onPointerDown={holdAutoplay} onPointerUp={pauseAutoplay} onPointerCancel={pauseAutoplay} onClick={() => { pauseAutoplay(); index === current ? open(index) : select(index); }} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
           <Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 78vw, 342px" style={{ objectPosition: `${(photo.position?.x ?? .5) * 100}% ${(photo.position?.y ?? .5) * 100}%` }} unoptimized={photo.url.startsWith('/api/')} />
         </button>; })}
       </div>
-      {photos.length > 1 && <><button className="album-carousel-arrow previous" onPointerDown={stopAutoplay} onClick={() => userMove(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><button className="album-carousel-arrow next" onPointerDown={stopAutoplay} onClick={() => userMove(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></>}
+      {photos.length > 1 && <><button className="album-carousel-arrow previous" onPointerDown={holdAutoplay} onPointerUp={pauseAutoplay} onPointerCancel={pauseAutoplay} onClick={() => userMove(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><button className="album-carousel-arrow next" onPointerDown={holdAutoplay} onPointerUp={pauseAutoplay} onPointerCancel={pauseAutoplay} onClick={() => userMove(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></>}
     </div>
-    {photos.length > 1 && <div className="album-carousel-dots" aria-label="Chọn ảnh">{photos.map((photo, index) => <button key={photo.id} className={index === current ? 'is-active' : ''} onPointerDown={stopAutoplay} onClick={() => userSelect(index)} aria-label={`Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined} />)}</div>}
+    {photos.length > 1 && <div className="album-carousel-dots" aria-label="Chọn ảnh">{photos.map((photo, index) => <button key={photo.id} className={index === current ? 'is-active' : ''} onPointerDown={holdAutoplay} onPointerUp={pauseAutoplay} onPointerCancel={pauseAutoplay} onClick={() => userSelect(index)} aria-label={`Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined} />)}</div>}
     {story && <p className="gallery-story">“{story}”</p>}
   </section></ArchitectureSection>;
 }
