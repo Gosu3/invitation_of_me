@@ -149,6 +149,18 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
       {config.features.showMap && <iframe className="venue-map" title={`Bản đồ ${config.venue.title}`} src={embed} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" />}
       <a className="venue-directions" href={directions} target="_blank" rel="noopener noreferrer"><Navigation size={16} aria-hidden="true" /><span>Chỉ đường</span></a>
     </div>
+    <div className="venue-dress-code">
+      <div className="venue-dress-code-copy">
+        <h2>DRESS CODE</h2>
+        <p>{config.content.dressCode || 'Trang phục dự tiệc'}</p>
+      </div>
+      <div className="venue-dress-code-swatches" aria-label="Bảng màu trang phục: xanh đậm, xanh olive, xanh sage và màu kem">
+        <span className="dress-swatch dress-swatch-forest" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-olive" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-sage" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-ivory" aria-hidden="true" />
+      </div>
+    </div>
   </section>;
 }
 
@@ -179,9 +191,9 @@ export function GuestbookSection() {
     <div className="guestbook-content">
       <h2>SỔ LƯU BÚT</h2>
       <form className="guestbook-form" onSubmit={submit}>
-        <input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={100} required placeholder="Tên của bạn" aria-label="Tên của bạn" />
-        <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={1000} required rows={2} placeholder="Lời chúc của bạn…" aria-label="Lời chúc" />
-        <button type="submit">GỬI LỜI CHÚC <Send size={13} /></button>
+        <input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={100} required placeholder="Nhập tên*" aria-label="Tên của bạn" />
+        <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={1000} required rows={4} placeholder="Nhập lời chúc*" aria-label="Lời chúc" />
+        <div className="guestbook-form-actions"><button type="submit">GỬI LỜI CHÚC <Send size={13} /></button></div>
       </form>
       <span className="guestbook-status" role="status">{status}</span>
       <div className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSwipe } from '@/hooks/use-swipe';
 import type { WeddingMedia } from '@/lib/types';
 import { Modal, SectionTitle } from './shared';
@@ -17,9 +17,50 @@ function circularOffset(index: number, activeIndex: number, length: number) {
 
 export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]; story?: string; open: (index: number) => void }) {
   const [current, setCurrent] = useState(0);
-  const move = useCallback((step: number) => setCurrent((value) => (value + step + photos.length) % photos.length), [photos.length]);
-  const swipe = useSwipe(() => move(1), () => move(-1));
-  return <ArchitectureSection><section className="invite-section gallery-section" id="album">
+  const [outgoing, setOutgoing] = useState<number | null>(null);
+  const [isInView, setIsInView] = useState(false);
+  const [autoplayStopped, setAutoplayStopped] = useState(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const currentRef = useRef(0);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const select = useCallback((next: number) => {
+    const previous = currentRef.current;
+    if (next === previous) return;
+    if (settleTimer.current) clearTimeout(settleTimer.current);
+    currentRef.current = next;
+    setOutgoing(previous);
+    setCurrent(next);
+    settleTimer.current = setTimeout(() => setOutgoing(null), 1100);
+  }, []);
+  const move = useCallback((step: number) => select((currentRef.current + step + photos.length) % photos.length), [photos.length, select]);
+  const stopAutoplay = useCallback(() => setAutoplayStopped(true), []);
+  const userMove = useCallback((step: number) => {
+    stopAutoplay();
+    move(step);
+  }, [move, stopAutoplay]);
+  const userSelect = useCallback((index: number) => {
+    stopAutoplay();
+    select(index);
+  }, [select, stopAutoplay]);
+  const swipe = useSwipe(() => userMove(1), () => userMove(-1));
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsInView(entry.isIntersecting && entry.intersectionRatio >= .45);
+    }, { threshold: [0, .45, .7] });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!isInView || autoplayStopped || photos.length < 2) return;
+    const timer = window.setInterval(() => move(1), 3200);
+    return () => window.clearInterval(timer);
+  }, [autoplayStopped, isInView, move, photos.length]);
+  useEffect(() => () => {
+    if (settleTimer.current) clearTimeout(settleTimer.current);
+  }, []);
+  return <ArchitectureSection><section ref={sectionRef} className="invite-section gallery-section" id="album">
     <SectionTitle eyebrow="KHOẢNH KHẮC CỦA CHÚNG MÌNH">Album yêu thương</SectionTitle>
     <div className="album-carousel" aria-label="Album ảnh cưới dạng vòng xoay 3D" {...swipe}>
       <div className="album-carousel-track">
@@ -27,14 +68,13 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
           const offset = circularOffset(index, current, photos.length);
           const distance = Math.abs(offset);
           const position = distance > 3 ? (offset < 0 ? 'far-left' : 'far-right') : String(offset);
-          return <button key={photo.id} type="button" data-coverflow-position={position} tabIndex={distance > 3 ? -1 : 0} aria-hidden={distance > 3} className={`album-carousel-slide${index === current ? ' is-active' : ''}`} onClick={() => index === current ? open(index) : setCurrent(index)} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
+          return <button key={photo.id} type="button" data-coverflow-position={position} tabIndex={distance > 3 ? -1 : 0} aria-hidden={distance > 3} className={`album-carousel-slide${index === current ? ' is-active' : ''}${index === outgoing ? ' is-outgoing' : ''}`} onPointerDown={stopAutoplay} onClick={() => { stopAutoplay(); index === current ? open(index) : select(index); }} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
           <Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 78vw, 342px" style={{ objectPosition: `${(photo.position?.x ?? .5) * 100}% ${(photo.position?.y ?? .5) * 100}%` }} unoptimized={photo.url.startsWith('/api/')} />
-          {index === current && <span className="gallery-hover"><Maximize2 size={17} /></span>}
         </button>; })}
       </div>
-      {photos.length > 1 && <><button className="album-carousel-arrow previous" onClick={() => move(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><button className="album-carousel-arrow next" onClick={() => move(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></>}
+      {photos.length > 1 && <><button className="album-carousel-arrow previous" onPointerDown={stopAutoplay} onClick={() => userMove(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><button className="album-carousel-arrow next" onPointerDown={stopAutoplay} onClick={() => userMove(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></>}
     </div>
-    {photos.length > 1 && <div className="album-carousel-dots" aria-label="Chọn ảnh">{photos.map((photo, index) => <button key={photo.id} className={index === current ? 'is-active' : ''} onClick={() => setCurrent(index)} aria-label={`Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined} />)}</div>}
+    {photos.length > 1 && <div className="album-carousel-dots" aria-label="Chọn ảnh">{photos.map((photo, index) => <button key={photo.id} className={index === current ? 'is-active' : ''} onPointerDown={stopAutoplay} onClick={() => userSelect(index)} aria-label={`Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined} />)}</div>}
     {story && <p className="gallery-story">“{story}”</p>}
   </section></ArchitectureSection>;
 }
@@ -57,12 +97,12 @@ export function GalleryLightbox({ photos, initial, close }: { photos: WeddingMed
   }, [index, photos]);
   return <Modal label="Album ảnh cưới" className="photo-dialog" close={close} onArrow={move}>
     <div className="lightbox-stage" {...swipe}>
+      <span className="lightbox-count" aria-live="polite">{index + 1} / {photos.length}</span>
       <div className="lightbox-frame">
-        <Image key={`${photos[index].id}-${direction}`} className={`lightbox-photo slide-${direction > 0 ? 'next' : 'previous'}`} src={photos[index].url} alt={photos[index].alt} width={1400} height={1800} style={{ objectPosition: `${(photos[index].position?.x ?? .5) * 100}% ${(photos[index].position?.y ?? .5) * 100}%` }} unoptimized={photos[index].url.startsWith('/api/')} />
+        <Image key={`${photos[index].id}-${direction}`} className={`lightbox-photo slide-${direction > 0 ? 'next' : 'previous'}`} src={photos[index].url} alt={photos[index].alt} fill sizes="(max-width: 650px) calc(100vw - 28px), min(1000px, 100vw)" style={{ objectFit: 'contain', objectPosition: `${(photos[index].position?.x ?? .5) * 100}% ${(photos[index].position?.y ?? .5) * 100}%` }} unoptimized={photos[index].url.startsWith('/api/')} />
       </div>
-      <div className="lightbox-controls"><button onClick={() => move(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><span aria-live="polite">{index + 1} / {photos.length}</span><button onClick={() => move(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></div>
+      {photos.length > 1 && <div className="lightbox-controls"><button className="previous" onClick={() => move(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><button className="next" onClick={() => move(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></div>}
       <div className="lightbox-thumbnails" aria-label="Chọn ảnh">{photos.map((photo, photoIndex) => <button ref={(element) => { thumbnailRefs.current[photoIndex] = element; }} key={photo.id} onClick={() => { setDirection(photoIndex >= index ? 1 : -1); setIndex(photoIndex); }} aria-label={`Chọn ảnh ${photoIndex + 1}`} aria-current={photoIndex === index ? 'true' : undefined}><Image src={photo.url} alt="" fill sizes="64px" unoptimized={photo.url.startsWith('/api/')} /></button>)}</div>
-      <p className="lightbox-swipe-hint">Vuốt hoặc dùng phím ← → để chuyển ảnh</p>
     </div>
   </Modal>;
 }
