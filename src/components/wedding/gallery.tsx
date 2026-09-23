@@ -37,7 +37,7 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
   const pauseAutoplay = useCallback(() => {
     setAutoplayPaused(true);
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
-    resumeTimer.current = setTimeout(() => setAutoplayPaused(false), 5000);
+    resumeTimer.current = setTimeout(() => setAutoplayPaused(false), 2000);
   }, []);
   const holdAutoplay = useCallback(() => {
     setAutoplayPaused(true);

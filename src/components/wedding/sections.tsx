@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
 import { Check, Heart, Navigation, X } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
@@ -231,14 +231,55 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
   const [wishes, setWishes] = useState<PublicWish[]>(config.content.wishes);
   const [status, setStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const suggestionPool = useRef<number[]>([]);
+  const lastSuggestion = useRef(-1);
   const suggestedWishes = [
     'Chúc hai bạn trăm năm hạnh phúc, luôn yêu thương và đồng hành cùng nhau trên mọi chặng đường.',
     'Chúc mừng ngày vui của hai bạn! Mong tổ ấm nhỏ luôn ngập tràn tiếng cười và những điều dịu dàng.',
     'Chúc cô dâu chú rể một đời viên mãn, bình an và mãi giữ được ánh mắt yêu thương dành cho nhau.',
+    'Mừng hai bạn về chung một nhà! Chúc hành trình phía trước luôn ấm áp, đủ đầy và ngập tràn yêu thương.',
+    'Chúc Văn Thọ và Hồng Thắm mãi nắm tay nhau thật chặt, cùng viết nên một câu chuyện tình yêu thật đẹp.',
+    'Chúc đôi uyên ương hạnh phúc bền lâu, sớm tối có nhau và mỗi ngày đều là một ngày đáng nhớ.',
+    'Ngày vui thêm trọn vẹn, duyên lành mãi vững bền. Chúc hai bạn một đời bình an và hạnh phúc.',
+    'Chúc ngôi nhà nhỏ của hai bạn luôn đầy ắp tiếng cười, sự sẻ chia và những bữa cơm thật ấm cúng.',
+    'Mong tình yêu hôm nay sẽ ngày một sâu đậm, để hai bạn luôn tìm thấy bình yên khi trở về bên nhau.',
+    'Chúc cô dâu chú rể mãi son sắt một lòng, cùng nhau đi qua mọi mùa trong đời bằng thật nhiều yêu thương.',
+    'Chúc mừng hạnh phúc hai bạn! Mong mọi dự định chung đều thành hiện thực và niềm vui luôn ở lại thật lâu.',
+    'Chúc hai bạn có một cuộc hôn nhân ngọt ngào, thấu hiểu, bao dung và luôn trân trọng từng khoảnh khắc bên nhau.',
+    'Từ hôm nay đã có thêm một mái ấm thật đẹp. Chúc hai bạn đồng lòng, đồng hành và hạnh phúc đến bạc đầu.',
+    'Mong những tháng năm phía trước của hai bạn luôn rực rỡ như ngày hôm nay và dịu dàng như thuở mới yêu.',
+    'Chúc tình yêu của Văn Thọ và Hồng Thắm luôn xanh tươi, bền bỉ và nở hoa qua từng năm tháng.',
+    'Chúc hai bạn một đời có nhau, vui cùng sẻ chia, khó khăn cùng vượt qua và bình yên cùng tận hưởng.',
+    'Mừng ngày hai trái tim cùng chung nhịp đập. Chúc đôi bạn trẻ mãi hạnh phúc, hòa thuận và viên mãn.',
+    'Chúc hành trình hôn nhân của hai bạn luôn có tiếng cười làm nắng, yêu thương làm nhà và tin tưởng làm điểm tựa.',
+    'Mong hai bạn luôn nhìn về cùng một hướng, giữ trọn lời thương và vun đắp mái ấm thật hạnh phúc.',
+    'Chúc ngày cưới là khởi đầu của muôn vàn ngày vui, nơi hai bạn luôn được yêu, được hiểu và được là chính mình.',
+    'Chúc hai bạn luôn dành cho nhau sự kiên nhẫn, chân thành và một tình yêu đủ lớn để cùng đi thật xa.',
+    'Mong mỗi sớm mai thức dậy, hai bạn đều thấy biết ơn vì có người mình thương ở ngay bên cạnh.',
+    'Chúc đôi bạn trẻ đời đời gắn bó, gia đình hòa thuận và đón thật nhiều niềm vui trong mái ấm mới.',
+    'Chúc hai bạn yêu nhau từ những điều nhỏ bé, cùng nhau biến những ngày bình thường thành kỷ niệm đáng nhớ.',
+    'Mong cuộc sống chung của hai bạn luôn có đủ dịu dàng để lắng nghe và đủ yêu thương để thứ tha.',
+    'Chúc Văn Thọ và Hồng Thắm mãi là người bạn đời, người tri kỷ và chốn bình yên thân thuộc của nhau.',
+    'Mong tình yêu của hai bạn luôn vẹn nguyên qua năm tháng, càng đồng hành càng thấu hiểu và thương nhau nhiều hơn.',
+    'Chúc hai bạn xây dựng một gia đình thật ấm áp, nơi niềm vui được nhân đôi và mọi nỗi buồn đều được sẻ nửa.',
+    'Chúc cô dâu chú rể từ nay chung bước, chung lòng, cùng đón những mùa hạnh phúc đẹp nhất của cuộc đời.',
+    'Mừng hạnh phúc hai bạn! Chúc lời hẹn ước hôm nay trở thành tình yêu bền vững trong suốt những năm tháng mai sau.',
   ];
   function suggestWish() {
-    const currentIndex = suggestedWishes.indexOf(message);
-    setMessage(suggestedWishes[(currentIndex + 1) % suggestedWishes.length]);
+    if (!suggestionPool.current.length) {
+      const shuffled = suggestedWishes.map((_, index) => index);
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+      }
+      if (shuffled.at(-1) === lastSuggestion.current && shuffled.length > 1) {
+        [shuffled[0], shuffled[shuffled.length - 1]] = [shuffled[shuffled.length - 1], shuffled[0]];
+      }
+      suggestionPool.current = shuffled;
+    }
+    const nextIndex = suggestionPool.current.pop() ?? 0;
+    lastSuggestion.current = nextIndex;
+    setMessage(suggestedWishes[nextIndex]);
     setStatus('');
   }
   useEffect(() => {

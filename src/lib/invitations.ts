@@ -48,15 +48,16 @@ export function mapInvitation(row: Row, relations: {
 }
 
 export async function getInvitation(slug: string, includeDraft = false): Promise<Invitation | null> {
+  const localFallback = demoInvitations.find((item) => item.slug === slug);
   if (!isDatabaseConfigured()) {
-    return demoInvitations.find((item) => item.slug === slug) || null;
+    return localFallback || null;
   }
   const db = includeDraft ? serviceDb() : publicDb();
-  if (!db) return null;
+  if (!db) return localFallback || null;
   let query = db.from('wedding_invitations').select('*').eq('slug', slug);
   if (!includeDraft) query = query.eq('status', 'published');
   const { data: invitation, error } = await query.maybeSingle();
-  if (error || !invitation) return null;
+  if (error || !invitation) return localFallback || null;
   const id = invitation.id;
   const [events, timeline, media, gifts, wishes] = await Promise.all([
     db.from('wedding_events').select('*').eq('invitation_id', id),
@@ -69,7 +70,6 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
     events: arr(events.data), timeline: arr(timeline.data), media: arr(media.data),
     gifts: arr(gifts.data), wishes: arr(wishes.data),
   });
-  const localFallback = demoInvitations.find((item) => item.slug === slug);
   if (!localFallback) return mapped;
   return {
     ...mapped,

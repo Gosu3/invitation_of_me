@@ -318,7 +318,7 @@
 .guestbook-form textarea{height:78px;resize:none}
 .guestbook-form input::placeholder,.guestbook-form textarea::placeholder{color:#30530fb8;opacity:1}
 .guestbook-form input:focus,.guestbook-form textarea:focus{border-color:#6b8040;box-shadow:0 0 0 3px #6b804018}
-.guestbook-form-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:5px}
+.guestbook-form-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:5px}
 .guestbook-form-actions button{display:inline-flex;align-items:center;justify-content:center;border:0;transition:transform .2s ease,background-color .2s ease}
 .guestbook-form-actions .guestbook-ai-button{width:32px;height:32px;flex:0 0 32px;padding:6px;border-radius:8px;background:#30530f1a;color:#30530f;font:400 14px/1 sans-serif!important}
 .guestbook-form-actions .guestbook-submit{min-height:32px;flex:0 0 auto;padding:6px 17px;border-radius:999px;background:#30530f;color:#ded9d7;font:600 12px/1.4 'Times New Roman',serif!important;letter-spacing:.02em;white-space:nowrap}

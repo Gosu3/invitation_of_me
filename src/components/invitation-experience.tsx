@@ -83,7 +83,7 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
     if (phase !== 'closed') return;
     autoScrollStarted.current = false;
     setAutoScrollPaused(false);
-    void music.play();
+    void music.playRandom();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setPhase('opened'); return; }
     setPhase('opening');
     timers.current = [

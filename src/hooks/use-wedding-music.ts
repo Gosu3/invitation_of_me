@@ -60,10 +60,21 @@ export function useWeddingMusic(config: WeddingMusic) {
   }, [index, loop, tracks.length, selectTrack]);
 
   const play = useCallback(() => selectTrack(index), [index, selectTrack]);
+  const playRandom = useCallback(() => {
+    if (!tracks.length) return Promise.resolve();
+    const storageKey = 'wedding-last-opening-track';
+    const previous = Number(window.sessionStorage.getItem(storageKey));
+    const candidates = tracks.map((_, trackIndex) => trackIndex).filter((trackIndex) => tracks.length === 1 || trackIndex !== previous);
+    const randomValue = new Uint32Array(1);
+    window.crypto.getRandomValues(randomValue);
+    const nextIndex = candidates[randomValue[0] % candidates.length];
+    window.sessionStorage.setItem(storageKey, String(nextIndex));
+    return selectTrack(nextIndex);
+  }, [selectTrack, tracks]);
   const pause = useCallback(async () => { request.current += 1; audio.current?.pause(); setBusy(false); }, []);
   const togglePlaying = useCallback(async () => { if (playing) await pause(); else await play(); }, [pause, play, playing]);
   const setVolume = (value: number) => setVolumeState(Math.min(1, Math.max(0, value)));
-  return { playing, muted, blocked, busy, play, pause, togglePlaying, toggleMuted: () => setMuted((value) => !value),
+  return { playing, muted, blocked, busy, play, playRandom, pause, togglePlaying, toggleMuted: () => setMuted((value) => !value),
     tracks, index, currentTrack: tracks[index], selectTrack, previous: () => selectTrack(index - 1), next: () => selectTrack(index + 1),
     volume, setVolume, loop, toggleLoop: () => setLoop((value) => !value), error };
 }
