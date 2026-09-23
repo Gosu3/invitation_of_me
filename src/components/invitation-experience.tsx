@@ -1,8 +1,8 @@
 'use client';
 
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Gift, Images } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { CalendarCheck, Gift, Heart, Images, MapPin } from 'lucide-react';
 import type { Invitation } from '@/lib/types';
 import { createWeddingConfig } from '@/lib/wedding-config';
 import { themeVariables } from '@/lib/wedding-theme';
@@ -13,7 +13,7 @@ import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
 import { FamilyCeremonySection, GuestbookSection, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
-const AUTO_SCROLL_SPEED = 22;
+const AUTO_SCROLL_SPEED = 67;
 const AUTO_SCROLL_START_DELAY = 1800;
 const AUTO_SCROLL_RESUME_DELAY = 4500;
 
@@ -22,8 +22,10 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
   const [phase, setPhase] = useState<OpeningPhase>('closed');
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
+  const [autoScrollPaused, setAutoScrollPaused] = useState(false);
   const timers = useRef<number[]>([]);
   const heading = useRef<HTMLDivElement>(null);
+  const autoScrollStarted = useRef(false);
   const music = useWeddingMusic(config.music);
   const contentVisible = phase === 'revealing' || phase === 'opened';
 
@@ -32,12 +34,13 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
     if (phase === 'opened') { window.scrollTo({ top: 0, behavior: 'instant' }); heading.current?.focus({ preventScroll: true }); }
   }, [phase]);
   useEffect(() => {
-    if (phase !== 'opened' || giftOpen || photoIndex !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (phase !== 'opened' || autoScrollPaused || giftOpen || photoIndex !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let animationFrame = 0;
     let lastFrame = 0;
-    let carriedDistance = 0;
-    let pausedUntil = performance.now() + AUTO_SCROLL_START_DELAY;
+    let autoScrollPosition = window.scrollY;
+    let pausedUntil = performance.now() + (autoScrollStarted.current ? 0 : AUTO_SCROLL_START_DELAY);
+    autoScrollStarted.current = true;
     const pauseForInteraction = () => { pausedUntil = performance.now() + AUTO_SCROLL_RESUME_DELAY; };
     const pauseForKeyboard = (event: KeyboardEvent) => {
       if (['ArrowDown', 'ArrowUp', 'End', 'Home', 'PageDown', 'PageUp', ' '].includes(event.key)) pauseForInteraction();
@@ -47,30 +50,22 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
       const elapsed = Math.min(time - lastFrame, 50);
       lastFrame = time;
       if (time >= pausedUntil) {
-        carriedDistance += AUTO_SCROLL_SPEED * elapsed / 1000;
-        const pixels = Math.floor(carriedDistance);
-        if (pixels > 0) {
-          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-          if (window.scrollY < maxScroll - 1) window.scrollBy({ top: Math.min(pixels, maxScroll - window.scrollY), behavior: 'auto' });
-          carriedDistance -= pixels;
-        }
-      }
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        autoScrollPosition = Math.min(maxScroll, Math.max(autoScrollPosition, window.scrollY) + AUTO_SCROLL_SPEED * elapsed / 1000);
+        if (window.scrollY < maxScroll - 1) window.scrollTo({ top: autoScrollPosition, behavior: 'instant' });
+      } else autoScrollPosition = window.scrollY;
       animationFrame = window.requestAnimationFrame(scroll);
     };
 
     window.addEventListener('wheel', pauseForInteraction, { passive: true });
-    window.addEventListener('touchstart', pauseForInteraction, { passive: true });
-    window.addEventListener('pointerdown', pauseForInteraction, { passive: true });
     window.addEventListener('keydown', pauseForKeyboard);
     animationFrame = window.requestAnimationFrame(scroll);
     return () => {
       window.cancelAnimationFrame(animationFrame);
       window.removeEventListener('wheel', pauseForInteraction);
-      window.removeEventListener('touchstart', pauseForInteraction);
-      window.removeEventListener('pointerdown', pauseForInteraction);
       window.removeEventListener('keydown', pauseForKeyboard);
     };
-  }, [giftOpen, phase, photoIndex]);
+  }, [autoScrollPaused, giftOpen, phase, photoIndex]);
   useEffect(() => {
     if (!contentVisible || !('IntersectionObserver' in window)) return;
     const content = document.querySelector('.invitation-content');
@@ -86,6 +81,8 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
 
   function openInvitation() {
     if (phase !== 'closed') return;
+    autoScrollStarted.current = false;
+    setAutoScrollPaused(false);
     void music.play();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setPhase('opened'); return; }
     setPhase('opening');
@@ -96,7 +93,14 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
     ];
   }
 
-  return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase}>
+  function toggleAutoScroll(event: ReactPointerEvent<HTMLElement>) {
+    if (phase !== 'opened' || event.button !== 0) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('a, button, input, textarea, select, label, [role="dialog"]')) return;
+    setAutoScrollPaused((paused) => !paused);
+  }
+
+  return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase} data-auto-scroll={autoScrollPaused ? 'paused' : 'playing'} onPointerDown={toggleAutoScroll}>
     {phase !== 'opened' && <EnvelopeIntro config={config} phase={phase} open={openInvitation} />}
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
@@ -110,7 +114,13 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
       {config.features.showThankYou && <ThankYouSection />}
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} title={config.music.title} />}
-    {phase === 'opened' && (config.gallery.length > 0 || (config.features.showBank && !config.features.showQRInline)) && <nav className="invitation-dock" aria-label="Điều hướng thiệp">{config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh"><Images size={18} /></a>}{config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}</nav>}
+    {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp">
+      <a href="#le-cuoi" aria-label="Thông tin lễ cưới" onClick={() => setAutoScrollPaused(true)}><Heart size={18} /></a>
+      {config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh" onClick={() => setAutoScrollPaused(true)}><Images size={18} /></a>}
+      {config.reception && <a href="#thoi-gian" aria-label="Thời gian và xác nhận tham dự" onClick={() => setAutoScrollPaused(true)}><CalendarCheck size={18} /></a>}
+      {config.venue && <a href="#dia-diem" aria-label="Địa điểm tổ chức" onClick={() => setAutoScrollPaused(true)}><MapPin size={18} /></a>}
+      {config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}
+    </nav>}
     {photoIndex !== null && <GalleryLightbox photos={config.gallery} initial={photoIndex} close={() => setPhotoIndex(null)} />}
     {giftOpen && <GiftModal accounts={config.bankAccounts} close={() => setGiftOpen(false)} />}
   </main>;

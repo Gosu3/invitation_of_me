@@ -37,8 +37,8 @@ const cardPetals = [
   { left: '91%', delay: '-10s', duration: '14s', size: '10px' },
 ];
 
-function WeddingInfoCard({ title, flowerSide, className, children }: { title: string; flowerSide: 'left' | 'right'; className: string; children: ReactNode }) {
-  return <ArchitectureSection><section className={`invite-section paper-info-card wedding-info-card ${className}`}>
+function WeddingInfoCard({ id, title, flowerSide, className, children }: { id?: string; title: string; flowerSide: 'left' | 'right'; className: string; children: ReactNode }) {
+  return <ArchitectureSection><section id={id} className={`invite-section paper-info-card wedding-info-card ${className}`}>
     <div className="wedding-card-petals" aria-hidden="true">{cardPetals.map((petal, index) => <span key={index} className="falling-piece petal" style={{ left: petal.left, animationDelay: petal.delay, animationDuration: petal.duration, width: petal.size, height: `calc(${petal.size} * 1.5)` } as CSSProperties}><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c2-8 7-15 18-18-1 11-8 17-18 18Z" /></svg></span>)}</div>
     <div className="wedding-info-content"><h2 className="wedding-info-title">{title}</h2>{children}</div>
     <CardFlower side={flowerSide} />
@@ -66,7 +66,7 @@ function ParentsColumn({ parents, address, side }: { parents?: string; address?:
 
 export function FamilyCeremonySection({ config }: { config: WeddingInvitationConfig }) {
   const event = config.ceremony;
-  return <WeddingInfoCard title="THÔNG TIN LỄ CƯỚI" flowerSide="right" className="family-section">
+  return <WeddingInfoCard id="le-cuoi" title="THÔNG TIN LỄ CƯỚI" flowerSide="right" className="family-section">
     {config.features.showFamilyInfo && (config.family.groomParents || config.family.brideParents || config.family.groomAddress || config.family.brideAddress) && <div className="wedding-family-grid">
       <ParentsColumn parents={config.family.groomParents} address={config.family.groomAddress} side="Nhà trai" />
       <i aria-hidden="true" />
@@ -95,7 +95,7 @@ export function ReceptionSection({ config }: { config: WeddingInvitationConfig }
   const event = config.reception;
   if (!event) return null;
   const date = dateParts(event.dateTime);
-  return <><WeddingInfoCard title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" className="events-section">
+  return <><WeddingInfoCard id="thoi-gian" title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" className="events-section">
     <div className="reception-content">
       <h3 className="reception-intro">Tiệc cưới sẽ diễn ra vào lúc:</h3>
       <div className="reception-day-time"><span>{date.weekday}</span><span>{formatTime(event.dateTime)}</span></div>
@@ -187,7 +187,7 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   const destination = `${config.venue.title}, ${config.venue.address}`;
   const embed = `https://www.google.com/maps?q=${encodeURIComponent(destination)}&output=embed`;
   const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
-  return <section className="venue-invitation-section" data-landing-screenshot-id="invite-map">
+  return <section id="dia-diem" className="venue-invitation-section" data-landing-screenshot-id="invite-map">
     <div className="venue-invitation-copy">
       <h3><span dir="auto">Tiệc cưới sẽ tổ chức tại</span></h3>
       <p className="venue-address"><span dir="auto">{destination}</span></p>

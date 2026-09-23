@@ -247,7 +247,7 @@
  .paper-info-card>.flower-timeline{top:-12%!important;right:-16%!important;width:30%!important;min-width:30%!important}
 }
 @media(prefers-reduced-motion:reduce){.card-flower-art{animation:none}.album-carousel .album-carousel-slide{transition:none}}
-.venue-invitation-section{position:relative;z-index:1;display:flex;width:100%;flex-direction:column;align-items:center;padding:32px 24px;color:var(--w-primary);text-align:center}
+.venue-invitation-section{position:relative;z-index:1;display:flex;width:100%;flex-direction:column;align-items:center;padding:32px 24px;color:var(--w-primary);text-align:center;scroll-margin-top:35px}
 .venue-invitation-copy h3{margin:0;font:700 18px/1.35 'Times New Roman',serif;letter-spacing:.03em;text-transform:uppercase;color:var(--w-primary)}
 .venue-invitation-copy .venue-address{max-width:440px;margin:8px auto 0;background:transparent;color:#30530fcc;font:400 14px/1.625 Baskerville,'Times New Roman',serif;text-align:center;white-space:pre-line}
 .venue-map-actions{position:relative;display:flex;width:100%;flex-direction:column;align-items:center;gap:20px}
