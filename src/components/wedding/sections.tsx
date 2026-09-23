@@ -2,15 +2,17 @@
 
 import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
-import { Heart, Navigation } from 'lucide-react';
+import { Check, Heart, Navigation, X } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
+import { weddingSubmissions } from '@/lib/wedding-submissions';
 import { dateParts, formatTime } from '@/lib/utils';
-import { FloralDivider } from './shared';
 import { ArchitectureSection, CardFlower, weddingArtwork } from './decorations';
+import { Modal } from './shared';
 
 export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLDivElement | null> }) {
   const { theme, couple, content } = config;
   return <section className="letter-story" aria-label={`Thiệp cưới ${couple.names}`}>
+    <p className="letter-save-date">Save The Date</p>
     <div className="letter-composition">
       <Image className="letter-flower-crown" src={theme.assets.flower} alt="" aria-hidden="true" width={420} height={420} loading="eager" />
       <Image className="letter-envelope-image" src={theme.assets.envelope} alt="" aria-hidden="true" width={420} height={604} loading="eager" />
@@ -89,10 +91,11 @@ function calendarUrlFor(config: WeddingInvitationConfig) {
 }
 
 export function ReceptionSection({ config }: { config: WeddingInvitationConfig }) {
+  const [rsvpOpen, setRsvpOpen] = useState(false);
   const event = config.reception;
   if (!event) return null;
   const date = dateParts(event.dateTime);
-  return <><FloralDivider /><WeddingInfoCard title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" className="events-section">
+  return <><WeddingInfoCard title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" className="events-section">
     <div className="reception-content">
       <h3 className="reception-intro">Tiệc cưới sẽ diễn ra vào lúc:</h3>
       <div className="reception-day-time"><span>{date.weekday}</span><span>{formatTime(event.dateTime)}</span></div>
@@ -102,8 +105,61 @@ export function ReceptionSection({ config }: { config: WeddingInvitationConfig }
       <div className="reception-calendar"><MiniCalendar date={event.dateTime} timezone={config.timezone} /></div>
       <a className="calendar-link" href={calendarUrlFor(config)} target="_blank" rel="noopener noreferrer">Thêm vào lịch</a>
       <Countdown target={event.dateTime} />
+      {config.features.showRsvp && <button type="button" className="reception-rsvp-button" onClick={() => setRsvpOpen(true)}><span>XÁC NHẬN THAM DỰ</span></button>}
     </div>
-  </WeddingInfoCard></>;
+  </WeddingInfoCard>{rsvpOpen && <RsvpModal config={config} close={() => setRsvpOpen(false)} />}</>;
+}
+
+function RsvpModal({ config, close }: { config: WeddingInvitationConfig; close: () => void }) {
+  const [guestName, setGuestName] = useState('');
+  const [attendance, setAttendance] = useState<'yes' | 'no' | ''>('');
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+  const canSubmit = guestName.trim().length >= 2 && attendance !== '' && status !== 'submitting';
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!canSubmit || !attendance) return;
+    setStatus('submitting');
+    setMessage('');
+    try {
+      await weddingSubmissions.rsvp({
+        invitationId: config.id,
+        guestName: guestName.trim(),
+        attendance,
+        guestCount: 1,
+        message: '',
+        website: '',
+      });
+      setStatus('success');
+    } catch (error) {
+      setStatus('error');
+      setMessage(error instanceof Error ? error.message : 'Chưa thể gửi xác nhận. Vui lòng thử lại.');
+    }
+  }
+
+  return <Modal label="Xác nhận tham dự" className="rsvp-dialog" close={close}>
+    {status === 'success' ? <div className="rsvp-success" role="status">
+      <span aria-hidden="true"><Check size={25} /></span>
+      <h2>Đã gửi xác nhận</h2>
+      <p>Cảm ơn {guestName.trim()} đã phản hồi. Chúng mình đã nhận được thông tin của bạn ♡</p>
+      <button type="button" onClick={close}>HOÀN TẤT</button>
+    </div> : <>
+      <header className="rsvp-dialog-heading">
+        <h2>Xác nhận tham dự</h2>
+        <p>Sự hiện diện của bạn là niềm vinh hạnh cho gia đình chúng tôi. Xin xác nhận để chúng tôi chuẩn bị chu đáo nhất.</p>
+      </header>
+      <form className="rsvp-dialog-form" onSubmit={submit}>
+        <label className="rsvp-name-field"><span>Tên của bạn</span><input value={guestName} onChange={(event) => setGuestName(event.target.value)} minLength={2} maxLength={100} required autoComplete="name" placeholder="Nhập tên của bạn" /></label>
+        <fieldset><legend>Bạn sẽ đến chứ?</legend>
+          <label className={`rsvp-choice${attendance === 'yes' ? ' is-selected' : ''}`}><input type="radio" name="attendance" value="yes" checked={attendance === 'yes'} onChange={() => setAttendance('yes')} /><span aria-hidden="true"><Check size={16} /></span><strong>Tôi sẽ đến</strong></label>
+          <label className={`rsvp-choice${attendance === 'no' ? ' is-selected' : ''}`}><input type="radio" name="attendance" value="no" checked={attendance === 'no'} onChange={() => setAttendance('no')} /><span aria-hidden="true"><X size={16} /></span><strong>Rất tiếc, tôi không thể đến</strong></label>
+        </fieldset>
+        {message && <p className="rsvp-error" role="alert">{message}</p>}
+        <button className="rsvp-submit" type="submit" disabled={!canSubmit}>{status === 'submitting' ? 'ĐANG GỬI...' : 'Gửi xác nhận'}</button>
+      </form>
+    </>}
+  </Modal>;
 }
 
 function MiniCalendar({ date, timezone }: { date: string; timezone: string }) {
