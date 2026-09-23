@@ -13,6 +13,10 @@ import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
 import { FamilyCeremonySection, GuestbookSection, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
+const AUTO_SCROLL_SPEED = 22;
+const AUTO_SCROLL_START_DELAY = 1800;
+const AUTO_SCROLL_RESUME_DELAY = 4500;
+
 export function InvitationExperience({ invitation, connected }: { invitation: Invitation; connected: boolean }) {
   const config = useMemo(() => createWeddingConfig(invitation), [invitation]);
   const [phase, setPhase] = useState<OpeningPhase>('closed');
@@ -27,6 +31,46 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
   useEffect(() => {
     if (phase === 'opened') { window.scrollTo({ top: 0, behavior: 'instant' }); heading.current?.focus({ preventScroll: true }); }
   }, [phase]);
+  useEffect(() => {
+    if (phase !== 'opened' || giftOpen || photoIndex !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let animationFrame = 0;
+    let lastFrame = 0;
+    let carriedDistance = 0;
+    let pausedUntil = performance.now() + AUTO_SCROLL_START_DELAY;
+    const pauseForInteraction = () => { pausedUntil = performance.now() + AUTO_SCROLL_RESUME_DELAY; };
+    const pauseForKeyboard = (event: KeyboardEvent) => {
+      if (['ArrowDown', 'ArrowUp', 'End', 'Home', 'PageDown', 'PageUp', ' '].includes(event.key)) pauseForInteraction();
+    };
+    const scroll = (time: number) => {
+      if (!lastFrame) lastFrame = time;
+      const elapsed = Math.min(time - lastFrame, 50);
+      lastFrame = time;
+      if (time >= pausedUntil) {
+        carriedDistance += AUTO_SCROLL_SPEED * elapsed / 1000;
+        const pixels = Math.floor(carriedDistance);
+        if (pixels > 0) {
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          if (window.scrollY < maxScroll - 1) window.scrollBy({ top: Math.min(pixels, maxScroll - window.scrollY), behavior: 'auto' });
+          carriedDistance -= pixels;
+        }
+      }
+      animationFrame = window.requestAnimationFrame(scroll);
+    };
+
+    window.addEventListener('wheel', pauseForInteraction, { passive: true });
+    window.addEventListener('touchstart', pauseForInteraction, { passive: true });
+    window.addEventListener('pointerdown', pauseForInteraction, { passive: true });
+    window.addEventListener('keydown', pauseForKeyboard);
+    animationFrame = window.requestAnimationFrame(scroll);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('wheel', pauseForInteraction);
+      window.removeEventListener('touchstart', pauseForInteraction);
+      window.removeEventListener('pointerdown', pauseForInteraction);
+      window.removeEventListener('keydown', pauseForKeyboard);
+    };
+  }, [giftOpen, phase, photoIndex]);
   useEffect(() => {
     if (!contentVisible || !('IntersectionObserver' in window)) return;
     const content = document.querySelector('.invitation-content');
