@@ -77,3 +77,5 @@ npm run start
 - RSVP và lời chúc là dữ liệu cá nhân. Chỉ quản trị viên có thể xem RSVP; lời chúc cần duyệt trước khi hiển thị.
 
 Xem [tài liệu cấu trúc](docs/CAU_TRUC_DU_AN.md) để biết vị trí mã nguồn và cách mở rộng.
+
+Khi chuyển sang máy khác, làm theo [tài liệu tiếp tục dự án](docs/TIEP_TUC_TREN_MAY_KHAC.md) để đồng bộ code, biến môi trường và trạng thái triển khai mà không làm lộ khóa bí mật.
