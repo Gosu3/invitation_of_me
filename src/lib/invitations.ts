@@ -65,10 +65,18 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
     db.from('wedding_gift_accounts').select('*').eq('invitation_id', id),
     db.from('wedding_wishes').select('*').eq('invitation_id', id).eq('status', 'approved').order('created_at', { ascending: false }).limit(20),
   ]);
-  return mapInvitation(invitation, {
+  const mapped = mapInvitation(invitation, {
     events: arr(events.data), timeline: arr(timeline.data), media: arr(media.data),
     gifts: arr(gifts.data), wishes: arr(wishes.data),
   });
+  const localFallback = demoInvitations.find((item) => item.slug === slug);
+  if (!localFallback) return mapped;
+  return {
+    ...mapped,
+    coverImage: mapped.coverImage || localFallback.coverImage,
+    coverAlt: mapped.coverAlt || localFallback.coverAlt,
+    media: mapped.media.length ? mapped.media : localFallback.media,
+  };
 }
 
 export async function listInvitations(): Promise<Invitation[]> {

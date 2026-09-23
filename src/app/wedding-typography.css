@@ -29,7 +29,8 @@
 .botanical-theme .cover-open-button {font:600 clamp(1rem,2.8vw,1.1rem)/1 var(--font-body);letter-spacing:.02em}
 .botanical-theme .invite-section h2,
 .botanical-theme .section-heading h2 {font-family:var(--font-heading);font-weight:600;letter-spacing:.04em;line-height:1.2}
-.botanical-theme .gallery-section h2 {text-transform:uppercase;font-size:clamp(1.3rem,4vw,1.85rem);text-align:center}
+.botanical-theme .gallery-section h2 {position:relative;z-index:10;color:var(--w-primary);font:700 20px/1.5 'Times New Roman',serif;letter-spacing:.03em;text-align:center;text-transform:uppercase}
+.botanical-theme .gallery-section .eyebrow {font-family:'Times New Roman',serif}
 .botanical-theme .wedding-info-card .wedding-info-title {
   font: 600 clamp(1.4rem,4vw,2rem)/1.2 var(--font-heading)!important;
   letter-spacing:.04em!important;
@@ -94,6 +95,11 @@
 .botanical-theme .album-hint,
 .botanical-theme .gift-dialog p,
 .botanical-theme .gift-section>p {font-family:var(--font-body);line-height:1.6}
+.botanical-theme .gift-section>.eyebrow {font:700 9px/1.4 'Times New Roman',serif;letter-spacing:.2em;color:#30530f;text-transform:uppercase}
+.botanical-theme .gift-section>h2 {margin-bottom:10px;color:#30530f;font:700 20px/1.5 'Times New Roman',serif;letter-spacing:.03em;text-align:center;text-transform:uppercase}
+.botanical-theme .gift-section>p {max-width:440px;margin:0 auto;color:#30530fcc;font:400 14px/1.625 Baskerville,'Times New Roman',serif;letter-spacing:0;text-align:center}
+.botanical-theme .gift-section .gift-box-caption {color:#30530f;font:400 14px/1.5 Baskerville,'Times New Roman',serif;letter-spacing:.02em}
+.botanical-theme .gift-section .gift-box-button>small {color:#30530fbf;font:italic 400 11px/1.5 Baskerville,'Times New Roman',serif;letter-spacing:.01em}
 @media(max-width:650px) {
   .botanical-theme .wedding-info-card .wedding-info-title {font-size:clamp(1.3rem,4vw,1.6rem)!important;letter-spacing:.04em!important}
   .botanical-theme .wedding-info-card .wedding-couple-names h3 {font-size:clamp(30px,10vw,38px)!important}
@@ -103,6 +109,7 @@
   .botanical-theme .guestbook-form textarea {font-size:clamp(.75rem,2.7vw,.92rem)}
   .botanical-theme .guestbook-form button {font-size:clamp(.7rem,2.5vw,.88rem)}
   .botanical-theme .guestbook-wishes {font-size:clamp(.7rem,2.5vw,.9rem)}
+  .botanical-theme .gift-section>p {max-width:260px;font-size:12px}
 }
 .botanical-theme .wedding-info-card.family-section .wedding-info-title {
   position:relative;

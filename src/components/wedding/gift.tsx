@@ -49,7 +49,7 @@ function BankCard({ account, fallbackRole }: { account: GiftAccount | null; fall
 }
 
 export function GiftSection({ accounts, inline, open }: { accounts: GiftAccount[]; inline: boolean; open: () => void }) {
-  return <section className="invite-section gift-section" id="qua-mung"><SectionTitle eyebrow="TẤM LÒNG CỦA BẠN">Hộp quà mừng</SectionTitle><p>Sự hiện diện của bạn đã là món quà rất quý.</p>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" /></div> : <GiftBox open={open} />}</section>;
+  return <section className="invite-section gift-section" id="qua-mung"><SectionTitle eyebrow="TẤM LÒNG CỦA BẠN"><span dir="auto">Hộp quà mừng</span></SectionTitle><p><span dir="auto">Sự hiện diện của bạn đã là món quà rất quý.</span></p>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" /></div> : <GiftBox open={open} />}</section>;
 }
 
 export function GiftModal({ accounts, close }: { accounts: GiftAccount[]; close: () => void }) {

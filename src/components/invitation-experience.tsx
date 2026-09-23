@@ -13,7 +13,7 @@ import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
 import { FamilyCeremonySection, GuestbookSection, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
-export function InvitationExperience({ invitation }: { invitation: Invitation; connected: boolean }) {
+export function InvitationExperience({ invitation, connected }: { invitation: Invitation; connected: boolean }) {
   const config = useMemo(() => createWeddingConfig(invitation), [invitation]);
   const [phase, setPhase] = useState<OpeningPhase>('closed');
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
@@ -61,7 +61,7 @@ export function InvitationExperience({ invitation }: { invitation: Invitation; c
       <ReceptionSection config={config} />
       {config.venue && <VenueSection config={config} />}
       {config.features.showTimeline && <TimelineSection config={config} />}
-      {config.features.showGuestbook && <GuestbookSection />}
+      {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
       {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} />}
       {config.features.showThankYou && <ThankYouSection />}
     </div>}

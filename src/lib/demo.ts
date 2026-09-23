@@ -2,7 +2,7 @@ import type { Invitation } from './types';
 
 export const demoInvitations: Invitation[] = [
   {
-    id: 'demo-tho-tham',
+    id: '8a0f8b1e-67e8-4fa8-ae3e-291120260001',
     slug: 'tho-va-tham',
     status: 'published',
     partnerOne: 'Văn Thọ',
@@ -18,7 +18,7 @@ export const demoInvitations: Invitation[] = [
     story: 'Giữa rất nhiều cuộc gặp gỡ, chúng mình đã tìm thấy một người để cùng đi qua những ngày bình thường đẹp nhất.',
     coverImage: '/photos/wedding-09.webp',
     coverAlt: 'Văn Thọ và Hồng Thắm trong bộ ảnh cưới',
-    dressCode: 'Trang phục lịch sự · Ưu tiên kem, xanh sage và xanh olive',
+    dressCode: 'Trang phục lịch sự - Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất ♥',
     closingMessage: 'Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình.',
     rsvpEnabled: true,
     rsvpDeadline: '2026-11-23T23:59:00+07:00',

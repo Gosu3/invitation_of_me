@@ -4,7 +4,7 @@ import { useEffect, useState, type CSSProperties, type FormEvent, type ReactNode
 import Image from 'next/image';
 import { Check, Heart, Navigation, X } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
-import { weddingSubmissions } from '@/lib/wedding-submissions';
+import { weddingSubmissions, type PublicWish } from '@/lib/wedding-submissions';
 import { dateParts, formatTime } from '@/lib/utils';
 import { ArchitectureSection, CardFlower, weddingArtwork } from './decorations';
 import { Modal } from './shared';
@@ -190,7 +190,7 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   return <section className="venue-invitation-section" data-landing-screenshot-id="invite-map">
     <div className="venue-invitation-copy">
       <h3><span dir="auto">Tiệc cưới sẽ tổ chức tại</span></h3>
-      <p><span dir="auto">{destination}</span></p>
+      <p className="venue-address"><span dir="auto">{destination}</span></p>
     </div>
     <div className="venue-map-actions">
       {config.features.showMap && <iframe className="venue-map" title={`Bản đồ ${config.venue.title}`} src={embed} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" />}
@@ -199,13 +199,19 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
     <div className="venue-dress-code">
       <div className="venue-dress-code-copy">
         <h2>DRESS CODE</h2>
-        <p>{config.content.dressCode || 'Trang phục dự tiệc'}</p>
+        <p>Trang phục lịch sự - Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất <span className="dress-code-heart" aria-label="trái tim">♥</span></p>
       </div>
-      <div className="venue-dress-code-swatches" aria-label="Bảng màu trang phục: xanh đậm, xanh olive, xanh sage và màu kem">
-        <span className="dress-swatch dress-swatch-forest" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-olive" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-sage" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-ivory" aria-hidden="true" />
+      <div className="venue-dress-code-swatches" aria-label="Bảng màu trang phục gồm đỏ, trắng, hồng, kem, đen, nâu, vàng, tím, cam và phối nhiều màu">
+        <span className="dress-swatch dress-swatch-red" title="Đỏ" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-white" title="Trắng" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-pink" title="Hồng" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-cream" title="Kem" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-black" title="Đen" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-brown" title="Nâu" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-yellow" title="Vàng" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-purple" title="Tím" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-orange" title="Cam" aria-hidden="true" />
+        <span className="dress-swatch dress-swatch-multicolor" title="Phối màu" aria-hidden="true" />
       </div>
     </div>
   </section>;
@@ -213,17 +219,18 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
 
 export function TimelineSection({ config }: { config: WeddingInvitationConfig }) {
   return <ArchitectureSection><section className="invite-section paper-info-card wedding-info-card timeline-section">
-    <div className="wedding-info-content"><h2 className="wedding-info-title">LỊCH TRÌNH NGÀY CƯỚI</h2>
-      <ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong>{item.title}</strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
+    <div className="wedding-info-content"><h2 className="wedding-info-title timeline-title"><span dir="auto">LỊCH TRÌNH NGÀY CƯỚI</span></h2>
+      <ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong><span dir="auto">{item.title}</span></strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
     </div><CardFlower timeline />
   </section></ArchitectureSection>;
 }
 
-export function GuestbookSection() {
+export function GuestbookSection({ config, connected }: { config: WeddingInvitationConfig; connected: boolean }) {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
-  const [wishes, setWishes] = useState<{ id: string; guestName: string; message: string }[]>([]);
+  const [wishes, setWishes] = useState<PublicWish[]>(config.content.wishes);
   const [status, setStatus] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const suggestedWishes = [
     'Chúc hai bạn trăm năm hạnh phúc, luôn yêu thương và đồng hành cùng nhau trên mọi chặng đường.',
     'Chúc mừng ngày vui của hai bạn! Mong tổ ấm nhỏ luôn ngập tràn tiếng cười và những điều dịu dàng.',
@@ -234,34 +241,76 @@ export function GuestbookSection() {
     setMessage(suggestedWishes[(currentIndex + 1) % suggestedWishes.length]);
     setStatus('');
   }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    if (!connected) return;
+    let active = true;
+    async function refresh() {
+      try {
+        const approved = await weddingSubmissions.listWishes(config.id);
+        if (active) setWishes((current) => {
+          const approvedIds = new Set(approved.map((wish) => wish.id));
+          const localPending = current.filter((wish) => wish.id.startsWith('pending-') && !approvedIds.has(wish.id.slice(8)));
+          return [...localPending, ...approved];
+        });
+      } catch { /* Initial server data remains visible if a refresh fails. */ }
+    }
+    void refresh();
+    const timer = window.setInterval(refresh, 30000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [config.id, connected]);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (name.trim().length < 2 || message.trim().length < 3) {
       setStatus('Vui lòng nhập tên và lời chúc của bạn.');
       return;
     }
-    setWishes((current) => [{ id: crypto.randomUUID(), guestName: name.trim(), message: message.trim() }, ...current]);
-    setName(''); setMessage(''); setStatus('Đã thêm lời chúc của bạn ♡');
+    if (!connected) {
+      setStatus('Trang đang ở chế độ xem thử và chưa kết nối Supabase.');
+      return;
+    }
+    setSubmitting(true);
+    setStatus('');
+    try {
+      const result = await weddingSubmissions.wish({ invitationId: config.id, guestName: name.trim(), message: message.trim(), website: '' });
+      setWishes((current) => [{ ...result.wish, id: `pending-${result.wish.id}` }, ...current]);
+      setName('');
+      setMessage('');
+      setStatus('Đã gửi lời chúc, đang chờ cô dâu chú rể duyệt ♡');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Chưa thể gửi lời chúc. Vui lòng thử lại.');
+    } finally {
+      setSubmitting(false);
+    }
   }
-  return <section className="invite-section guestbook-wrapper" id="so-luu-but">
-    <Image className="guestbook-background" src={weddingArtwork.guestbook} alt="" aria-hidden="true" width={1314} height={1197} unoptimized />
-    <div className="guestbook-content">
-      <h2 className="guestbook-title"><span dir="auto">Sổ lưu bút</span></h2>
-      <form className="guestbook-form" onSubmit={submit}>
-        <div className="guestbook-form-panel">
-          <input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={500} required placeholder="Nhập tên*" aria-label="Tên của bạn" />
-          <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={10000} required rows={4} placeholder="Nhập lời chúc*" aria-label="Lời chúc" />
-          <div className="guestbook-form-actions">
-            <button type="button" className="guestbook-ai-button" title="Tạo lời chúc bằng AI" aria-label="Tạo lời chúc bằng AI" onClick={suggestWish}>🪄</button>
-            <button type="submit" className="guestbook-submit"><span dir="auto">GỬI LỜI CHÚC</span></button>
+  const wishDate = (value: string) => new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit',
+    day: 'numeric', month: 'numeric', year: 'numeric', hour12: false,
+  }).format(new Date(value));
+  return <section className="invite-section guestbook-section" id="so-luu-but">
+    <div className="guestbook-wrapper">
+      <Image className="guestbook-background" src={weddingArtwork.guestbook} alt="" aria-hidden="true" width={1314} height={1197} unoptimized />
+      <div className="guestbook-content">
+        <h2 className="guestbook-title"><span dir="auto">Sổ lưu bút</span></h2>
+        <form className="guestbook-form" onSubmit={submit}>
+          <div className="guestbook-form-panel">
+            <input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={100} required disabled={submitting} placeholder="Nhập tên*" aria-label="Tên của bạn" />
+            <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={1000} required disabled={submitting} rows={4} placeholder="Nhập lời chúc*" aria-label="Lời chúc" />
+            <div className="guestbook-form-actions">
+              <button type="button" className="guestbook-ai-button" title="Tạo lời chúc bằng AI" aria-label="Tạo lời chúc bằng AI" onClick={suggestWish}>🪄</button>
+              <button type="submit" className="guestbook-submit" disabled={submitting}><span dir="auto">{submitting ? 'ĐANG GỬI...' : 'GỬI LỜI CHÚC'}</span></button>
+            </div>
           </div>
-        </div>
-      </form>
-      <span className="guestbook-status" role="status">{status}</span>
-      {wishes.length > 0 && <div className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
-        {wishes.map((wish) => <blockquote key={wish.id}><strong>{wish.guestName}</strong><p>{wish.message}</p></blockquote>)}
-      </div>}
+        </form>
+        <span className="guestbook-status" role="status">{status}</span>
+      </div>
     </div>
+    {wishes.length > 0 && <div className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
+      {wishes.map((wish) => <blockquote key={wish.id}>
+        <header><strong>{wish.guestName}</strong><time dateTime={wish.createdAt}>{wishDate(wish.createdAt)}</time></header>
+        <p>{wish.message}</p>
+      </blockquote>)}
+    </div>}
   </section>;
 }
 

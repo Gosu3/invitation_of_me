@@ -1,7 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { wishSchema } from '@/lib/validation';
-import { serviceDb } from '@/lib/supabase';
+import { publicDb, serviceDb } from '@/lib/supabase';
 import { allowSubmission, submitterHash } from '@/lib/submission';
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export async function GET(request: NextRequest) {
+  const invitationId = request.nextUrl.searchParams.get('invitationId') || '';
+  if (!uuidPattern.test(invitationId)) return NextResponse.json({ error: 'Thiệp không hợp lệ.' }, { status: 400 });
+  const db = publicDb();
+  if (!db) return NextResponse.json({ error: 'Chưa kết nối cơ sở dữ liệu.' }, { status: 503 });
+  const { data, error } = await db.from('wedding_wishes')
+    .select('id,guest_name,message,created_at')
+    .eq('invitation_id', invitationId)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+    .limit(20);
+  if (error) return NextResponse.json({ error: 'Chưa thể tải lời chúc.' }, { status: 500 });
+  return NextResponse.json({ wishes: (data || []).map((wish) => ({
+    id: wish.id,
+    guestName: wish.guest_name,
+    message: wish.message,
+    createdAt: wish.created_at,
+  })) }, { headers: { 'Cache-Control': 'private, no-store' } });
+}
 
 export async function POST(request: NextRequest) {
   const db = serviceDb();
@@ -16,7 +38,7 @@ export async function POST(request: NextRequest) {
   if (!invitation || invitation.status !== 'published' || !invitation.wishes_enabled) return NextResponse.json({ error: 'Thiệp không nhận lời chúc.' }, { status: 404 });
   const hash = submitterHash(request, input.invitationId);
   if (!await allowSubmission('wish', input.invitationId, hash)) return NextResponse.json({ error: 'Bạn đã gửi quá nhiều lần. Vui lòng thử lại sau.' }, { status: 429 });
-  const { error } = await db.from('wedding_wishes').insert({ invitation_id: input.invitationId, guest_name: input.guestName, message: input.message, status: 'pending', submitter_hash: hash });
+  const { data: wish, error } = await db.from('wedding_wishes').insert({ invitation_id: input.invitationId, guest_name: input.guestName, message: input.message, status: 'pending', submitter_hash: hash }).select('id,guest_name,message,created_at').single();
   if (error) return NextResponse.json({ error: 'Chưa thể lưu lời chúc. Vui lòng thử lại.' }, { status: 500 });
-  return NextResponse.json({ ok: true }, { status: 201 });
+  return NextResponse.json({ ok: true, wish: { id: wish.id, guestName: wish.guest_name, message: wish.message, createdAt: wish.created_at } }, { status: 201 });
 }

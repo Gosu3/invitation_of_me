@@ -71,7 +71,7 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
   }, []);
   return <ArchitectureSection><section ref={sectionRef} className="invite-section gallery-section" id="album">
-    <SectionTitle eyebrow="KHOẢNH KHẮC CỦA CHÚNG MÌNH">Album yêu thương</SectionTitle>
+    <SectionTitle eyebrow="KHOẢNH KHẮC CỦA CHÚNG MÌNH"><span dir="auto">Album yêu thương</span></SectionTitle>
     <div className="album-carousel" aria-label="Album ảnh cưới dạng vòng xoay 3D" {...swipe}>
       <div className="album-carousel-track">
         {photos.map((photo, index) => {
