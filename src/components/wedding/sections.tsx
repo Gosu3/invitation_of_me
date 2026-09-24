@@ -101,7 +101,7 @@ export function ReceptionSection({ config }: { config: WeddingInvitationConfig }
   return <><WeddingInfoCard id="thoi-gian" title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" className="events-section">
     <div className="reception-content">
       <h3 className="reception-intro">Tiệc cưới sẽ diễn ra vào lúc:</h3>
-      <div className="reception-day-time"><span>{date.weekday}</span><span>{formatTime(event.dateTime)}</span></div>
+      <div className="reception-day-time"><span>{date.weekday}</span><span>{event.arrivalTime || formatTime(event.dateTime)}</span></div>
       <div className="reception-date-numbers"><strong>{date.day}</strong><span aria-hidden="true" /><div><span>THÁNG {date.month}</span><span>{date.year}</span></div></div>
       {event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}
       <div className="reception-times"><span>ĐÓN KHÁCH<strong>{event.arrivalTime || formatTime(event.dateTime)}</strong></span><span>KHAI TIỆC<strong>{formatTime(event.dateTime)}</strong></span></div>

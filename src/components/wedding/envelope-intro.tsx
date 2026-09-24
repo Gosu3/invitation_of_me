@@ -45,10 +45,10 @@ export function EnvelopeIntro({ config, phase, open, personalizedGuestName }: { 
         <h1>{couple.groom}<em>&</em>{couple.bride}</h1>
         <div className="cover-divider cover-divider-date" aria-hidden="true"><i />♥<i /></div>
         <p>{weddingDate ? formatDate(weddingDate) : 'Một ngày thật đẹp'}</p>
-        <span className={`cover-invite${guestName ? ' cover-invite-personalized' : ''}`}>
+        <div className={`cover-invite${guestName ? ' cover-invite-personalized' : ''}`}>
           <span>Thân Mời{guestName ? ':' : ''}</span>
           {guestName && <strong>{guestName}</strong>}
-        </span>
+        </div>
         <button className="cover-open-button" onClick={open} disabled={phase !== 'closed'} aria-busy={phase !== 'closed'}>{phase === 'closed' ? 'Mở thiệp' : 'Đang mở…'}</button>
       </div>
     </article>

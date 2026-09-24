@@ -31,7 +31,7 @@ export const demoInvitations: Invitation[] = [
         address: 'Cầu Giấy, Hà Nội', mapUrl: 'https://www.google.com/maps/search/?api=1&query=C%E1%BA%A7u+Gi%E1%BA%A5y+H%C3%A0+N%E1%BB%99i', sortOrder: 0,
       },
       {
-        id: 'demo-reception', title: 'Tiệc cưới', dateTime: '2026-11-29T08:30:00+07:00',
+        id: 'demo-reception', title: 'Tiệc cưới', dateTime: '2026-11-29T09:00:00+07:00',
         arrivalTime: '08:30', lunarDate: 'Tức ngày 21 tháng 10 năm Bính Ngọ', venue: 'Nhà Văn Hóa Thôn An Tử 2', address: 'Xã Tiên Lãng, Thành phố Hải Phòng',
         mapUrl: 'https://www.google.com/maps/dir/?api=1&destination=Nh%C3%A0+V%C4%83n+H%C3%B3a+Th%C3%B4n+An+T%E1%BB%AD+2%2C+X%C3%A3+Ti%C3%AAn+L%C3%A3ng%2C+Th%C3%A0nh+ph%E1%BB%91+H%E1%BA%A3i+Ph%C3%B2ng', sortOrder: 1,
       },
