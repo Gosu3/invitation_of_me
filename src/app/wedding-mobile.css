@@ -2,11 +2,11 @@
 @media (max-width: 650px) {
   .botanical-theme .wedding-info-card:is(.family-section,.events-section,.timeline-section) {
     box-sizing: border-box;
-    width: calc(100% - 32px);
+    width: calc(100% - 40px);
     max-width: 560px;
     min-width: 0;
     margin-inline: auto;
-    padding: 32px 20px!important;
+    padding: 27px 16px!important;
   }
   .botanical-theme .wedding-info-card>.wedding-info-content {
     width: 100%;
@@ -20,50 +20,61 @@
     column-gap: 14px;
   }
   .botanical-theme .family-section .wedding-parent-name {
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 13px;
+    line-height: 1.4;
     overflow-wrap: normal;
   }
-  .botanical-theme .family-section .wedding-parent-address {font-size: 11px;line-height: 1.5}
+  .botanical-theme .family-section .wedding-parent-address {font-size: 10px;line-height: 1.4}
   .botanical-theme .family-section .wedding-couple-names h3 {
     width: 100%;
     max-width: 100%;
     min-height: 0;
-    font-size: 32px!important;
-    line-height: 1.35!important;
+    font-size: 29px!important;
+    line-height: 1.25!important;
     white-space: normal;
     word-break: normal;
     overflow-wrap: normal;
     text-wrap: balance;
   }
-  .botanical-theme .family-section .wedding-invitation-copy {font-size: 12px;line-height: 1.65}
-  .botanical-theme .family-section .ceremony-event-details {max-width: 100%;gap: 18px}
-  .botanical-theme .family-section .ceremony-event-details .wedding-lunar-date {font-size: 12px;letter-spacing: .04em;line-height: 1.6}
+  .botanical-theme .family-section .wedding-invitation-copy {font-size: 11px;line-height: 1.55}
+  .botanical-theme .family-section .ceremony-event-details {max-width: 100%;gap: 14px}
+  .botanical-theme .family-section .ceremony-event-details .wedding-lunar-date {font-size: 11px;letter-spacing: .03em;line-height: 1.5}
   .ceremony-flowers .ceremony-lily-right {right: -29%;top: 26%;width: 52%}
   .ceremony-flowers .ceremony-lily-left {left: -5%;width: 19%}
   .events-section>.reception-lily {right: -19%;width: 29%}
   .botanical-theme .events-section .reception-calendar {width: 100%;max-width: 100%}
-  .botanical-theme .events-section .reception-calendar .mini-calendar {width: 100%;max-width: 100%;padding: 18px 10px}
+  .botanical-theme .events-section .reception-calendar .mini-calendar {width: 100%;max-width: 100%;padding: 14px 8px}
   .botanical-theme .events-section .mini-calendar-grid {grid-template-columns: repeat(7,minmax(0,1fr))}
   .botanical-theme .events-section .countdown {display: grid;grid-template-columns: repeat(4,minmax(0,1fr));width: 100%;gap: 6px}
   .botanical-theme .events-section .countdown div {min-width: 0}
   .botanical-theme .timeline-section .wedding-timeline {
-    width: 100%;max-width: none;margin-inline: auto;
-    grid-template-columns: 54px 14px minmax(0,1fr);column-gap: 14px;
+    width: 100%;max-width: 310px;margin-inline: auto;
+    grid-template-columns: 48px 12px minmax(0,1fr);column-gap: 12px;
   }
-  .botanical-theme .timeline-section .wedding-timeline strong {font-size: 14px!important;line-height: 1.5}
+  .botanical-theme .timeline-section .wedding-timeline time {font-size: 12px!important}
+  .botanical-theme .timeline-section .wedding-timeline strong {font-size: 13px!important;line-height: 1.4}
   .timeline-lily-right {right: -21%;height: 100%}
   .timeline-lily-left {width: 23%;left: -7%;bottom: -7%}
   .botanical-theme .guestbook-section {padding-inline: 8px}
-  .botanical-theme .guestbook-wrapper {width: 100%;aspect-ratio: auto;min-height: 370px}
+  .botanical-theme .guestbook-wrapper {width:94%;aspect-ratio: auto;min-height:340px}
   .guestbook-background {object-fit: fill}
-  .botanical-theme .guestbook-content {position: relative;inset: auto;width: 100%;padding: 50px 14% 48px}
-  .botanical-theme .guestbook-content .guestbook-title {transform: none;font-size: 18px}
-  .botanical-theme .guestbook-form {width: 100%;max-width: none;margin: 20px auto 0}
-  .botanical-theme .guestbook-form-panel {padding: 0;gap: 12px}
-  .botanical-theme .guestbook-form textarea {height: 100px}
+  .botanical-theme .guestbook-content {position: relative;inset: auto;width: 100%;padding: 40px 14% 38px}
+  .botanical-theme .guestbook-content .guestbook-title {transform: none;font-size:16px}
+  .botanical-theme .guestbook-form {width: 100%;max-width: none;margin:16px auto 0}
+  .botanical-theme .guestbook-form-panel {padding:0;gap:10px}
+  .botanical-theme .guestbook-form textarea {height:88px}
   .botanical-theme .guestbook-form input,.botanical-theme .guestbook-form textarea {font-size: 16px!important}
   .guestbook-wishes blockquote header {flex-wrap: wrap;gap: 4px 12px}
-  .venue-invitation-section {padding-inline: 20px}
+  .venue-invitation-section {padding-inline:16px}
   .venue-map {width: 100%;max-width: 100%}
+  .album-carousel {max-width:360px;padding-block:6px 10px}
+  .album-carousel-track {height:clamp(340px,95vw,390px)}
+  .album-carousel .album-carousel-slide {width:min(62%,235px);border-width:4px;border-radius:8px}
+  .album-carousel .album-carousel-arrow {width:32px;height:32px;margin-top:-16px}
+  .album-carousel .album-carousel-arrow svg {width:16px;height:16px}
+  .album-carousel-dots button {width:6px;height:6px}
+  .album-carousel-dots button.is-active {width:18px}
+  .invitation-dock {gap:4px;padding:5px}
+  .invitation-dock a,.invitation-dock button {width:37px;height:37px}
+  .music-player-trigger {width:40px;height:40px}
 }

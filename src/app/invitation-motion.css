@@ -307,7 +307,8 @@
   .wedding-family-grid{gap:9px;margin-bottom:24px}
   .wedding-family-grid span{font-size:8px}.wedding-family-grid p{font-size:11px}.wedding-family-grid small{font-size:9px}
   .wedding-invitation-copy{font-size:10px;margin-bottom:18px}
-  .botanical-theme .wedding-info-card .wedding-couple-names h3{font-size:clamp(24px,7vw,31px)!important}
+  .botanical-theme .wedding-info-card .wedding-couple-names h3{min-height:0;font-size:clamp(24px,7vw,31px)!important;line-height:1.25!important;text-align:center}
+  .botanical-theme .family-section .wedding-couple-names>em{margin:11px auto;text-align:center}
   .wedding-event-details{margin-top:25px;padding-top:19px}
   .wedding-date-display strong{font-size:50px}
   .album-carousel .album-carousel-arrow{width:36px;height:36px;margin-top:-18px}

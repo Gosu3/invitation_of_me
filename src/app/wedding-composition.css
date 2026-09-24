@@ -439,8 +439,10 @@
  font-size:clamp(29px,7.2vw,40px)!important;
  line-height:1.1!important;
 }
+.botanical-theme .family-section .wedding-couple-names{display:flex;width:100%;flex-direction:column;align-items:center;text-align:center}
+.botanical-theme .family-section .wedding-couple-names h3{width:100%}
 .botanical-theme .family-section .wedding-couple-names>span{font-size:9px}
-.botanical-theme .family-section .wedding-couple-names>em{font-size:31px}
+.botanical-theme .family-section .wedding-couple-names>em{align-self:center;font-size:31px;text-align:center}
 .botanical-theme .family-section .ceremony-venue>span{font-size:15px}
 .botanical-theme .family-section .ceremony-time-row{font-size:12px}
 .botanical-theme .family-section .ceremony-date-numbers>strong{font-size:37px}
@@ -488,7 +490,9 @@
 /* RSVP popup connected to the invitation response endpoint. */
 .rsvp-dialog::backdrop{background:#12130fd1;backdrop-filter:blur(6px)}
 .rsvp-dialog .dialog-surface{
- width:min(400px,100%);
+ box-sizing:border-box;
+ width:min(400px,calc(100vw - 32px));
+ max-width:100%;
  padding:32px 20px 20px;
  border:1px solid #ffffff80;
  border-radius:14px;
@@ -505,6 +509,7 @@
 .rsvp-dialog-form{display:grid;gap:14px}
 .rsvp-dialog-form label>span:first-child,.rsvp-dialog-form legend{display:block;margin:0 0 6px;color:#344039;font:500 12px/1.4 Arial,sans-serif}
 .rsvp-name-field input{
+ box-sizing:border-box;
  display:block;
  width:100%;
  height:39px;
@@ -540,7 +545,9 @@
 .rsvp-success button{margin-top:22px;padding:9px 24px;border:0;border-radius:999px;background:#30530f;color:#fff;font:500 11px/1.4 Arial,sans-serif}
 
 @media(max-width:650px){
- .rsvp-dialog[open]{padding:16px}
- .rsvp-dialog .dialog-surface{padding:30px 18px 18px}
+ .rsvp-dialog[open]{align-items:flex-start;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));overflow-x:hidden}
+ .rsvp-dialog .dialog-surface{width:100%;max-height:calc(100dvh - max(24px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));padding:30px 18px 18px;overflow-x:hidden}
  .rsvp-dialog-heading h2{font-size:18px}
+ .rsvp-name-field input{font-size:16px}
+ .timeline-section .wedding-timeline{width:100%;max-width:310px;margin-right:auto;margin-left:auto}
 }
