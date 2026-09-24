@@ -221,9 +221,14 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
 }
 
 export function TimelineSection({ config }: { config: WeddingInvitationConfig }) {
+  const timelineIcons: Record<string, string> = {
+    'Khai tiệc': '/assets/wedding/timeline-icons/gate.webp',
+    'Rót rượu, cắt bánh': '/assets/wedding/timeline-icons/cake.webp',
+    'Phục vụ món chính': '/assets/wedding/timeline-icons/water.webp',
+  };
   return <ArchitectureSection><section className="invite-section paper-info-card wedding-info-card timeline-section">
     <div className="wedding-info-content"><h2 className="wedding-info-title timeline-title"><span dir="auto">LỊCH TRÌNH NGÀY CƯỚI</span></h2>
-      <ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong><span dir="auto">{item.title}</span></strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
+      <ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}>{timelineIcons[item.title] ? <span className="timeline-icon" aria-hidden="true"><Image src={timelineIcons[item.title]} alt="" width={320} height={320} /></span> : <span className="timeline-icon timeline-icon-empty" aria-hidden="true" />}<time>{item.time}</time><span className="timeline-node" aria-hidden="true" /><div><strong><span dir="auto">{item.title}</span></strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
     </div><TimelineFlowers />
   </section></ArchitectureSection>;
 }

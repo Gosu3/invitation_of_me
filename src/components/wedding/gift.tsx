@@ -18,8 +18,19 @@ export function GiftBox({ open }: { open: () => void }) {
     timer.current = window.setTimeout(() => { open(); setOpening(false); timer.current = null; }, 520);
   }
   return <button className={`gift-box-button${opening ? ' is-unwrapping' : ''}`} onClick={reveal} aria-busy={opening} aria-label="Mở hộp quà mừng">
-    <span className="gift-sparkles" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i><i>✧</i></span>
-    <span className="present" aria-hidden="true"><span className="present-lid"><span className="present-bow" /></span><span className="present-base"><span className="present-heart">♡</span></span></span>
+    <span className="image-gift-box" aria-hidden="true">
+      <span className="image-gift-shadow" />
+      <span className="image-gift-stars"><i>✦</i><i>✧</i><i>✦</i><i>✧</i><i>✦</i><i>✧</i></span>
+      <span className="image-gift-confetti"><i /><i /><i /><i /><i /><i /><i /><i /></span>
+      <Image className="image-gift-decor image-gift-decor-1" src="/assets/wedding/giftbox/mini/porcelain_blue.webp" alt="" width={68} height={68} />
+      <Image className="image-gift-decor image-gift-decor-2" src="/assets/wedding/giftbox/mini/royal_v2_purple.webp" alt="" width={76} height={76} />
+      <Image className="image-gift-decor image-gift-decor-3" src="/assets/wedding/giftbox/mini/minimalism_purple.webp" alt="" width={52} height={52} />
+      <Image className="image-gift-decor image-gift-decor-4" src="/assets/wedding/giftbox/mini/song_hy_red.webp" alt="" width={48} height={48} />
+      <Image className="image-gift-main" src="/assets/wedding/giftbox/anhto.webp" alt="" width={680} height={680} priority />
+      <Image className="image-gift-decor image-gift-decor-5" src="/assets/wedding/giftbox/mini/silk_ribbon_green.webp" alt="" width={88} height={88} />
+      <Image className="image-gift-decor image-gift-decor-6" src="/assets/wedding/giftbox/mini/qasr_gold.webp" alt="" width={52} height={52} />
+      <Image className="image-gift-decor image-gift-decor-7" src="/assets/wedding/giftbox/mini/lien_hoa_v2_green.webp" alt="" width={80} height={80} />
+    </span>
     <span className="gift-box-caption">Nhấn để mở <Gift size={16} /></span><small>Gửi một chút yêu thương</small>
   </button>;
 }
@@ -48,8 +59,8 @@ function BankCard({ account, fallbackRole }: { account: GiftAccount | null; fall
   </article>;
 }
 
-export function GiftSection({ accounts, inline, open }: { accounts: GiftAccount[]; inline: boolean; open: () => void }) {
-  return <section className="invite-section gift-section" id="qua-mung"><SectionTitle eyebrow="TẤM LÒNG CỦA BẠN"><span dir="auto">Hộp quà mừng</span></SectionTitle><p><span dir="auto">Sự hiện diện của bạn đã là món quà rất quý.</span></p>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" /></div> : <GiftBox open={open} />}</section>;
+export function GiftSection({ accounts, inline, open, showClosingMessage = false }: { accounts: GiftAccount[]; inline: boolean; open: () => void; showClosingMessage?: boolean }) {
+  return <section className="invite-section gift-section" id="qua-mung"><SectionTitle eyebrow="TẤM LÒNG CỦA BẠN"><span dir="auto">Hộp quà mừng</span></SectionTitle>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" /></div> : <GiftBox open={open} />}{showClosingMessage && <p><span dir="auto">Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình ♡</span></p>}</section>;
 }
 
 export function GiftModal({ accounts, close }: { accounts: GiftAccount[]; close: () => void }) {

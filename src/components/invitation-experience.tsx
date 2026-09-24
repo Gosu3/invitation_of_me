@@ -111,11 +111,11 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
         {config.venue && <VenueSection config={config} />}
         {config.features.showTimeline && <TimelineSection config={config} />}
         {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
-        {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} />}
-        {config.features.showThankYou && <ThankYouSection />}
+        {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} showClosingMessage={config.features.showThankYou} />}
+        {config.features.showThankYou && !config.features.showBank && <ThankYouSection />}
       </div>
     </div>}
-    {phase === 'opened' && config.music.enabled && <MusicController music={music} title={config.music.title} />}
+    {phase === 'opened' && config.music.enabled && <MusicController music={music} />}
     {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp">
       <a href="#le-cuoi" aria-label="Thông tin lễ cưới" onClick={() => setAutoScrollPaused(true)}><Heart size={18} /></a>
       {config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh" onClick={() => setAutoScrollPaused(true)}><Images size={18} /></a>}

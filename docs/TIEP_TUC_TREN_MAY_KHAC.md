@@ -134,3 +134,15 @@ Sau khi push, ghi lại thay đổi đáng chú ý trong mục **Nhật ký bàn
 - Cập nhật danh sách lời chúc thành card rộng tối đa 600px, cao tối đa 500px, có tên, thời gian và nội dung.
 - Build và deploy thành công tại `invitationofme.vercel.app`.
 
+# Cá nhân hóa tên khách mời
+
+Tên khách ở bìa thiệp được lấy từ tham số `guest` trên URL. Không cần sửa code hoặc build lại cho từng khách.
+
+Ví dụ:
+
+```text
+http://localhost:3000/thiep/tho-va-tham?guest=B%E1%BA%A1n%20A%20%26%20ng%C6%B0%E1%BB%9Di%20th%C6%B0%C6%A1ng
+```
+
+Khi mở link trên, bìa thiệp hiển thị `Thân Mời: Bạn A & người thương`. Có thể dùng `khach` thay cho `guest`. Khi URL không có hai tham số này, bìa giữ nội dung mặc định `Thân Mời`.
+
