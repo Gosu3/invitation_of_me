@@ -22,6 +22,7 @@ import './globals.css';
 import './invitation-motion.css';
 import './wedding-composition.css';
 import './wedding-typography.css';
+import './wedding-mobile.css';
 
 export const metadata: Metadata = {
   title: { default: 'Nét Duyên — Thiệp cưới lưu giữ yêu thương', template: '%s | Nét Duyên' },
