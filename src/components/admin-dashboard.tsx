@@ -135,7 +135,7 @@ export function AdminDashboard() {
           <div><h2 id="guest-link-title">Tạo link mời riêng</h2><p>Nhập tên khách, hệ thống tự tạo và sao chép một đường dẫn ngắn.</p></div>
         </div>
         <form onSubmit={createGuestLink}>
-          <label className="admin-field"><span>Chọn thiệp</span><select value={selectedInvitation} onChange={(event) => setSelectedInvitation(event.target.value)} required><option value="">Chọn một thiệp đã xuất bản</option>{items.filter((item) => item.status === 'published').map((item) => <option key={item.id} value={item.id}>{item.partner_one} & {item.partner_two}</option>)}</select></label>
+          <label className="admin-field"><span>Chọn thiệp</span><select value={selectedInvitation} onChange={(event) => setSelectedInvitation(event.target.value)} required><option value="">Chọn một thiệp đã xuất bản</option>{items.filter((item) => item.status === 'published').map((item) => <option key={item.id} value={item.id}>{item.admin_title || `${item.partner_one} & ${item.partner_two}`}</option>)}</select></label>
           <label className="admin-field"><span>Thân mời</span><input value={guestName} onChange={(event) => setGuestName(event.target.value)} placeholder="Ví dụ: Bạn A & người thương" maxLength={100} required /></label>
           <button className="admin-primary guest-link-submit" disabled={creatingLink || !selectedInvitation || !guestName.trim()}>{creatingLink ? 'Đang tạo…' : <><Link2 size={16} /> Tạo và sao chép link</>}</button>
         </form>
@@ -143,7 +143,7 @@ export function AdminDashboard() {
         {generatedUrl && <div className="guest-link-result"><div><Check size={17} /><span>Đã tạo và sao chép link</span></div><a href={generatedUrl} target="_blank" rel="noreferrer">{generatedUrl}</a></div>}
         {guestLinks.length > 0 && <div className="guest-link-recent"><h3>Link vừa tạo</h3>{guestLinks.map((link) => {
           const invitation = items.find((item) => item.id === link.invitation_id);
-          return <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitation ? `${invitation.partner_one} & ${invitation.partner_two}` : 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => copyLink(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a></div></div>;
+          return <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitation ? invitation.admin_title || `${invitation.partner_one} & ${invitation.partner_two}` : 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => copyLink(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a></div></div>;
         })}</div>}
       </section>
 

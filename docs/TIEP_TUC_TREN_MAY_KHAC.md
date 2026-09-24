@@ -15,15 +15,16 @@ Tài liệu này là điểm bàn giao chung giữa máy công ty và máy ở n
 - Supabase project ref: `lerfgehzqvyjvbklwggt`
 - Trang quản trị: `https://invitationofme.vercel.app/quan-tri/dang-nhap`
 
-Năm migration production đã áp dụng:
+Sáu migration production, trong đó migration thứ sáu đổi nhãn phân biệt thiệp nhà gái:
 
 1. `202609210001_wedding_core.sql`
 2. `202609230001_seed_tho_tham.sql`
 3. `202609240001_guest_invite_links.sql`
 4. `202609240002_update_reception_schedule.sql`
 5. `202609240003_publish_bride_invitation.sql`
+6. `202609250001_label_bride_invitation.sql`
 
-Migration thứ ba tạo bảng link mời ngắn và bản thiệp `tho-va-tham-nha-gai`. Bản nhà gái đã được xuất bản với nhãn quản trị **Hồng Thắm & Văn Thọ** và giữ lịch trình riêng. Thiệp nhà trai `tho-va-tham` dùng giờ đón khách 08:30, khai tiệc 09:00 và kết thúc 11:30.
+Migration thứ ba tạo bảng link mời ngắn và bản thiệp `tho-va-tham-nha-gai`. Bản nhà gái đã được xuất bản với nhãn quản trị **Hồng Thắm & Văn Thọ - Nhà Gái** và giữ lịch trình riêng. Thiệp nhà trai `tho-va-tham` dùng giờ đón khách 08:30, khai tiệc 09:00 và kết thúc 11:30.
 
 ## Bắt đầu trên máy ở nhà
 
