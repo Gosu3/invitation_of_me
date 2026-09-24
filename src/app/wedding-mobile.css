@@ -48,8 +48,8 @@
   .botanical-theme .events-section .countdown {display: grid;grid-template-columns: repeat(4,minmax(0,1fr));width: 100%;gap: 6px}
   .botanical-theme .events-section .countdown div {min-width: 0}
   .botanical-theme .timeline-section .wedding-timeline {
-    width: 100%;max-width: 310px;margin-inline: auto;
-    grid-template-columns: 48px 12px minmax(0,1fr);column-gap: 12px;
+    width: 100%;max-width: 270px;margin-inline: auto;
+    grid-template-columns: 48px 12px minmax(0,170px);justify-content:center;column-gap: 12px;
   }
   .botanical-theme .timeline-section .wedding-timeline time {font-size: 12px!important}
   .botanical-theme .timeline-section .wedding-timeline strong {font-size: 13px!important;line-height: 1.4}
@@ -58,15 +58,20 @@
   .botanical-theme .guestbook-section {padding-inline: 8px}
   .botanical-theme .guestbook-wrapper {width:94%;aspect-ratio: auto;min-height:340px}
   .guestbook-background {object-fit: fill}
-  .botanical-theme .guestbook-content {position: relative;inset: auto;width: 100%;padding: 40px 14% 38px}
+  .botanical-theme .guestbook-content {position: relative;inset: auto;width: 100%;padding:40px 17% 38px}
   .botanical-theme .guestbook-content .guestbook-title {transform: none;font-size:16px}
   .botanical-theme .guestbook-form {width: 100%;max-width: none;margin:16px auto 0}
   .botanical-theme .guestbook-form-panel {padding:0;gap:10px}
   .botanical-theme .guestbook-form textarea {height:88px}
   .botanical-theme .guestbook-form input,.botanical-theme .guestbook-form textarea {font-size: 16px!important}
+  .botanical-theme .guestbook-form input::placeholder,.botanical-theme .guestbook-form textarea::placeholder {font-size:14px}
+  .guestbook-form-actions {gap:8px}
+  .guestbook-form-actions .guestbook-ai-button {width:28px;height:28px;flex-basis:28px;padding:5px;font-size:12px!important}
+  .guestbook-form-actions .guestbook-submit {min-height:28px;padding:5px 14px;font-size:10px!important}
   .guestbook-wishes blockquote header {flex-wrap: wrap;gap: 4px 12px}
   .venue-invitation-section {padding-inline:16px}
-  .venue-map {width: 100%;max-width: 100%}
+  .venue-map {width:86%;max-width:270px;height:200px;margin-right:auto;margin-left:auto}
+  .venue-directions {padding:6px 16px;font-size:12px}
   .album-carousel {max-width:360px;padding-block:6px 10px}
   .album-carousel-track {height:clamp(340px,95vw,390px)}
   .album-carousel .album-carousel-slide {width:min(62%,235px);border-width:4px;border-radius:8px}
