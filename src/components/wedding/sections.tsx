@@ -2,24 +2,25 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
+import { createClient } from '@supabase/supabase-js';
 import { Check, Heart, Navigation, X } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { weddingSubmissions, type PublicWish } from '@/lib/wedding-submissions';
 import { dateParts, formatTime } from '@/lib/utils';
-import { ArchitectureSection, CardFlower, weddingArtwork } from './decorations';
+import { ArchitectureSection, CardFlower, CeremonyFlowers, ReceptionFlower, TimelineFlowers, weddingArtwork } from './decorations';
 import { Modal } from './shared';
+import styles from './hero-cover.module.css';
 
 export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLDivElement | null> }) {
   const { theme, couple, content } = config;
-  return <section className="letter-story" aria-label={`Thiệp cưới ${couple.names}`}>
+  return <section className={`letter-story ${styles.cover}`} aria-label={`Thiệp cưới ${couple.names}`}>
     <p className="letter-save-date">Save The Date</p>
     <div className="letter-composition">
-      <Image className="letter-flower-crown" src={theme.assets.flower} alt="" aria-hidden="true" width={420} height={420} loading="eager" />
+      <Image className="letter-flower-crown" src={theme.assets.lilyCorner} alt="" aria-hidden="true" width={1254} height={1254} sizes="(max-width: 780px) 35vw, 275px" loading="eager" />
       <Image className="letter-envelope-image" src={theme.assets.envelope} alt="" aria-hidden="true" width={420} height={604} loading="eager" />
-      <div className="letter-note" aria-hidden="true"><span>THƯ MỜI</span><i>✦</i><small>Ngày chung đôi</small></div>
+      <div className="letter-note" aria-hidden="true" />
       <div className="letter-photo">{content.coverImage ? <Image src={content.coverImage} alt={content.coverAlt || couple.names} fill sizes="(max-width: 650px) 55vw, 320px" preload unoptimized={content.coverImage.startsWith('/api/')} /> : <div className="envelope-initials">{couple.groom[0]} & {couple.bride[0]}</div>}</div>
-      <Image className="letter-bouquet" src={theme.assets.flower} alt="" aria-hidden="true" width={500} height={500} loading="eager" />
-      <Image className="letter-flower-trail" src={theme.assets.flower} alt="" aria-hidden="true" width={340} height={340} loading="eager" />
+      <Image className="letter-bouquet" src={theme.assets.tulipCorner} alt="" aria-hidden="true" width={1254} height={1254} sizes="(max-width: 780px) 53vw, 415px" loading="eager" />
       <div className="letter-seal" aria-hidden="true"><Heart size={25} strokeWidth={1.7} /></div>
     </div>
     <div className="letter-names" ref={headingRef} tabIndex={-1} role="heading" aria-level={1} aria-label={`${couple.groom} và ${couple.bride}`}>
@@ -38,10 +39,12 @@ const cardPetals = [
 ];
 
 function WeddingInfoCard({ id, title, flowerSide, className, children }: { id?: string; title: string; flowerSide: 'left' | 'right'; className: string; children: ReactNode }) {
+  const isCeremony = className === 'family-section';
+  const isReception = className === 'events-section';
   return <ArchitectureSection><section id={id} className={`invite-section paper-info-card wedding-info-card ${className}`}>
-    <div className="wedding-card-petals" aria-hidden="true">{cardPetals.map((petal, index) => <span key={index} className="falling-piece petal" style={{ left: petal.left, animationDelay: petal.delay, animationDuration: petal.duration, width: petal.size, height: `calc(${petal.size} * 1.5)` } as CSSProperties}><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c2-8 7-15 18-18-1 11-8 17-18 18Z" /></svg></span>)}</div>
+    <div className="wedding-card-petals" aria-hidden="true">{cardPetals.map((petal, index) => <span key={index} className="falling-piece petal white-leaf" style={{ left: petal.left, animationDelay: petal.delay, animationDuration: petal.duration, width: petal.size, height: `calc(${petal.size} * 1.5)` } as CSSProperties}><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21C2 11 9 4 21 3c0 10-7 18-18 18Z" /><path d="M4 20 17 7" fill="none" stroke="#dce2d5" strokeWidth=".7" /></svg></span>)}</div>
     <div className="wedding-info-content"><h2 className="wedding-info-title">{title}</h2>{children}</div>
-    <CardFlower side={flowerSide} />
+    {isCeremony ? <CeremonyFlowers /> : isReception ? <ReceptionFlower /> : <CardFlower side={flowerSide} />}
   </section></ArchitectureSection>;
 }
 
@@ -221,7 +224,7 @@ export function TimelineSection({ config }: { config: WeddingInvitationConfig })
   return <ArchitectureSection><section className="invite-section paper-info-card wedding-info-card timeline-section">
     <div className="wedding-info-content"><h2 className="wedding-info-title timeline-title"><span dir="auto">LỊCH TRÌNH NGÀY CƯỚI</span></h2>
       <ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}><time>{item.time}</time><span aria-hidden="true" /><div><strong><span dir="auto">{item.title}</span></strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
-    </div><CardFlower timeline />
+    </div><TimelineFlowers />
   </section></ArchitectureSection>;
 }
 
@@ -233,6 +236,9 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
   const [submitting, setSubmitting] = useState(false);
   const suggestionPool = useRef<number[]>([]);
   const lastSuggestion = useRef(-1);
+  const wishesRef = useRef<HTMLDivElement>(null);
+  const wishesRevision = useRef(0);
+  const scrollPauseUntil = useRef(0);
   const suggestedWishes = [
     'Chúc hai bạn trăm năm hạnh phúc, luôn yêu thương và đồng hành cùng nhau trên mọi chặng đường.',
     'Chúc mừng ngày vui của hai bạn! Mong tổ ấm nhỏ luôn ngập tràn tiếng cười và những điều dịu dàng.',
@@ -285,20 +291,89 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
   useEffect(() => {
     if (!connected) return;
     let active = true;
+    let loading = false;
+    let refreshAgain = false;
     async function refresh() {
+      if (loading) { refreshAgain = true; return; }
+      loading = true;
+      const revision = wishesRevision.current;
       try {
-        const approved = await weddingSubmissions.listWishes(config.id);
-        if (active) setWishes((current) => {
-          const approvedIds = new Set(approved.map((wish) => wish.id));
-          const localPending = current.filter((wish) => wish.id.startsWith('pending-') && !approvedIds.has(wish.id.slice(8)));
-          return [...localPending, ...approved];
-        });
+        const latest = await weddingSubmissions.listWishes(config.id);
+        if (active && revision === wishesRevision.current) setWishes(latest);
       } catch { /* Initial server data remains visible if a refresh fails. */ }
+      finally {
+        loading = false;
+        if (active && refreshAgain) { refreshAgain = false; void refresh(); }
+      }
     }
     void refresh();
-    const timer = window.setInterval(refresh, 30000);
-    return () => { active = false; window.clearInterval(timer); };
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const realtime = url && key ? createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }) : null;
+    const channel = realtime?.channel(`wedding-wishes:${config.id}`)
+      .on('broadcast', { event: 'updated' }, () => { void refresh(); })
+      .subscribe((state) => { if (state === 'SUBSCRIBED') void refresh(); });
+    const timer = window.setInterval(() => { if (!document.hidden) void refresh(); }, 5000);
+    const onVisible = () => { if (!document.hidden) void refresh(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      if (channel) void realtime?.removeChannel(channel);
+    };
   }, [config.id, connected]);
+
+  const newestWishId = wishes[0]?.id;
+  useEffect(() => {
+    if (wishesRef.current) wishesRef.current.scrollTop = 0;
+    scrollPauseUntil.current = performance.now() + 1800;
+  }, [newestWishId]);
+
+  useEffect(() => {
+    const list = wishesRef.current;
+    if (!list) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let frame = 0;
+    let previous = 0;
+    let position = list.scrollTop;
+    let visible = false;
+    let holding = false;
+    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
+    observer.observe(list);
+    const pause = () => { scrollPauseUntil.current = performance.now() + 4000; };
+    const hold = () => { holding = true; pause(); };
+    const release = () => { if (holding) { holding = false; pause(); } };
+    const tick = (now: number) => {
+      const delta = previous ? Math.min(now - previous, 50) : 0;
+      previous = now;
+      const copy = list.querySelector<HTMLElement>('[data-wish-loop-copy]');
+      const loopPoint = copy?.offsetTop ?? 0;
+      if (!visible || document.hidden || reducedMotion.matches || holding || now < scrollPauseUntil.current || loopPoint <= list.clientHeight) {
+        position = list.scrollTop;
+      } else {
+        position += delta * 0.018;
+        if (position >= loopPoint) position %= loopPoint;
+        list.scrollTop = position;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    list.addEventListener('wheel', pause, { passive: true });
+    list.addEventListener('keydown', pause);
+    list.addEventListener('pointerdown', hold);
+    window.addEventListener('pointerup', release);
+    window.addEventListener('pointercancel', release);
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      list.removeEventListener('wheel', pause);
+      list.removeEventListener('keydown', pause);
+      list.removeEventListener('pointerdown', hold);
+      window.removeEventListener('pointerup', release);
+      window.removeEventListener('pointercancel', release);
+    };
+  }, [wishes.length, newestWishId]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -314,10 +389,11 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
     setStatus('');
     try {
       const result = await weddingSubmissions.wish({ invitationId: config.id, guestName: name.trim(), message: message.trim(), website: '' });
-      setWishes((current) => [{ ...result.wish, id: `pending-${result.wish.id}` }, ...current]);
+      wishesRevision.current += 1;
+      setWishes((current) => [result.wish, ...current.filter((wish) => wish.id !== result.wish.id)]
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
       setName('');
       setMessage('');
-      setStatus('Đã gửi lời chúc, đang chờ cô dâu chú rể duyệt ♡');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Chưa thể gửi lời chúc. Vui lòng thử lại.');
     } finally {
@@ -330,7 +406,7 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
   }).format(new Date(value));
   return <section className="invite-section guestbook-section" id="so-luu-but">
     <div className="guestbook-wrapper">
-      <Image className="guestbook-background" src={weddingArtwork.guestbook} alt="" aria-hidden="true" width={1314} height={1197} unoptimized />
+      <Image className="guestbook-background" src={weddingArtwork.guestbook} alt="" aria-hidden="true" width={1448} height={1086} unoptimized />
       <div className="guestbook-content">
         <h2 className="guestbook-title"><span dir="auto">Sổ lưu bút</span></h2>
         <form className="guestbook-form" onSubmit={submit}>
@@ -346,11 +422,19 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
         <span className="guestbook-status" role="status">{status}</span>
       </div>
     </div>
-    {wishes.length > 0 && <div className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
-      {wishes.map((wish) => <blockquote key={wish.id}>
-        <header><strong>{wish.guestName}</strong><time dateTime={wish.createdAt}>{wishDate(wish.createdAt)}</time></header>
-        <p>{wish.message}</p>
-      </blockquote>)}
+    {wishes.length > 0 && <div ref={wishesRef} className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
+      <div className="guestbook-wishes-loop">
+        {wishes.map((wish) => <blockquote key={wish.id}>
+          <header><strong>{wish.guestName}</strong><time dateTime={wish.createdAt}>{wishDate(wish.createdAt)}</time></header>
+          <p>{wish.message}</p>
+        </blockquote>)}
+      </div>
+      <div className="guestbook-wishes-loop" data-wish-loop-copy aria-hidden="true">
+        {wishes.map((wish) => <blockquote key={`copy-${wish.id}`}>
+          <header><strong>{wish.guestName}</strong><time dateTime={wish.createdAt}>{wishDate(wish.createdAt)}</time></header>
+          <p>{wish.message}</p>
+        </blockquote>)}
+      </div>
     </div>}
   </section>;
 }

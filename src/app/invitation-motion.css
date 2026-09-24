@@ -158,8 +158,8 @@
 .letter-note{left:29%;top:5%;width:56%;height:69%;transform:rotate(-6deg);z-index:2;padding-top:18px}
 .letter-photo{left:44%;top:9%;width:50%;height:78%;transform:rotate(7deg);z-index:4;border-width:10px;border-bottom-width:30px;box-shadow:0 16px 34px #203a0d3d}
 .letter-photo img{object-position:center 40%}
-.letter-bouquet{left:-7%;bottom:-7%;width:59%;height:68%;z-index:5;filter:drop-shadow(0 12px 14px #203a0d20)}
-.letter-flower-crown{position:absolute;right:-5%;top:-8%;width:43%;height:43%;object-fit:contain;z-index:3;opacity:.48;transform:rotate(105deg);filter:drop-shadow(0 10px 15px #203a0d1c);pointer-events:none}
+.letter-bouquet{left:-11%;bottom:-8%;width:69%;height:66%;z-index:5;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 12px 14px #203a0d20)}
+.letter-flower-crown{position:absolute;right:-13%;top:-1%;width:57%;height:48%;object-fit:contain;object-position:right top;z-index:5;opacity:.98;transform:rotate(-3deg);filter:drop-shadow(0 10px 15px #203a0d1c);pointer-events:none}
 .letter-flower-trail{position:absolute;right:-7%;bottom:-7%;width:37%;height:37%;object-fit:contain;z-index:3;opacity:.3;transform:rotate(205deg);pointer-events:none}
 .letter-seal{left:39%;bottom:8%;width:60px;height:60px;z-index:7;box-shadow:0 7px 18px #203a0d42}
 .letter-names{position:relative;z-index:2;display:flex;width:min(560px,calc(100% - 36px));flex-direction:column;align-items:center;gap:22px;margin:52px auto 28px;color:var(--w-primary);outline:none}
@@ -167,7 +167,7 @@
 .letter-names>span{position:absolute;top:37%;left:50%;transform:translate(-50%,-50%);pointer-events:none;font:400 92px/1 'The Nautigal','Ms Madi',cursive;color:#30530f26}
 
 @media(min-width:768px){.letter-save-date{top:36px;font-size:18px}.letter-names{margin-top:64px;margin-bottom:32px}.letter-names p{font-size:58px}.letter-names>span{font-size:120px}}
-@media(max-width:650px){.letter-story{min-height:100svh;padding:8px 8px 25px}.letter-save-date{top:16px}.letter-story::before,.letter-story::after{width:280px;height:280px;opacity:.2}.letter-story::before{left:-130px;top:-55px}.letter-story::after{right:-130px;bottom:-65px}.letter-composition{width:min(430px,100vw);height:clamp(410px,62svh,500px);margin-top:34px}.letter-composition::before{left:10%;top:9%;width:82%;height:78%}.letter-envelope-image{left:-1%;top:8%;width:67%;height:87%}.letter-note{left:25%;top:7%;width:59%;height:67%}.letter-photo{left:42%;top:10%;width:54%;height:76%;border-width:7px;border-bottom-width:23px}.letter-bouquet{left:-10%;bottom:-6%;width:61%;height:67%}.letter-flower-crown{right:-10%;top:-4%;width:48%;height:42%}.letter-flower-trail{right:-12%;bottom:0;width:40%;height:35%}.letter-seal{left:35%;bottom:9%;width:52px;height:52px}.letter-names{margin-top:46px;margin-bottom:28px}}
+@media(max-width:650px){.letter-story{min-height:100svh;padding:8px 8px 25px}.letter-save-date{top:16px}.letter-story::before,.letter-story::after{width:280px;height:280px;opacity:.2}.letter-story::before{left:-130px;top:-55px}.letter-story::after{right:-130px;bottom:-65px}.letter-composition{width:min(430px,100vw);height:clamp(410px,62svh,500px);margin-top:34px}.letter-composition::before{left:10%;top:9%;width:82%;height:78%}.letter-envelope-image{left:-1%;top:8%;width:67%;height:87%}.letter-note{left:25%;top:7%;width:59%;height:67%}.letter-photo{left:42%;top:10%;width:54%;height:76%;border-width:7px;border-bottom-width:23px}.letter-bouquet{left:-13%;bottom:-5%;width:69%;height:62%}.letter-flower-crown{right:-15%;top:0;width:61%;height:45%}.letter-flower-trail{right:-12%;bottom:0;width:40%;height:35%}.letter-seal{left:35%;bottom:9%;width:52px;height:52px}.letter-names{margin-top:46px;margin-bottom:28px}}
 @media(max-height:720px) and (min-width:651px){.letter-story{min-height:700px}.letter-composition{height:475px;width:min(610px,94vw)}.letter-names{margin-top:-8px}}
 
 /* Compact information rhythm and horizontal album inspired by the minimal invitation layout. */

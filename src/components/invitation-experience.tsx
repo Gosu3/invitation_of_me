@@ -105,13 +105,15 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
       <FamilyCeremonySection config={config} />
-      {config.gallery.length > 0 && <WeddingGallery photos={config.gallery} story={config.content.story} open={setPhotoIndex} />}
-      <ReceptionSection config={config} />
-      {config.venue && <VenueSection config={config} />}
-      {config.features.showTimeline && <TimelineSection config={config} />}
-      {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
-      {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} />}
-      {config.features.showThankYou && <ThankYouSection />}
+      <div className="paper02-flow">
+        {config.gallery.length > 0 && <WeddingGallery photos={config.gallery} story={config.content.story} open={setPhotoIndex} />}
+        <ReceptionSection config={config} />
+        {config.venue && <VenueSection config={config} />}
+        {config.features.showTimeline && <TimelineSection config={config} />}
+        {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
+        {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} />}
+        {config.features.showThankYou && <ThankYouSection />}
+      </div>
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} title={config.music.title} />}
     {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp">

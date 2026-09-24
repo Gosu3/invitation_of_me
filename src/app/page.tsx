@@ -20,7 +20,7 @@ export default async function Home() {
     <section className="home-collection" aria-labelledby="collection-title">
       <div className="section-heading"><span className="eyebrow">BỘ SƯU TẬP</span><h2 id="collection-title">Những ngày đáng nhớ</h2><p>Các thiệp đã được xuất bản.</p></div>
       {invitations.length ? <div className="invitation-grid">{invitations.map((invite) => <Link className="invitation-card" href={`/thiep/${invite.slug}`} key={invite.id}>
-        <div className="card-photo">{invite.coverImage ? <Image src={invite.coverImage} alt={invite.coverAlt || `Thiệp cưới ${invite.partnerOne} và ${invite.partnerTwo}`} fill sizes="(max-width: 700px) 100vw, 360px" unoptimized={invite.coverImage.startsWith('/api/')} /> : <div className="card-monogram">{invite.partnerOne[0]}<span>&</span>{invite.partnerTwo[0]}</div>}</div>
+        <div className="card-photo">{invite.slug === 'tho-va-tham' ? <Image src="/assets/wedding/home/thumnail.png" alt={`Thiệp cưới ${invite.partnerOne} và ${invite.partnerTwo}`} fill sizes="(max-width: 700px) calc(100vw - 48px), 360px" /> : invite.coverImage ? <Image src={invite.coverImage} alt={invite.coverAlt || `Thiệp cưới ${invite.partnerOne} và ${invite.partnerTwo}`} fill sizes="(max-width: 700px) calc(100vw - 48px), 360px" unoptimized={invite.coverImage.startsWith('/api/')} /> : <div className="card-monogram">{invite.partnerOne[0]}<span>&</span>{invite.partnerTwo[0]}</div>}</div>
         <div className="card-caption"><div><span>{invite.events[0] ? formatDate(invite.events[0].dateTime) : 'Ngày cưới'}</span><h3>{invite.partnerOne} <em>&</em> {invite.partnerTwo}</h3></div><ArrowUpRight size={21} /></div>
       </Link>)}</div> : <p className="empty-home">Chưa có thiệp nào được xuất bản.</p>}
     </section>

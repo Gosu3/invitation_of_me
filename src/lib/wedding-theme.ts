@@ -10,6 +10,8 @@ export const bohoFloralGreen = {
   },
   assets: {
     flower: '/decor/hoa-moc-xanh/flower.webp',
+    tulipCorner: '/assets/wedding/hoa-cuoi/tulip3.png',
+    lilyCorner: '/assets/wedding/hoa-cuoi/linhlan3.png',
     decorationBar: '/decor/hoa-moc-xanh/decoration_bar.webp',
     envelope: '/decor/hoa-moc-xanh/boho_floral_green.webp',
     paper: '/decor/hoa-moc-xanh/paper.webp',

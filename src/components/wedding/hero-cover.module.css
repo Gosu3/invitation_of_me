@@ -1,0 +1,148 @@
+/* Keep the reference composition proportional to the invitation, not viewport height. */
+.cover:global(.letter-story) {
+  container-type: inline-size;
+  min-height: 0;
+  padding: 0 0 5%;
+  background: transparent;
+}
+
+.cover::before,
+.cover::after {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  opacity: .09;
+  background-image: url('/decor/hoa-moc-xanh/flower.webp'), url('/decor/hoa-moc-xanh/flower.webp');
+  background-size: 45% auto;
+  background-repeat: no-repeat;
+  background-position: left -12cqw top -5cqw, right -12cqw bottom -5cqw;
+}
+
+.cover::after {
+  transform: scaleX(-1);
+  opacity: .04;
+}
+
+/* Let the watercolor paper dissolve into the invitation's continuous paper. */
+.cover::before {
+  content: '';
+  background: url('/assets/wedding/hoa-cuoi/paper01.png') center / cover no-repeat;
+  opacity: .5;
+  filter: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 73%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 73%, transparent 100%);
+}
+.cover::after { content: none; }
+
+.cover :global(.letter-save-date) {
+  position: relative;
+  inset: auto;
+  transform: none;
+  margin: 4.7% 0 0;
+  font: 400 clamp(14px, 2.3cqw, 20px)/1.4 'Times New Roman', serif;
+  letter-spacing: .16em;
+  color: #3e592f;
+}
+
+.cover :global(.letter-composition) {
+  width: 96%;
+  max-width: none;
+  height: auto;
+  aspect-ratio: 1.29;
+  margin: 1% 0 0;
+  filter: none;
+}
+
+.cover :global(.letter-composition)::before,
+.cover :global(.letter-composition)::after { content: none; }
+
+.cover :global(.letter-envelope-image) {
+  left: 9%; top: 8%; width: 58%; height: 84%;
+  transform: rotate(-10deg);
+  filter: drop-shadow(0 4px 5px #34412a18);
+}
+
+.cover :global(.letter-note) {
+  left: 33%; top: 5%; width: 43%; height: 75%;
+  padding: 0;
+  transform: rotate(-7deg);
+  border: 1px solid #cbd0b5;
+  background: #fffef5;
+  box-shadow: 0 5px 12px #34412a10;
+}
+
+.cover :global(.letter-photo) {
+  left: 46%; top: 10%; width: 44%; height: 73%;
+  transform: rotate(9deg);
+  border: clamp(5px, 1cqw, 9px) solid #fffefa;
+  border-bottom-width: clamp(13px, 3cqw, 25px);
+  box-shadow: 0 6px 16px #34412a1c;
+  z-index: 4;
+}
+
+.cover :global(.letter-photo) img { object-position: center 40%; }
+
+.cover:global(.letter-story) :global(.letter-bouquet) {
+  left: 7%; bottom: 4%; width: 43%; height: 56%;
+  object-fit: contain; object-position: left bottom;
+  transform: rotate(-5deg);
+  transform-origin: 70% 85%;
+  animation: tulip-bloom 7.5s ease-in-out infinite;
+  z-index: 5;
+  filter: saturate(.78) brightness(1.04) contrast(.96) drop-shadow(0 3px 4px #34412a10);
+}
+
+@keyframes tulip-bloom {
+  0%, 100% { transform: rotate(-5deg) scale(1); }
+  50% { transform: rotate(-3.8deg) scale(1.028, 1.018); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover:global(.letter-story) :global(.letter-bouquet) { animation: none; }
+}
+
+.cover :global(.letter-flower-crown) {
+  right: -2%; top: -3%; width: 36%; height: auto;
+  object-fit: contain;
+  object-position: right top;
+  transform: rotate(9deg);
+  transform-origin: 50% 25%;
+  opacity: 1;
+  z-index: 3;
+  filter: saturate(.78) brightness(1.04) contrast(.96) drop-shadow(0 3px 4px #34412a10);
+}
+
+.cover :global(.letter-seal) {
+  left: 43%; bottom: 11%; width: 7.6%; height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px double #d1d9ae;
+  background: radial-gradient(circle at 30% 20%, #aab786, #85975f);
+  box-shadow: 0 3px 7px #34412a22;
+  color: #fffdf8;
+  transform: rotate(-8deg);
+}
+
+.cover :global(.letter-seal) svg { width: 48%; height: 48%; }
+
+.cover :global(.letter-names) {
+  width: 94%; margin: 2.5% auto 0; gap: 2cqw;
+}
+
+.cover :global(.letter-names) p {
+  font: 400 clamp(34px, 7.2cqw, 62px)/1.18 'Viaoda Libre', 'Times New Roman', serif;
+  white-space: nowrap;
+  color: #30530f;
+}
+
+.cover :global(.letter-names) > span {
+  top: 46%; font-size: 13cqw; color: #78905a33;
+}
+
+@media (max-width: 480px) {
+  .cover:global(.letter-story) { padding-bottom: 8%; }
+  .cover :global(.letter-save-date) { margin-top: 7%; }
+  .cover :global(.letter-composition) { margin-top: 4%; }
+  .cover :global(.letter-names) { margin-top: 5%; }
+}
