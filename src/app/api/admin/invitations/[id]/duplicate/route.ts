@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/supabase';
 import { getInvitation } from '@/lib/invitations';
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: 'Bạn cần đăng nhập quản trị.' }, { status: 401 });
   const { id } = await params;
@@ -12,7 +12,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   if (!source) return NextResponse.json({ error: 'Không tìm thấy thiệp.' }, { status: 404 });
   const invitation = await getInvitation(source.slug, true);
   if (!invitation) return NextResponse.json({ error: 'Không thể đọc thiệp nguồn.' }, { status: 500 });
-  let slug = `${source.slug}-ban-sao`;
+  let options: { adminTitle?: string; slug?: string } = {};
+  try { options = await request.json(); } catch { /* The editor's existing duplicate action has no body. */ }
+  const requestedSlug = typeof options.slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(options.slug) ? options.slug : '';
+  let slug = requestedSlug || `${source.slug}-ban-sao`;
   let n = 2;
   while (true) { const { data } = await db.from('wedding_invitations').select('id').eq('slug', slug).maybeSingle(); if (!data) break; slug = `${source.slug}-ban-sao-${n++}`; }
   const payload = {
@@ -31,6 +34,8 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const saved = await db.rpc('wedding_save_invitation', { p_data: payload, p_owner: admin.user.id });
   if (saved.error || !saved.data) return NextResponse.json({ error: 'Không thể tạo bản sao.' }, { status: 500 });
   const newId = saved.data as string;
+  const adminTitle = typeof options.adminTitle === 'string' ? options.adminTitle.trim().slice(0, 150) : `${invitation.partnerOne} & ${invitation.partnerTwo} (Bản sao)`;
+  await db.from('wedding_invitations').update({ admin_title: adminTitle }).eq('id', newId);
   const { data: sourceMedia } = await db.from('wedding_media').select('*').eq('invitation_id', id).eq('status', 'ready').order('sort_order');
   const copied = new Map<string, string>();
   for (const item of sourceMedia || []) {

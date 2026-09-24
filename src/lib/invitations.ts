@@ -32,7 +32,7 @@ export function mapInvitation(row: Row, relations: {
     id: str(w.id), guestName: str(w.guest_name), message: str(w.message), createdAt: str(w.created_at),
   }));
   return {
-    id: str(row.id), slug: str(row.slug), status: str(row.status) as Invitation['status'],
+    id: str(row.id), slug: str(row.slug), status: str(row.status) as Invitation['status'], adminTitle: opt(row.admin_title),
     partnerOne: str(row.partner_one), partnerTwo: str(row.partner_two),
     partnerOneFullName: opt(row.partner_one_full_name), partnerTwoFullName: opt(row.partner_two_full_name),
     partnerOneParents: opt(row.partner_one_parents), partnerTwoParents: opt(row.partner_two_parents),
@@ -70,12 +70,13 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
     events: arr(events.data), timeline: arr(timeline.data), media: arr(media.data),
     gifts: arr(gifts.data), wishes: arr(wishes.data),
   });
-  if (!localFallback) return mapped;
+  const designFallback = localFallback || demoInvitations[0];
+  if (!designFallback) return mapped;
   return {
     ...mapped,
-    coverImage: mapped.coverImage || localFallback.coverImage,
-    coverAlt: mapped.coverAlt || localFallback.coverAlt,
-    media: mapped.media.length ? mapped.media : localFallback.media,
+    coverImage: mapped.coverImage || designFallback.coverImage,
+    coverAlt: mapped.coverAlt || designFallback.coverAlt,
+    media: mapped.media.length ? mapped.media : designFallback.media,
   };
 }
 

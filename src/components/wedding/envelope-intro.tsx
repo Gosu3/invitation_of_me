@@ -2,19 +2,11 @@
 
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
-import { useEffect, useState, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { formatDate } from '@/lib/utils';
 
 export type OpeningPhase = 'closed' | 'opening' | 'flowerBurst' | 'revealing' | 'opened';
-
-const MAX_GUEST_NAME_LENGTH = 80;
-
-function readGuestName() {
-  const params = new URLSearchParams(window.location.search);
-  const value = params.get('guest') ?? params.get('khach');
-  return value?.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, MAX_GUEST_NAME_LENGTH) || null;
-}
 
 const leaves = [
   [5, 13, 22, -5, -22, '#C8DFA0'], [14, 18, 25, -17, 18, '#A5C862'], [23, 15, 20, -9, -12, '#8BC34A'],
@@ -32,11 +24,9 @@ const burst = Array.from({ length: 22 }, (_, index) => {
   return { x, y, xHalf: Math.round(x * 52) / 100, yHalf: Math.round(y * 52) / 100, rotate: -180 + index * 25, delay: (index % 5) * 24, scale, endScale: Math.round(scale * 50) / 100 };
 });
 
-export function EnvelopeIntro({ config, phase, open }: { config: WeddingInvitationConfig; phase: OpeningPhase; open: () => void }) {
+export function EnvelopeIntro({ config, phase, open, personalizedGuestName }: { config: WeddingInvitationConfig; phase: OpeningPhase; open: () => void; personalizedGuestName?: string }) {
   const { theme, couple, weddingDate } = config;
-  const [guestName, setGuestName] = useState<string | null>(null);
-
-  useEffect(() => setGuestName(readGuestName()), []);
+  const guestName = personalizedGuestName;
 
   return <section className={`cover-gate opening-${phase}`} aria-label="Mở thiệp cưới">
     <div className="cover-ambient-flowers" aria-hidden="true">

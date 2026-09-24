@@ -15,6 +15,11 @@ export const wishSchema = z.object({
   message: safeText(1000).min(3), website: z.string().optional().default(''),
 });
 
+export const guestLinkSchema = z.object({
+  invitationId: z.uuid(),
+  guestName: safeText(100),
+});
+
 const eventSchema = z.object({
   title: safeText(100), dateTime: z.iso.datetime({ offset: true }), arrivalTime: optionalText(30),
   lunarDate: optionalText(120), venue: safeText(200), address: safeText(400), mapUrl: optionalUrl,
@@ -33,6 +38,7 @@ const giftSchema = z.object({
 export const invitationSchema = z.object({
   id: z.uuid().optional(), slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100),
   status: z.enum(['draft', 'published', 'archived']),
+  adminTitle: optionalText(150),
   partnerOne: safeText(100), partnerTwo: safeText(100),
   partnerOneFullName: optionalText(150), partnerTwoFullName: optionalText(150),
   partnerOneParents: optionalText(200), partnerTwoParents: optionalText(200),

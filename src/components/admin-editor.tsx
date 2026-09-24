@@ -13,7 +13,7 @@ type EditableEvent = { title: string; dateTime: string; arrivalTime: string; lun
 type EditableTimeline = { time: string; title: string; description: string; sortOrder: number };
 type EditableGift = { recipient: string; bankName: string; accountNumber: string; accountHolder: string; qrMediaId: string; sortOrder: number };
 type Draft = {
-  id?: string; slug: string; status: Status; partnerOne: string; partnerTwo: string;
+  id?: string; slug: string; status: Status; adminTitle: string; partnerOne: string; partnerTwo: string;
   partnerOneFullName: string; partnerTwoFullName: string; partnerOneParents: string; partnerTwoParents: string;
   partnerOneAddress: string; partnerTwoAddress: string; headline: string; message: string; story: string;
   coverMediaId: string; coverAlt: string; dressCode: string; closingMessage: string;
@@ -24,7 +24,7 @@ type RsvpRow = { id: string; guest_name: string; attendance: 'yes' | 'no'; guest
 type WishRow = { id: string; guest_name: string; message: string; status: 'pending' | 'approved' | 'hidden'; created_at: string };
 
 const emptyDraft: Draft = {
-  slug: '', status: 'draft', partnerOne: '', partnerTwo: '', partnerOneFullName: '', partnerTwoFullName: '',
+  slug: '', status: 'draft', adminTitle: '', partnerOne: '', partnerTwo: '', partnerOneFullName: '', partnerTwoFullName: '',
   partnerOneParents: '', partnerTwoParents: '', partnerOneAddress: '', partnerTwoAddress: '',
   headline: 'Trân trọng kính mời', message: '', story: '', coverMediaId: '', coverAlt: '', dressCode: '',
   closingMessage: 'Sự hiện diện của quý khách là niềm vinh hạnh của gia đình chúng tôi.',
@@ -42,7 +42,7 @@ function slugify(value: string) { return value.normalize('NFD').replace(/[\u0300
 
 function toDraft(invite: Invitation, coverMediaId: string): Draft {
   return {
-    id: invite.id, slug: invite.slug, status: invite.status,
+    id: invite.id, slug: invite.slug, status: invite.status, adminTitle: invite.adminTitle || '',
     partnerOne: invite.partnerOne, partnerTwo: invite.partnerTwo,
     partnerOneFullName: invite.partnerOneFullName || '', partnerTwoFullName: invite.partnerTwoFullName || '',
     partnerOneParents: invite.partnerOneParents || '', partnerTwoParents: invite.partnerTwoParents || '',

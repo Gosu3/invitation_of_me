@@ -17,7 +17,7 @@ const AUTO_SCROLL_SPEED = 67;
 const AUTO_SCROLL_START_DELAY = 1800;
 const AUTO_SCROLL_RESUME_DELAY = 4500;
 
-export function InvitationExperience({ invitation, connected }: { invitation: Invitation; connected: boolean }) {
+export function InvitationExperience({ invitation, connected, guestName }: { invitation: Invitation; connected: boolean; guestName?: string }) {
   const config = useMemo(() => createWeddingConfig(invitation), [invitation]);
   const [phase, setPhase] = useState<OpeningPhase>('closed');
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
@@ -101,7 +101,7 @@ export function InvitationExperience({ invitation, connected }: { invitation: In
   }
 
   return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase} data-auto-scroll={autoScrollPaused ? 'paused' : 'playing'} onPointerDown={toggleAutoScroll}>
-    {phase !== 'opened' && <EnvelopeIntro config={config} phase={phase} open={openInvitation} />}
+    {phase !== 'opened' && <EnvelopeIntro config={config} phase={phase} open={openInvitation} personalizedGuestName={guestName} />}
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
       <FamilyCeremonySection config={config} />

@@ -15,10 +15,13 @@ Tài liệu này là điểm bàn giao chung giữa máy công ty và máy ở n
 - Supabase project ref: `lerfgehzqvyjvbklwggt`
 - Trang quản trị: `https://invitationofme.vercel.app/quan-tri/dang-nhap`
 
-Hai migration production đã áp dụng:
+Ba migration production đã áp dụng:
 
 1. `202609210001_wedding_core.sql`
 2. `202609230001_seed_tho_tham.sql`
+3. `202609240001_guest_invite_links.sql`
+
+Migration thứ ba tạo bảng link mời ngắn và bản nháp `tho-va-tham-nha-gai` với nhãn quản trị **Hồng Thắm & Văn Thọ (Nhà gái)** để chỉnh sửa thông tin nhà gái độc lập.
 
 ## Bắt đầu trên máy ở nhà
 
@@ -134,7 +137,17 @@ Sau khi push, ghi lại thay đổi đáng chú ý trong mục **Nhật ký bàn
 - Cập nhật danh sách lời chúc thành card rộng tối đa 600px, cao tối đa 500px, có tên, thời gian và nội dung.
 - Build và deploy thành công tại `invitationofme.vercel.app`.
 
-# Cá nhân hóa tên khách mời
+## Cá nhân hóa tên khách mời
+
+Cách dùng chính là đăng nhập `/quan-tri`, nhập tên ở khung **Tạo link mời riêng** và sao chép link ngắn dạng `/m/A7kP3`. Tên tiếng Việt được lưu trong bảng `wedding_guest_links`, không nằm trong URL.
+
+Áp dụng migration mới trước khi dùng:
+
+```powershell
+npx --yes supabase@latest db push
+```
+
+Tham số `guest` dưới đây được giữ lại để tương thích với những link đã tạo trước đó.
 
 Tên khách ở bìa thiệp được lấy từ tham số `guest` trên URL. Không cần sửa code hoặc build lại cho từng khách.
 

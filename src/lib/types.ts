@@ -71,6 +71,7 @@ export type Invitation = {
   id: string;
   slug: string;
   status: InvitationStatus;
+  adminTitle?: string;
   partnerOne: string;
   partnerTwo: string;
   partnerOneFullName?: string;
