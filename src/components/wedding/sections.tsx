@@ -230,6 +230,7 @@ export function TimelineSection({ config }: { config: WeddingInvitationConfig })
   const timelineIcons: Record<string, string> = {
     'Khai tiệc': '/assets/wedding/timeline-icons/gate.webp',
     'Rót rượu, cắt bánh': '/assets/wedding/timeline-icons/cake.webp',
+    'Tiệc ngọt, lễ ăn hỏi, dẫn cưới': '/assets/wedding/timeline-icons/cake.webp',
     'Phục vụ món chính': '/assets/wedding/timeline-icons/water.webp',
   };
   return <ArchitectureSection><section className="invite-section paper-info-card wedding-info-card timeline-section">
