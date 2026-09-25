@@ -1,4 +1,4 @@
-const thoThamWishSlugs = ['tho-va-tham', 'tho-va-tham-nha-gai'] as const;
+const thoThamWishSlugs = ['tho-va-tham', 'tham-va-tho'] as const;
 
 export function sharedWishSlugs(slug: string) {
   return thoThamWishSlugs.includes(slug as (typeof thoThamWishSlugs)[number])

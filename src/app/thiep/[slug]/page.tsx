@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function InvitationPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  if (slug === 'tho-va-tham-nha-gai') redirect('/thiep/tham-va-tho');
   if (!isDatabaseConfigured() && slug === 'an-va-minh') redirect('/thiep/tho-va-tham');
   const invitation = await getInvitation(slug);
   if (!invitation) notFound();

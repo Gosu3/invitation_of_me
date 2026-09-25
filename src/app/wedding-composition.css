@@ -322,7 +322,7 @@
 .venue-dress-code-copy p{max-width:440px;margin:0;color:#30530fcc;font:400 12px/1.625 Baskerville,'Times New Roman',serif;text-align:center;white-space:pre-line}
 .dress-code-heart{display:inline-block;margin-left:2px;color:#b32635;font-family:'Times New Roman',serif;font-size:1.08em;line-height:1;transform:translateY(1px)}
 .venue-dress-code-swatches{display:grid;grid-template-columns:repeat(5,36px);justify-content:center;gap:12px 14px}
-.dress-swatch{display:block;width:36px;height:36px;border:1px solid #30530f1f;border-radius:50%;box-shadow:0 5px 14px #203a0d24}
+.dress-swatch{display:block;width:36px;height:36px;overflow:hidden;border:2px solid #fffdf9;border-radius:50%;box-shadow:0 0 0 1px #30530f24,0 5px 14px #203a0d24;background-clip:padding-box}
 .dress-swatch-red{background:#9f1d2d}
 .dress-swatch-white{background:#fff;border-color:#30530f38}
 .dress-swatch-pink{background:#e9a6b2}
@@ -332,8 +332,9 @@
 .dress-swatch-yellow{background:#e4bd4c}
 .dress-swatch-purple{background:#876395}
 .dress-swatch-orange{background:#d9783d}
-.dress-swatch-multicolor{background:conic-gradient(#9f1d2d 0 14%,#e9a6b2 14% 28%,#efe2c6 28% 42%,#e4bd4c 42% 56%,#d9783d 56% 70%,#876395 70% 84%,#835b45 84% 100%)}
-@media(min-width:768px){.venue-dress-code{gap:24px;padding:38px 40px 12px}.venue-dress-code-copy h2{font-size:18px}.venue-dress-code-copy p{font-size:14px}.venue-dress-code-swatches{grid-template-columns:repeat(5,40px);gap:14px 18px}.dress-swatch{width:40px;height:40px}}
+.dress-swatch-multicolor{background:conic-gradient(from 18deg,#9f1d2d 0 14%,#e9a6b2 14% 28%,#efe2c6 28% 42%,#e4bd4c 42% 56%,#d9783d 56% 70%,#876395 70% 84%,#835b45 84% 100%)}
+.venue-dress-code-swatches.is-bride-invitation{grid-template-columns:36px}
+@media(min-width:768px){.venue-dress-code{gap:24px;padding:38px 40px 12px}.venue-dress-code-copy h2{font-size:18px}.venue-dress-code-copy p{font-size:14px}.venue-dress-code-swatches{grid-template-columns:repeat(5,40px);gap:14px 18px}.venue-dress-code-swatches.is-bride-invitation{grid-template-columns:40px}.dress-swatch{width:40px;height:40px}}
 @media(max-width:650px){.venue-invitation-section{padding:32px 24px}.venue-invitation-copy h3{font-size:16px}.venue-invitation-copy .venue-address{max-width:260px;font-size:12px}.venue-map-actions{gap:16px}.venue-map{max-width:316px;height:238px}.venue-directions{font-size:14px}.venue-dress-code{margin-top:18px;padding:28px 10px 6px}.venue-dress-code-copy h2{font-size:16px}.venue-dress-code-copy p{max-width:260px}}
 @media(max-width:380px){
  .botanical-theme .wedding-info-card.family-section{padding-left:8px!important;padding-right:8px!important}

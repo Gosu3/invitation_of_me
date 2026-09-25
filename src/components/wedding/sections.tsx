@@ -13,7 +13,7 @@ import styles from './hero-cover.module.css';
 
 export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLDivElement | null> }) {
   const { theme, couple, content } = config;
-  return <section className={`letter-story ${styles.cover}`} aria-label={`Thiệp cưới ${couple.names}`}>
+  return <section id="bia-thiep" className={`letter-story ${styles.cover}`} aria-label={`Thiệp cưới ${couple.names}`}>
     <p className="letter-save-date">Save The Date</p>
     <div className="letter-composition">
       <Image className="letter-flower-crown" src={theme.assets.lilyCorner} alt="" aria-hidden="true" width={1254} height={1254} sizes="(max-width: 780px) 35vw, 275px" loading="eager" />
@@ -51,7 +51,10 @@ function WeddingInfoCard({ id, title, flowerSide, className, children }: { id?: 
 function WeddingDateDisplay({ dateTime, ceremony = false }: { dateTime: string; ceremony?: boolean }) {
   const date = dateParts(dateTime);
   if (ceremony) return <div className="wedding-date-display ceremony-date-display">
-    <div className="ceremony-time-row"><span>VÀO LÚC {formatTime(dateTime)}</span><span>{date.weekday}</span></div>
+    <div className="ceremony-time-row">
+      <span>VÀO LÚC <b>{formatTime(dateTime)}</b></span>
+      <span>{date.weekday}</span>
+    </div>
     <div className="ceremony-date-numbers"><strong>{date.day}</strong><span aria-hidden="true" /><div className="ceremony-month-year"><span>THÁNG {date.month}</span><span>{date.year}</span></div></div>
   </div>;
   return <div className="wedding-date-display"><p>VÀO LÚC {formatTime(dateTime)} <span>·</span> {date.weekday}</p><div><strong>{date.day}</strong><span aria-hidden="true" /><span>THÁNG {date.month}<br />{date.year}</span></div></div>;
@@ -101,7 +104,7 @@ export function ReceptionSection({ config }: { config: WeddingInvitationConfig }
   return <><WeddingInfoCard id="thoi-gian" title="THÔNG TIN TIỆC CƯỚI" flowerSide="left" className="events-section">
     <div className="reception-content">
       <h3 className="reception-intro">Tiệc cưới sẽ diễn ra vào lúc:</h3>
-      <div className="reception-day-time"><span>{date.weekday}</span><span>{event.arrivalTime || formatTime(event.dateTime)}</span></div>
+      <div className="reception-day-time"><span>{date.weekday}</span><span>{formatTime(event.dateTime)}</span></div>
       <div className="reception-date-numbers"><strong>{date.day}</strong><span aria-hidden="true" /><div><span>THÁNG {date.month}</span><span>{date.year}</span></div></div>
       {event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}
       <div className="reception-times"><span>ĐÓN KHÁCH<strong>{event.arrivalTime || formatTime(event.dateTime)}</strong></span><span>KHAI TIỆC<strong>{formatTime(event.dateTime)}</strong></span></div>
@@ -187,6 +190,7 @@ function Countdown({ target }: { target: string }) {
 
 export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   if (!config.venue) return null;
+  const isBrideInvitation = config.slug === 'tham-va-tho';
   const destination = `${config.venue.title}, ${config.venue.address}`;
   const embed = `https://www.google.com/maps?q=${encodeURIComponent(destination)}&output=embed`;
   const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
@@ -204,16 +208,18 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
         <h2>DRESS CODE</h2>
         <p>Trang phục lịch sự - Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất <span className="dress-code-heart" aria-label="trái tim">♥</span></p>
       </div>
-      <div className="venue-dress-code-swatches" aria-label="Bảng màu trang phục gồm đỏ, trắng, hồng, kem, đen, nâu, vàng, tím, cam và phối nhiều màu">
-        <span className="dress-swatch dress-swatch-red" title="Đỏ" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-white" title="Trắng" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-pink" title="Hồng" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-cream" title="Kem" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-black" title="Đen" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-brown" title="Nâu" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-yellow" title="Vàng" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-purple" title="Tím" aria-hidden="true" />
-        <span className="dress-swatch dress-swatch-orange" title="Cam" aria-hidden="true" />
+      <div className={`venue-dress-code-swatches${isBrideInvitation ? ' is-bride-invitation' : ''}`} aria-label={isBrideInvitation ? 'Bảng màu trang phục phối nhiều màu' : 'Bảng màu trang phục gồm đỏ, trắng, hồng, kem, đen, nâu, vàng, tím, cam và phối nhiều màu'}>
+        {!isBrideInvitation && <>
+          <span className="dress-swatch dress-swatch-red" title="Đỏ" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-white" title="Trắng" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-pink" title="Hồng" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-cream" title="Kem" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-black" title="Đen" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-brown" title="Nâu" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-yellow" title="Vàng" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-purple" title="Tím" aria-hidden="true" />
+          <span className="dress-swatch dress-swatch-orange" title="Cam" aria-hidden="true" />
+        </>}
         <span className="dress-swatch dress-swatch-multicolor" title="Phối màu" aria-hidden="true" />
       </div>
     </div>

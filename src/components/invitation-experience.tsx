@@ -67,6 +67,15 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     };
   }, [autoScrollPaused, giftOpen, phase, photoIndex]);
   useEffect(() => {
+    if (phase !== 'opened') return;
+    const pauseForFormEntry = (event: FocusEvent) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && target.matches('input, textarea, select, [contenteditable="true"]')) setAutoScrollPaused(true);
+    };
+    window.addEventListener('focusin', pauseForFormEntry);
+    return () => window.removeEventListener('focusin', pauseForFormEntry);
+  }, [phase]);
+  useEffect(() => {
     if (!contentVisible || !('IntersectionObserver' in window)) return;
     const content = document.querySelector('.invitation-content');
     const sections = content?.querySelectorAll('.invite-section, .event-card, .paper-card');
@@ -117,7 +126,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} />}
     {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp">
-      <a href="#le-cuoi" aria-label="Thông tin lễ cưới" onClick={() => setAutoScrollPaused(true)}><Heart size={18} /></a>
+      <a href="#bia-thiep" aria-label="Về đầu thiệp" onClick={() => setAutoScrollPaused(true)}><Heart size={18} /></a>
       {config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh" onClick={() => setAutoScrollPaused(true)}><Images size={18} /></a>}
       {config.reception && <a href="#thoi-gian" aria-label="Thời gian và xác nhận tham dự" onClick={() => setAutoScrollPaused(true)}><CalendarCheck size={18} /></a>}
       {config.venue && <a href="#dia-diem" aria-label="Địa điểm tổ chức" onClick={() => setAutoScrollPaused(true)}><MapPin size={18} /></a>}
