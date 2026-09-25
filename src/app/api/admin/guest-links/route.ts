@@ -13,13 +13,16 @@ function createShortCode() {
 export async function GET() {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: 'Bạn cần đăng nhập quản trị.' }, { status: 401 });
-  const { data, error } = await admin.service
-    .from('wedding_guest_links')
-    .select('id,invitation_id,code,guest_name,created_at')
-    .order('created_at', { ascending: false })
-    .limit(12);
-  if (error) return NextResponse.json({ error: 'Chưa thể tải link khách mời. Hãy kiểm tra migration guest invite links.' }, { status: 500 });
-  return NextResponse.json({ links: data || [] });
+  const links = [];
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await admin.service.from('wedding_guest_links')
+      .select('id,invitation_id,code,guest_name,created_at')
+      .order('created_at', { ascending: false }).order('id').range(offset, offset + 499);
+    if (error) return NextResponse.json({ error: 'Chưa thể tải link khách mời.' }, { status: 500 });
+    links.push(...(data || []));
+    if (!data || data.length < 500) break;
+  }
+  return NextResponse.json({ links }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export async function POST(request: NextRequest) {

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { createBrowserClient } from '@supabase/ssr';
 import { ArrowRight, Check, Copy, ExternalLink, FilePlus2, Link2, LogOut, Search, UserRoundPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { AdminResponses } from './admin-responses';
 
 type ListRow = {
   id: string;
@@ -42,6 +43,22 @@ export function AdminDashboard() {
   const [guestLinkError, setGuestLinkError] = useState('');
   const [creatingLink, setCreatingLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState('');
+  const [tab, setTab] = useState<'invitations' | 'rsvps' | 'wishes'>('invitations');
+  const [deletingLink, setDeletingLink] = useState('');
+
+  async function deleteLink(link: GuestLinkRow) {
+    if (!window.confirm('Xoá link mời của ' + link.guest_name + '? Link này sẽ không mở được nữa.')) return;
+    setDeletingLink(link.id);
+    setGuestLinkError('');
+    try {
+      const response = await fetch('/api/admin/guest-links/' + link.id, { method: 'DELETE' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setGuestLinks(current => current.filter(item => item.id !== link.id));
+      if (generatedUrl.endsWith('/m/' + link.code)) setGeneratedUrl('');
+    } catch (caught) { setGuestLinkError(caught instanceof Error ? caught.message : 'Không thể xoá link.'); }
+    finally { setDeletingLink(''); }
+  }
 
   useEffect(() => {
     fetch('/api/admin/invitations')
@@ -63,7 +80,7 @@ export function AdminDashboard() {
         return response.json();
       })
       .then((data) => setGuestLinks(data.links || []))
-      .catch(() => setGuestLinks([]));
+      .catch(() => setGuestLinkError('Không thể tải link khách mời. Vui lòng tải lại trang.'));
   }, []);
 
   const shown = items.filter((item) =>
@@ -100,7 +117,7 @@ export function AdminDashboard() {
       if (!response.ok) throw new Error(data.error || 'Không thể tạo link khách mời.');
       const url = new URL(data.path, window.location.origin).toString();
       setGeneratedUrl(url);
-      setGuestLinks((current) => [data.link, ...current].slice(0, 12));
+      setGuestLinks((current) => [data.link, ...current]);
       setGuestName('');
       await navigator.clipboard.writeText(url);
       setCopiedCode(data.link.code);
@@ -129,6 +146,13 @@ export function AdminDashboard() {
         <div><strong>{items.filter((item) => item.status === 'draft').length}</strong><span>Bản nháp</span></div>
       </div>
 
+      <div className="editor-tabs" aria-label="Mục quản trị">
+        <button className={tab === 'invitations' ? 'active' : ''} onClick={() => setTab('invitations')}>Thiệp & link mời</button>
+        <button className={tab === 'rsvps' ? 'active' : ''} onClick={() => setTab('rsvps')}>Xác nhận tham dự</button>
+        <button className={tab === 'wishes' ? 'active' : ''} onClick={() => setTab('wishes')}>Tất cả lời chúc</button>
+      </div>
+      {tab !== 'invitations' && <AdminResponses invitations={items} tab={tab} />}
+      <div hidden={tab !== 'invitations'}>
       <section className="guest-link-builder" aria-labelledby="guest-link-title">
         <div className="guest-link-heading">
           <span><UserRoundPlus size={20} /></span>
@@ -141,10 +165,14 @@ export function AdminDashboard() {
         </form>
         {guestLinkError && <div className="admin-alert error">{guestLinkError}</div>}
         {generatedUrl && <div className="guest-link-result"><div><Check size={17} /><span>Đã tạo và sao chép link</span></div><a href={generatedUrl} target="_blank" rel="noreferrer">{generatedUrl}</a></div>}
-        {guestLinks.length > 0 && <div className="guest-link-recent"><h3>Link vừa tạo</h3>{guestLinks.map((link) => {
+        <div className="admin-family-columns">{[
+          { title: 'Nhà trai', ids: items.filter(item => item.slug === 'tho-va-tham').map(item => item.id) },
+          { title: 'Nhà gái', ids: items.filter(item => item.slug === 'tham-va-tho').map(item => item.id) },
+          ...items.filter(item => !['tho-va-tham', 'tham-va-tho'].includes(item.slug)).map(item => ({ title: item.admin_title || item.slug, ids: [item.id] })),
+        ].map(group => <section key={group.title} className="guest-link-recent"><h3>{group.title} · {guestLinks.filter(link => group.ids.includes(link.invitation_id)).length} link đã tạo</h3>{guestLinks.filter(link => group.ids.includes(link.invitation_id)).map((link) => {
           const invitation = items.find((item) => item.id === link.invitation_id);
-          return <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitation ? invitation.admin_title || `${invitation.partner_one} & ${invitation.partner_two}` : 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => copyLink(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a></div></div>;
-        })}</div>}
+          return <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitation ? invitation.admin_title || `${invitation.partner_one} & ${invitation.partner_two}` : 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => copyLink(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a><button disabled={!!deletingLink} type="button" onClick={() => deleteLink(link)} aria-label={`Xoá link của ${link.guest_name}`}>Xoá</button></div></div>;
+        })}{!guestLinks.some(link => group.ids.includes(link.invitation_id)) && <p>Chưa có link mời.</p>}</section>)}</div>
       </section>
 
       <div className="admin-toolbar">
@@ -152,7 +180,8 @@ export function AdminDashboard() {
         <select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Lọc trạng thái"><option value="all">Tất cả trạng thái</option><option value="draft">Bản nháp</option><option value="published">Đã xuất bản</option><option value="archived">Lưu trữ</option></select>
       </div>
       {error && <div className="admin-alert">{error}</div>}
-      {loading ? <p className="admin-empty">Đang tải thiệp…</p> : shown.length ? <div className="admin-card-grid">{shown.map((item) => <Link className="admin-invite-card" key={item.id} href={`/quan-tri/thiep/${item.id}`}><div className="admin-card-image">{item.cover_media_id ? <Image src={`/api/media/${item.cover_media_id}`} alt="Ảnh bìa thiệp" fill unoptimized sizes="260px" /> : <span>{item.partner_one[0]} & {item.partner_two[0]}</span>}</div><div className="admin-card-body"><span className={`status-chip ${item.status}`}>{labels[item.status]}</span><h2>{item.admin_title || <>{item.partner_one} <em>&</em> {item.partner_two}</>}</h2><p>/thiep/{item.slug}</p><div className="admin-card-bottom"><span>Cập nhật {new Date(item.updated_at).toLocaleDateString('vi-VN')}</span><ArrowRight size={17} /></div></div></Link>)}</div> : <div className="admin-empty"><p>{items.length ? 'Không tìm thấy thiệp phù hợp.' : 'Chưa có thiệp nào. Hãy tạo thiệp đầu tiên.'}</p>{!items.length && <Link href="/quan-tri/thiep/moi">Tạo thiệp <ArrowRight size={16} /></Link>}</div>}
+      {loading ? <p className="admin-empty">Đang tải thiệp…</p> : shown.length ? <div className="admin-card-grid">{shown.map((item) => <Link className="admin-invite-card" key={item.id} href={`/quan-tri/thiep/${item.id}`}><div className="admin-card-image">{['tho-va-tham', 'tham-va-tho'].includes(item.slug) ? <Image src={item.slug === 'tho-va-tham' ? '/assets/wedding/home/thumnail.png' : '/assets/wedding/home/thumnail2.png'} alt={item.admin_title || 'Ảnh thiệp cưới'} fill sizes="300px" /> : item.cover_media_id ? <Image src={`/api/media/${item.cover_media_id}`} alt="Ảnh bìa thiệp" fill unoptimized sizes="260px" /> : <span>{item.partner_one[0]} & {item.partner_two[0]}</span>}</div><div className="admin-card-body"><span className={`status-chip ${item.status}`}>{labels[item.status]}</span><h2>{item.admin_title || <>{item.partner_one} <em>&</em> {item.partner_two}</>}</h2><p>/thiep/{item.slug}</p><div className="admin-card-bottom"><span>Cập nhật {new Date(item.updated_at).toLocaleDateString('vi-VN')}</span><ArrowRight size={17} /></div></div></Link>)}</div> : <div className="admin-empty"><p>{items.length ? 'Không tìm thấy thiệp phù hợp.' : 'Chưa có thiệp nào. Hãy tạo thiệp đầu tiên.'}</p>{!items.length && <Link href="/quan-tri/thiep/moi">Tạo thiệp <ArrowRight size={16} /></Link>}</div>}
+      </div>
     </div>
   </main>;
 }
