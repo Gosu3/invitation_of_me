@@ -48,11 +48,21 @@
   .botanical-theme .events-section .countdown {display: grid;grid-template-columns: repeat(4,minmax(0,1fr));width: 100%;gap: 6px}
   .botanical-theme .events-section .countdown div {min-width: 0}
   .botanical-theme .timeline-section .wedding-timeline {
-    width: 100%;max-width: 270px;margin-inline: auto;
-    grid-template-columns: 48px 12px minmax(0,170px);justify-content:center;column-gap: 12px;
+    width: 100%;max-width: 286px;margin-inline: auto;
+    grid-template-columns: 24px 46px 12px minmax(0,1fr);
+    justify-content:center;column-gap: 6px;
   }
-  .botanical-theme .timeline-section .wedding-timeline time {font-size: 12px!important}
-  .botanical-theme .timeline-section .wedding-timeline strong {font-size: 13px!important;line-height: 1.4}
+  .botanical-theme .timeline-section .wedding-timeline time {
+    min-width:0;font-size:12px!important;line-height:1.4;white-space:nowrap;
+  }
+  .botanical-theme .timeline-section .wedding-timeline li>.timeline-node {min-height:48px}
+  .botanical-theme .timeline-section .wedding-timeline li>div {min-width:0;padding:10px 0}
+  .botanical-theme .timeline-section .wedding-timeline strong {
+    font-size:13px!important;line-height:1.4;white-space:normal;overflow-wrap:normal;word-break:normal;
+  }
+  .botanical-theme .timeline-section .timeline-icon {
+    width:24px;height:24px;transform:none;
+  }
   .timeline-lily-right {right: -21%;height: 100%}
   .timeline-lily-left {width: 23%;left: -7%;bottom: -7%}
   .botanical-theme .guestbook-section {padding-inline: 8px}
