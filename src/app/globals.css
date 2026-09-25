@@ -70,8 +70,10 @@
 .admin-wish-edit label{width:100%;font-size:13px}
 .admin-wish-edit input,.admin-wish-edit textarea{display:block;width:100%;padding:10px;margin-top:6px;border:1px solid #ded1c9;background:white}
 .admin-family-columns .guest-link-recent{min-width:0}
+.admin-family-columns .guest-link-recent>h3{margin-bottom:14px;color:var(--burgundy);font:500 24px/1.25 var(--serif);letter-spacing:0;text-transform:none}
 .admin-family-columns .guest-link-recent>div>div:last-child{flex-shrink:0}
+.guest-link-recent .guest-link-delete{color:#9a3e48}
 .admin-page .editor-tabs{overflow-x:auto;gap:24px}
 .admin-page .editor-tabs button{white-space:nowrap}
 .admin-card-image img{object-position:center}
-@media(max-width:760px){.admin-family-columns{grid-template-columns:1fr}.admin-family-column,.admin-all-wishes{padding:16px}.admin-response-panel .admin-toolbar{flex-wrap:wrap}.admin-response-search{width:100%}}
+@media(max-width:760px){.admin-family-columns{grid-template-columns:1fr}.admin-family-column,.admin-all-wishes{padding:16px}.admin-response-panel .admin-toolbar{flex-wrap:wrap}.admin-response-search{width:100%}.invitation-page input,.invitation-page textarea,.invitation-page select,.wedding-dialog input,.wedding-dialog textarea,.wedding-dialog select{font-size:16px!important}}

@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createBrowserClient } from '@supabase/ssr';
-import { ArrowRight, Check, Copy, ExternalLink, FilePlus2, Link2, LogOut, Search, UserRoundPlus } from 'lucide-react';
+import { ArrowRight, Check, Copy, ExternalLink, FilePlus2, Link2, LogOut, Search, Trash2, UserRoundPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AdminResponses } from './admin-responses';
 
@@ -166,12 +166,12 @@ export function AdminDashboard() {
         {guestLinkError && <div className="admin-alert error">{guestLinkError}</div>}
         {generatedUrl && <div className="guest-link-result"><div><Check size={17} /><span>Đã tạo và sao chép link</span></div><a href={generatedUrl} target="_blank" rel="noreferrer">{generatedUrl}</a></div>}
         <div className="admin-family-columns">{[
-          { title: 'Nhà trai', ids: items.filter(item => item.slug === 'tho-va-tham').map(item => item.id) },
-          { title: 'Nhà gái', ids: items.filter(item => item.slug === 'tham-va-tho').map(item => item.id) },
+          { title: 'Nhà Trai', ids: items.filter(item => item.slug === 'tho-va-tham').map(item => item.id) },
+          { title: 'Nhà Gái', ids: items.filter(item => item.slug === 'tham-va-tho').map(item => item.id) },
           ...items.filter(item => !['tho-va-tham', 'tham-va-tho'].includes(item.slug)).map(item => ({ title: item.admin_title || item.slug, ids: [item.id] })),
-        ].map(group => <section key={group.title} className="guest-link-recent"><h3>{group.title} · {guestLinks.filter(link => group.ids.includes(link.invitation_id)).length} link đã tạo</h3>{guestLinks.filter(link => group.ids.includes(link.invitation_id)).map((link) => {
+        ].map(group => <section key={group.title} className="guest-link-recent"><h3>{group.title} - {guestLinks.filter(link => group.ids.includes(link.invitation_id)).length} link đã tạo</h3>{guestLinks.filter(link => group.ids.includes(link.invitation_id)).map((link) => {
           const invitation = items.find((item) => item.id === link.invitation_id);
-          return <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitation ? invitation.admin_title || `${invitation.partner_one} & ${invitation.partner_two}` : 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => copyLink(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a><button disabled={!!deletingLink} type="button" onClick={() => deleteLink(link)} aria-label={`Xoá link của ${link.guest_name}`}>Xoá</button></div></div>;
+          return <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitation ? invitation.admin_title || `${invitation.partner_one} & ${invitation.partner_two}` : 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => copyLink(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a><button className="guest-link-delete" disabled={!!deletingLink} type="button" onClick={() => deleteLink(link)} aria-label={`Xoá link của ${link.guest_name}`} title="Xoá link"><Trash2 size={15} /></button></div></div>;
         })}{!guestLinks.some(link => group.ids.includes(link.invitation_id)) && <p>Chưa có link mời.</p>}</section>)}</div>
       </section>
 
