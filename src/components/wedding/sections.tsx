@@ -191,7 +191,7 @@ function Countdown({ target }: { target: string }) {
 export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   if (!config.venue) return null;
   const isBrideInvitation = config.slug === 'tham-va-tho';
-  const destination = `${config.venue.title}, ${config.venue.address}`;
+  const destination = [config.venue.title, config.venue.address].filter(Boolean).join(', ');
   const embed = `https://www.google.com/maps?q=${encodeURIComponent(destination)}&output=embed`;
   const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
   return <section id="dia-diem" className="venue-invitation-section" data-landing-screenshot-id="invite-map">
