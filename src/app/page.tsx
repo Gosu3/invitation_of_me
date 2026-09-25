@@ -21,7 +21,7 @@ export default async function Home() {
       <div className="section-heading"><span className="eyebrow">BỘ SƯU TẬP</span><h2 id="collection-title">Những ngày đáng nhớ</h2><p>Các thiệp đã được xuất bản.</p></div>
       {invitations.length ? <div className="invitation-grid">{invitations.map((invite) => {
         const isBrideInvitation = invite.slug === 'tham-va-tho';
-        const displayName = isBrideInvitation ? 'Văn Thọ & Hồng Thắm (Thiệp Nhà Gái)' : `${invite.partnerOne} & ${invite.partnerTwo}`;
+        const displayName = isBrideInvitation ? 'Văn Thọ & Hồng Thắm (Thiệp Nhà Gái)' : invite.slug === 'tho-va-tham' ? 'Văn Thọ & Hồng Thắm (Thiệp Nhà Trai)' : `${invite.partnerOne} & ${invite.partnerTwo}`;
         return <Link className="invitation-card" href={`/thiep/${invite.slug}`} key={invite.id}>
           <div className="card-photo">{invite.slug === 'tho-va-tham' || isBrideInvitation ? <Image src={invite.slug === 'tho-va-tham' ? '/assets/wedding/home/thumnail.png' : '/assets/wedding/home/thumnail2.png'} alt={`Thiệp cưới ${displayName}`} fill sizes="(max-width: 700px) calc(100vw - 48px), 360px" /> : invite.coverImage ? <Image src={invite.coverImage} alt={invite.coverAlt || `Thiệp cưới ${displayName}`} fill sizes="(max-width: 700px) calc(100vw - 48px), 360px" unoptimized={invite.coverImage.startsWith('/api/')} /> : <div className="card-monogram">{invite.partnerOne[0]}<span>&</span>{invite.partnerTwo[0]}</div>}</div>
           <div className="card-caption"><div><span>{invite.events[0] ? formatDate(invite.events[0].dateTime) : 'Ngày cưới'}</span><h3>{displayName}</h3></div><ArrowUpRight size={19} /></div>
