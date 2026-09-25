@@ -1,0 +1,39 @@
+/* Loaded after theme styles so small input fonts cannot re-enable focus zoom. */
+@media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+  html body input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='hidden']),
+  html body textarea,
+  html body select {
+    font-size: 16px !important;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .admin-field,
+  .admin-search,
+  .admin-toolbar,
+  .editor-layout > *,
+  .admin-fields > *,
+  .login-card form,
+  .login-card label,
+  .admin-wish-edit label {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .admin-search { width: 100%; }
+  .admin-search > svg { flex-shrink: 0; }
+  .admin-search input { flex: 1; }
+  .admin-response-search { width: 100%; }
+  .admin-toolbar { flex-wrap: wrap; }
+  .guest-link-result a { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 650px) {
+  .admin-card-grid { grid-template-columns: minmax(0, 1fr); }
+  .admin-media-grid { grid-template-columns: repeat(auto-fit, minmax(min(145px, 100%), 1fr)); }
+  .admin-page .editor-tabs { max-width: 100%; }
+  .admin-page .moderation-actions { flex-wrap: wrap; }
+  .guest-link-recent > div { flex-wrap: wrap; gap: 10px; }
+  .guest-link-recent > div > div:first-child { flex: 1 1 140px; }
+}
