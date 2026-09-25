@@ -1,6 +1,7 @@
 import { demoInvitations } from './demo';
 import { isDatabaseConfigured, publicDb, serviceDb } from './supabase';
 import type { GiftAccount, Invitation, WeddingEvent, WeddingMedia, TimelineItem, Wish } from './types';
+import { sharedWishSlugs } from './wedding-wish-groups';
 
 type Row = Record<string, unknown>;
 const str = (value: unknown) => typeof value === 'string' ? value : '';
@@ -59,12 +60,15 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
   const { data: invitation, error } = await query.maybeSingle();
   if (error || !invitation) return localFallback || null;
   const id = invitation.id;
+  const { data: wishInvitations } = await db.from('wedding_invitations')
+    .select('id').in('slug', sharedWishSlugs(invitation.slug));
+  const wishInvitationIds = (wishInvitations || []).map((item) => item.id);
   const [events, timeline, media, gifts, wishes] = await Promise.all([
     db.from('wedding_events').select('*').eq('invitation_id', id),
     db.from('wedding_timeline_items').select('*').eq('invitation_id', id),
     db.from('wedding_media').select('*').eq('invitation_id', id).eq('status', 'ready'),
     db.from('wedding_gift_accounts').select('*').eq('invitation_id', id),
-    db.from('wedding_wishes').select('*').eq('invitation_id', id).eq('status', 'approved').order('created_at', { ascending: false }).limit(20),
+    db.from('wedding_wishes').select('*').in('invitation_id', wishInvitationIds.length ? wishInvitationIds : [id]).eq('status', 'approved').order('created_at', { ascending: false }).limit(20),
   ]);
   const mapped = mapInvitation(invitation, {
     events: arr(events.data), timeline: arr(timeline.data), media: arr(media.data),

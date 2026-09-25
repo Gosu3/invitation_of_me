@@ -84,18 +84,18 @@
 .cover :global(.letter-photo) img { object-position: center 40%; }
 
 .cover:global(.letter-story) :global(.letter-bouquet) {
-  left: 7%; bottom: 4%; width: 43%; height: 56%;
+  left: 1.5%; bottom: -1%; width: 48%; height: 62%;
   object-fit: contain; object-position: left bottom;
-  transform: rotate(-5deg);
-  transform-origin: 70% 85%;
-  animation: tulip-bloom 7.5s ease-in-out infinite;
+  transform: rotate(-3deg);
+  transform-origin: 68% 82%;
+  animation: tulip-bloom 8s ease-in-out infinite;
   z-index: 5;
-  filter: saturate(.78) brightness(1.04) contrast(.96) drop-shadow(0 3px 4px #34412a10);
+  filter: saturate(.86) brightness(1.05) contrast(.95) drop-shadow(0 3px 5px #34412a12);
 }
 
 @keyframes tulip-bloom {
-  0%, 100% { transform: rotate(-5deg) scale(1); }
-  50% { transform: rotate(-3.8deg) scale(1.028, 1.018); }
+  0%, 100% { transform: rotate(-3deg) scale(1); }
+  50% { transform: rotate(-1.8deg) scale(1.022, 1.014); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -103,14 +103,20 @@
 }
 
 .cover :global(.letter-flower-crown) {
-  right: -2%; top: -3%; width: 36%; height: auto;
+  right: -1%; top: -4%; width: 42%; height: auto;
   object-fit: contain;
   object-position: right top;
-  transform: rotate(9deg);
+  transform: rotate(3deg);
   transform-origin: 50% 25%;
   opacity: 1;
   z-index: 3;
-  filter: saturate(.78) brightness(1.04) contrast(.96) drop-shadow(0 3px 4px #34412a10);
+  animation: lily-crown-breathe 9s ease-in-out infinite;
+  filter: saturate(.86) brightness(1.05) contrast(.95) drop-shadow(0 3px 5px #34412a12);
+}
+
+@keyframes lily-crown-breathe {
+  0%, 100% { transform: rotate(3deg) scale(1); }
+  50% { transform: rotate(2deg) scale(1.016); }
 }
 
 .cover :global(.letter-seal) {
@@ -145,4 +151,14 @@
   .cover :global(.letter-save-date) { margin-top: 7%; }
   .cover :global(.letter-composition) { margin-top: 4%; }
   .cover :global(.letter-names) { margin-top: 5%; }
+  .cover:global(.letter-story) :global(.letter-bouquet) {
+    left: -2%; bottom: -2%; width: 50%; height: 63%;
+  }
+  .cover :global(.letter-flower-crown) {
+    right: -4%; top: -3%; width: 44%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover :global(.letter-flower-crown) { animation: none; }
 }
