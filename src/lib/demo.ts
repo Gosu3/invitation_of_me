@@ -9,7 +9,7 @@ export const demoInvitations: Invitation[] = [
     partnerTwo: 'Hồng Thắm',
     partnerOneFullName: 'Nguyễn Văn Thọ',
     partnerTwoFullName: 'Trương Thị Hồng Thắm',
-    partnerOneParents: 'Nguyễn Văn Phú · Nguyễn Thị Mai',
+    partnerOneParents: 'Nguyễn Văn Phúc · Nguyễn Thị Mai',
     partnerTwoParents: 'Trương Nguyên Ngọc · Đỗ Thị Thủy',
     partnerOneAddress: 'Tiên Lãng, Hải Phòng',
     partnerTwoAddress: 'Khoái Châu, Hưng Yên',
