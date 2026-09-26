@@ -562,12 +562,25 @@
 
 /* Couple illustrations frame bank images cropped only through their empty margins. */
 .gift-dialog .dialog-surface{width:min(730px,100%);padding:30px 16px 20px;border-color:#afbd95;border-radius:24px;background:#faf8f1}
-.gift-dialog .gift-modal-icon{width:40px;height:40px;margin-bottom:12px}
-.gift-couple-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:690px;margin:18px auto 16px}
+.gift-modal-heading{position:relative;isolation:isolate;max-width:620px;margin:0 auto;overflow:hidden}
+.gift-modal-heading>*:not(.gift-heart-shower){position:relative;z-index:1}
+.gift-dialog .gift-modal-icon{width:36px;height:36px;margin:0 auto 5px}
+.botanical-theme .gift-dialog .gift-modal-heading>.eyebrow{display:block;margin-bottom:2px;font:600 8px/1.2 'Times New Roman',serif;letter-spacing:.16em}
+.botanical-theme .gift-dialog .gift-modal-heading>h2{margin:5px 0 4px;font-size:clamp(1.45rem,3.2vw,1.65rem);line-height:1.15}
+.botanical-theme .gift-dialog .gift-modal-heading>p{margin:0;font-size:12px;line-height:1.4;white-space:nowrap}
+.gift-heart-shower{position:absolute;z-index:0;inset:25px 6% 0;overflow:hidden;pointer-events:none}
+.gift-heart-shower i{position:absolute;top:14px;left:50%;color:#eaa4b7;font:400 13px/1 Georgia,serif;opacity:0;filter:drop-shadow(0 1px 1px #fff);animation:gift-heart-drift 4.6s ease-out infinite}
+.gift-heart-shower i:nth-child(even){color:#fff;font-size:15px;filter:drop-shadow(0 1px 2px #d88ca1)}
+.gift-heart-shower i:nth-child(1){--heart-x:-185px;animation-delay:.1s}.gift-heart-shower i:nth-child(2){--heart-x:170px;animation-delay:.7s}.gift-heart-shower i:nth-child(3){--heart-x:-125px;animation-delay:1.3s}.gift-heart-shower i:nth-child(4){--heart-x:118px;animation-delay:1.9s}.gift-heart-shower i:nth-child(5){--heart-x:-75px;animation-delay:2.5s}.gift-heart-shower i:nth-child(6){--heart-x:70px;animation-delay:3.1s}.gift-heart-shower i:nth-child(7){--heart-x:-215px;animation-delay:3.7s}.gift-heart-shower i:nth-child(8){--heart-x:205px;animation-delay:4.2s}
+@keyframes gift-heart-drift{0%{opacity:0;transform:translate(0,-4px) scale(.65)}18%{opacity:.65}100%{opacity:0;transform:translate(var(--heart-x),72px) scale(1.05) rotate(18deg)}}
+.gift-couple-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:690px;margin:12px auto 12px}
 .gift-couple-pair{display:grid;grid-template-columns:minmax(82px,.5fr) minmax(0,1fr);align-items:end;min-width:0;gap:0}
 .gift-couple-bride{grid-template-columns:minmax(0,1fr) minmax(90px,.6fr)}
 .gift-couple-pair .bank-card{align-self:end;padding:12px 8px;border-radius:16px;background:#fffefa;border-color:#c3ceae;gap:6px}
 .gift-couple-pair .bank-qr-original{max-width:176px}
+.bank-save-qr{display:inline-flex;min-height:27px;align-items:center;justify-content:center;gap:5px;padding:5px 13px;border:1px solid #bdcaa7;border-radius:999px;background:#f3f6eb;color:#30530f;font:600 10px/1.2 'Times New Roman',serif;cursor:pointer;transition:background-color .2s ease,transform .2s ease}
+.bank-save-qr:hover{background:#e7eed9;transform:translateY(-1px)}
+.bank-save-qr:focus-visible{outline:2px solid #6b804066;outline-offset:2px}
 .gift-character{position:relative;align-self:end;padding-top:34px;pointer-events:none}
 .gift-character img{display:block;width:100%;height:auto}
 .gift-character-groom{transform:translateX(14px)}
@@ -575,12 +588,37 @@
 .gift-character-heart{position:absolute;top:0;left:calc(50% - 12px);color:#91a66e;transform:rotate(-14deg)}
 .gift-character-bride .gift-character-heart{transform:rotate(14deg)}
 @media(max-width:760px){
- .gift-dialog .dialog-surface{width:min(390px,100%);padding:34px 12px 18px;border-radius:20px}
- .gift-couple-layout{grid-template-columns:1fr;gap:14px;margin-top:16px;max-width:310px}
- .gift-couple-pair{grid-template-columns:minmax(72px,.55fr) minmax(0,1fr);gap:0}
- .gift-couple-bride{grid-template-columns:minmax(0,1fr) minmax(72px,.55fr)}
- .gift-couple-pair .bank-card{padding:10px 6px;gap:5px;border-radius:14px}
- .gift-couple-pair .bank-qr-original{max-width:160px}
- .gift-couple-pair .bank-role{font-size:20px}
- .gift-character-heart{width:21px;height:21px}
+ .gift-dialog[open]{align-items:center;padding:8px}
+ .gift-dialog .dialog-surface{width:min(370px,100%);max-height:calc(100dvh - 16px);padding:28px 10px 12px;overflow:hidden;border-radius:18px}
+ .gift-dialog .dialog-close{top:7px;right:7px;width:31px;height:31px}
+ .gift-dialog .gift-modal-icon{width:29px;height:29px;margin-bottom:2px}
+ .gift-dialog .gift-modal-icon svg{width:18px;height:18px}
+ .botanical-theme .gift-dialog .gift-modal-heading>.eyebrow{font-size:7px}
+ .botanical-theme .gift-dialog .gift-modal-heading>h2{margin:4px 0 3px;font-size:22px}
+ .botanical-theme .gift-dialog .gift-modal-heading>p{font-size:10px;line-height:1.3}
+ .gift-heart-shower{inset:18px 3% 0}
+ .gift-heart-shower i{font-size:10px}.gift-heart-shower i:nth-child(even){font-size:12px}
+ .gift-couple-layout{grid-template-columns:1fr;gap:6px;max-width:280px;margin:8px auto}
+ .gift-couple-pair{grid-template-columns:80px minmax(0,1fr);gap:0}
+ .gift-couple-bride{grid-template-columns:minmax(0,1fr) 80px}
+ .gift-couple-pair .bank-card{padding:6px 5px;gap:3px;border-radius:12px}
+ .gift-couple-pair .bank-qr-original{max-width:120px}
+ .bank-save-qr{min-height:22px;padding:3px 9px;font-size:9px}
+ .bank-save-qr svg{width:11px;height:11px}
+ .gift-couple-pair .bank-role{font-size:15px;line-height:1.15}
+ .gift-character{padding-top:22px}
+ .gift-character-groom{transform:translateX(10px)}
+ .gift-character-bride{transform:translateX(-10px)}
+ .gift-character-heart{top:2px;width:17px;height:17px}
+ .gift-dialog p.gift-thanks{font-size:9px;line-height:1.3}
 }
+@media(max-width:760px) and (max-height:620px){
+ .gift-dialog .dialog-surface{padding-top:24px}
+ .gift-dialog .gift-modal-icon{display:none}
+ .gift-couple-layout{gap:4px;margin:5px auto}
+ .gift-couple-pair{grid-template-columns:68px minmax(0,1fr)}
+ .gift-couple-bride{grid-template-columns:minmax(0,1fr) 68px}
+ .gift-couple-pair .bank-qr-original{max-width:104px}
+ .gift-character{padding-top:18px}
+}
+@media(prefers-reduced-motion:reduce){.gift-heart-shower i{animation:none}}

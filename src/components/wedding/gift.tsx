@@ -53,8 +53,10 @@ function BankCard({ account, fallbackRole, fallbackQr }: { account: GiftAccount 
     catch { setSaveHint('Hãy chọn số tài khoản và sao chép thủ công.'); }
   }
   function saveQr() {
-    if (!qr || !account) return;
-    try { downloadDataUrl(qr, `vietqr-${account.recipient.toLowerCase().replace(/\s+/g, '-')}.png`); setSaveHint('Đã chuẩn bị ảnh QR để tải xuống.'); }
+    if (!qr) return;
+    const recipient = account?.recipient || fallbackRole;
+    const extension = qr.startsWith('data:image/png') ? 'png' : 'jpg';
+    try { downloadDataUrl(qr, `ma-qr-${recipient.toLowerCase().replace(/\s+/g, '-')}.${extension}`); setSaveHint('Đã chuẩn bị ảnh QR để tải xuống.'); }
     catch { setSaveHint('Nếu thiết bị không tải tự động, hãy nhấn giữ ảnh QR để lưu.'); }
   }
   return <article className="bank-card">
@@ -65,7 +67,8 @@ function BankCard({ account, fallbackRole, fallbackQr }: { account: GiftAccount 
         <Image src={isGroom ? '/assets/wedding/qr/chu-re-original-v2.jpg' : '/assets/wedding/qr/co-dau-original-v2.jpg'} alt={`Mã QR chuyển khoản ${fallbackRole}`} width={isGroom ? 1179 : 1320} height={isGroom ? 2263 : 2567} unoptimized />
       </div>
     </> : qr ? <Image className="bank-qr" src={qr} alt={`Mã QR chuyển khoản ${account?.recipient || fallbackRole}`} width={1000} height={1450} unoptimized /> : <div className="qr-placeholder"><QrCode size={36} strokeWidth={1} /><span>Mã QR sẽ được bổ sung</span></div>}
-    {account && <><strong>{account.accountHolder}</strong><span>{account.bankName}</span><span className="account-number">{account.accountNumber}</span><div className="bank-actions"><button onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? 'Đã sao chép' : 'Sao chép STK'}</button>{qr && <button onClick={saveQr}><Download size={15} /> Lưu QR</button>}</div></>}
+    {qr && <button type="button" className="bank-save-qr" onClick={saveQr} aria-label={`Lưu mã QR ${account?.recipient || fallbackRole}`}><Download size={13} /> Lưu QR</button>}
+    {account && <><strong>{account.accountHolder}</strong><span>{account.bankName}</span><span className="account-number">{account.accountNumber}</span><div className="bank-actions"><button onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? 'Đã sao chép' : 'Sao chép STK'}</button></div></>}
     {saveHint && <small role="status">{saveHint}</small>}
   </article>;
 }
@@ -76,7 +79,13 @@ export function GiftSection({ accounts, inline, open, showClosingMessage = false
 
 export function GiftModal({ accounts, close }: { accounts: GiftAccount[]; close: () => void }) {
   return <Modal label="Hộp Quà Mừng" className="gift-dialog" close={close}>
-    <span className="gift-modal-icon"><Gift size={26} /></span><span className="eyebrow">GỬI GẮM YÊU THƯƠNG</span><h2>Hộp Quà Mừng</h2><p>Cảm ơn bạn đã cùng chúng mình<br />lưu giữ một ngày thật đẹp.</p>
+    <div className="gift-modal-heading">
+      <span className="gift-modal-icon"><Gift size={24} /></span>
+      <span className="eyebrow">GỬI GẮM YÊU THƯƠNG</span>
+      <h2>Hộp Quà Mừng</h2>
+      <p>Cảm ơn bạn đã cùng chúng mình lưu giữ một ngày thật đẹp.</p>
+      <span className="gift-heart-shower" aria-hidden="true"><i>♥</i><i>♡</i><i>♥</i><i>♡</i><i>♥</i><i>♡</i><i>♥</i><i>♡</i></span>
+    </div>
     <div className="gift-couple-layout">
       <div className="gift-couple-pair gift-couple-groom">
         <GiftCharacter role="groom" />
