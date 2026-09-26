@@ -57,8 +57,7 @@ function BankCard({ account, fallbackRole, fallbackQr }: { account: GiftAccount 
     const recipient = account?.recipient || fallbackRole;
     const downloadUrl = useLocalQr ? `/api/qr-download/${isGroom ? 'groom' : 'bride'}` : qr;
     const extension = useLocalQr ? 'jpg' : 'png';
-    try { downloadDataUrl(downloadUrl, `ma-qr-${recipient.toLowerCase().replace(/\s+/g, '-')}.${extension}`); setSaveHint('Đang tải ảnh QR về thiết bị.'); }
-    catch { setSaveHint('Nếu thiết bị không tải tự động, hãy nhấn giữ ảnh QR để lưu.'); }
+    downloadDataUrl(downloadUrl, `ma-qr-${recipient.toLowerCase().replace(/\s+/g, '-')}.${extension}`);
   }
   return <article className="bank-card">
     <span className="bank-role">{account?.recipient || fallbackRole}</span>
