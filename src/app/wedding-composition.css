@@ -578,7 +578,7 @@
 .gift-couple-bride{grid-template-columns:minmax(0,1fr) minmax(90px,.6fr)}
 .gift-couple-pair .bank-card{align-self:end;padding:12px 8px;border-radius:16px;background:#fffefa;border-color:#c3ceae;gap:6px}
 .gift-couple-pair .bank-qr-original{max-width:176px}
-.bank-save-qr{display:inline-flex;min-height:27px;align-items:center;justify-content:center;gap:5px;padding:5px 13px;border:1px solid #bdcaa7;border-radius:999px;background:#f3f6eb;color:#30530f;font:600 10px/1.2 'Times New Roman',serif;cursor:pointer;transition:background-color .2s ease,transform .2s ease}
+.bank-save-qr{display:inline-flex;min-height:24px;align-items:center;justify-content:center;gap:4px;padding:4px 10px;border:1px solid #bdcaa7;border-radius:999px;background:#f3f6eb;color:#30530f;font:600 9px/1.2 'Times New Roman',serif;cursor:pointer;transition:background-color .2s ease,transform .2s ease}
 .bank-save-qr:hover{background:#e7eed9;transform:translateY(-1px)}
 .bank-save-qr:focus-visible{outline:2px solid #6b804066;outline-offset:2px}
 .gift-character{position:relative;align-self:end;padding-top:34px;pointer-events:none}
@@ -603,8 +603,8 @@
  .gift-couple-bride{grid-template-columns:minmax(0,1fr) 80px}
  .gift-couple-pair .bank-card{padding:6px 5px;gap:3px;border-radius:12px}
  .gift-couple-pair .bank-qr-original{max-width:120px}
- .bank-save-qr{min-height:22px;padding:3px 9px;font-size:9px}
- .bank-save-qr svg{width:11px;height:11px}
+ .bank-save-qr{min-height:20px;padding:2px 8px;font-size:8px}
+ .bank-save-qr svg{width:10px;height:10px}
  .gift-couple-pair .bank-role{font-size:15px;line-height:1.15}
  .gift-character{padding-top:22px}
  .gift-character-groom{transform:translateX(10px)}
