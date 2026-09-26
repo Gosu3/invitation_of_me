@@ -103,7 +103,19 @@ export function useWeddingMusic(config: WeddingMusic) {
     let state: ShuffleState | undefined;
     try {
       const stored = window.localStorage.getItem(SHUFFLE_STORAGE_KEY);
-      if (stored) state = JSON.parse(stored) as ShuffleState;
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object'
+          && 'signature' in parsed && typeof parsed.signature === 'string'
+          && 'remainingIds' in parsed && Array.isArray(parsed.remainingIds)
+          && parsed.remainingIds.every((id): id is string => typeof id === 'string')) {
+          state = {
+            signature: parsed.signature,
+            remainingIds: parsed.remainingIds,
+            lastId: 'lastId' in parsed && typeof parsed.lastId === 'string' ? parsed.lastId : undefined,
+          };
+        }
+      }
     } catch { /* A fresh queue is safe when storage is unavailable or invalid. */ }
 
     const validIds = new Set(tracks.map((track) => track.id));

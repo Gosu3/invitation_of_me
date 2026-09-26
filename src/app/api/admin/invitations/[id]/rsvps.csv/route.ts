@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/supabase';
 
-function cell(value: unknown) { return `"${String(value ?? '').replaceAll('"', '""')}"`; }
+function cell(value: unknown) {
+  const text = String(value ?? '');
+  // CSV quoting alone does not stop spreadsheet formula evaluation.
+  const safe = /^[\t\r\n]/.test(text) || /^\s*[=+\-@]/.test(text) ? `'${text}` : text;
+  return `"${safe.replaceAll('"', '""')}"`;
+}
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();

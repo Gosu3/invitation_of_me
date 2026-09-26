@@ -78,7 +78,7 @@ export function WeddingGallery({ photos, story, open }: { photos: WeddingMedia[]
           const offset = circularOffset(index, current, photos.length);
           const distance = Math.abs(offset);
           const position = distance > 3 ? (offset < 0 ? 'far-left' : 'far-right') : String(offset);
-          return <button key={photo.id} type="button" data-coverflow-position={position} tabIndex={distance > 3 ? -1 : 0} aria-hidden={distance > 3} className={`album-carousel-slide${index === current ? ' is-active' : ''}${index === outgoing ? ' is-outgoing' : ''}`} onPointerDown={holdAutoplay} onPointerUp={pauseAutoplay} onPointerCancel={pauseAutoplay} onClick={() => { pauseAutoplay(); index === current ? open(index) : select(index); }} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
+          return <button key={photo.id} type="button" data-coverflow-position={position} tabIndex={distance > 3 ? -1 : 0} aria-hidden={distance > 3} className={`album-carousel-slide${index === current ? ' is-active' : ''}${index === outgoing ? ' is-outgoing' : ''}`} onPointerDown={holdAutoplay} onPointerUp={pauseAutoplay} onPointerCancel={pauseAutoplay} onClick={() => { pauseAutoplay(); if (index === current) open(index); else select(index); }} aria-label={index === current ? `Mở ảnh ${index + 1}` : `Chuyển đến ảnh ${index + 1}`} aria-current={index === current ? 'true' : undefined}>
           <Image src={photo.url} alt={photo.alt} fill sizes="(max-width: 650px) 78vw, 342px" style={{ objectPosition: `${(photo.position?.x ?? .5) * 100}% ${(photo.position?.y ?? .5) * 100}%` }} unoptimized={photo.url.startsWith('/api/')} />
         </button>; })}
       </div>

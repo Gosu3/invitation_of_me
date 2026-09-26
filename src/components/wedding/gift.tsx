@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Check, Copy, Download, Gift, QrCode } from 'lucide-react';
+import { Check, Copy, Download, Gift, Heart, QrCode } from 'lucide-react';
 import type { GiftAccount } from '@/lib/types';
 import { downloadDataUrl, getBankQrDataUrl } from '@/lib/wedding-qr';
 import { Modal, SectionTitle } from './shared';
@@ -35,11 +35,18 @@ export function GiftBox({ open }: { open: () => void }) {
   </button>;
 }
 
-function BankCard({ account, fallbackRole }: { account: GiftAccount | null; fallbackRole: string }) {
-  const [qr, setQr] = useState<string | null>(account?.qrUrl || null);
+function BankCard({ account, fallbackRole, fallbackQr }: { account: GiftAccount | null; fallbackRole: string; fallbackQr: string }) {
+  const [accountQr, setAccountQr] = useState<string | null>(account?.qrUrl || null);
   const [copied, setCopied] = useState(false);
   const [saveHint, setSaveHint] = useState('');
-  useEffect(() => { let active = true; if (account) void getBankQrDataUrl(account).then((value) => { if (active) setQr(value); }); return () => { active = false; }; }, [account]);
+  useEffect(() => {
+    let active = true;
+    if (account) void getBankQrDataUrl(account).then((value) => { if (active) setAccountQr(value); });
+    return () => { active = false; };
+  }, [account]);
+  const qr = accountQr || fallbackQr;
+  const useLocalQr = !accountQr;
+  const isGroom = fallbackRole === 'Chú rể';
   async function copy() {
     if (!account) return;
     try { await navigator.clipboard.writeText(account.accountNumber); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }
@@ -53,20 +60,40 @@ function BankCard({ account, fallbackRole }: { account: GiftAccount | null; fall
   return <article className="bank-card">
     <span className="bank-role">{account?.recipient || fallbackRole}</span>
     {account?.bankLogo && <Image className="bank-logo" src={account.bankLogo} alt={`Logo ${account.bankName}`} width={100} height={34} unoptimized />}
-    {qr ? <Image className="bank-qr" src={qr} alt={`Mã QR chuyển khoản ${account?.recipient}`} width={230} height={230} unoptimized /> : <div className="qr-placeholder"><QrCode size={36} strokeWidth={1} /><span>Mã QR sẽ được bổ sung</span></div>}
-    {account ? <><strong>{account.accountHolder}</strong><span>{account.bankName}</span><span className="account-number">{account.accountNumber}</span><div className="bank-actions"><button onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? 'Đã sao chép' : 'Sao chép STK'}</button>{qr && <button onClick={saveQr}><Download size={15} /> Lưu QR</button>}</div></> : <p>Thông tin ngân hàng sẽ được bổ sung sau.</p>}
+    {useLocalQr ? <>
+      <div className={`bank-qr-original ${isGroom ? 'bank-qr-original-groom' : 'bank-qr-original-bride'}`}>
+        <Image src={isGroom ? '/assets/wedding/qr/chu-re-original-v2.jpg' : '/assets/wedding/qr/co-dau-original-v2.jpg'} alt={`Mã QR chuyển khoản ${fallbackRole}`} width={isGroom ? 1179 : 1320} height={isGroom ? 2263 : 2567} unoptimized />
+      </div>
+    </> : qr ? <Image className="bank-qr" src={qr} alt={`Mã QR chuyển khoản ${account?.recipient || fallbackRole}`} width={1000} height={1450} unoptimized /> : <div className="qr-placeholder"><QrCode size={36} strokeWidth={1} /><span>Mã QR sẽ được bổ sung</span></div>}
+    {account && <><strong>{account.accountHolder}</strong><span>{account.bankName}</span><span className="account-number">{account.accountNumber}</span><div className="bank-actions"><button onClick={copy}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? 'Đã sao chép' : 'Sao chép STK'}</button>{qr && <button onClick={saveQr}><Download size={15} /> Lưu QR</button>}</div></>}
     {saveHint && <small role="status">{saveHint}</small>}
   </article>;
 }
 
 export function GiftSection({ accounts, inline, open, showClosingMessage = false }: { accounts: GiftAccount[]; inline: boolean; open: () => void; showClosingMessage?: boolean }) {
-  return <section className="invite-section gift-section" id="qua-mung"><SectionTitle eyebrow="TẤM LÒNG CỦA BẠN"><span dir="auto">Hộp quà mừng</span></SectionTitle>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" /></div> : <GiftBox open={open} />}{showClosingMessage && <p><span dir="auto">Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình ♡</span></p>}</section>;
+  return <section className="invite-section gift-section" id="qua-mung"><SectionTitle eyebrow="TẤM LÒNG CỦA BẠN"><span dir="auto">Hộp quà mừng</span></SectionTitle>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" fallbackQr="/assets/wedding/qr/chu-re.png" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" fallbackQr="/assets/wedding/qr/co-dau.png" /></div> : <GiftBox open={open} />}{showClosingMessage && <p><span dir="auto">Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình ♡</span></p>}</section>;
 }
 
 export function GiftModal({ accounts, close }: { accounts: GiftAccount[]; close: () => void }) {
   return <Modal label="Hộp Quà Mừng" className="gift-dialog" close={close}>
     <span className="gift-modal-icon"><Gift size={26} /></span><span className="eyebrow">GỬI GẮM YÊU THƯƠNG</span><h2>Hộp Quà Mừng</h2><p>Cảm ơn bạn đã cùng chúng mình<br />lưu giữ một ngày thật đẹp.</p>
-    <div className="gift-accounts"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" /></div>
+    <div className="gift-couple-layout">
+      <div className="gift-couple-pair gift-couple-groom">
+        <GiftCharacter role="groom" />
+        <BankCard account={accounts[0] || null} fallbackRole="Chú rể" fallbackQr="/assets/wedding/qr/chu-re-original-v2.jpg" />
+      </div>
+      <div className="gift-couple-pair gift-couple-bride">
+        <BankCard account={accounts[1] || null} fallbackRole="Cô dâu" fallbackQr="/assets/wedding/qr/co-dau-original-v2.jpg" />
+        <GiftCharacter role="bride" />
+      </div>
+    </div>
     <p className="gift-thanks">Sự hiện diện của bạn là món quà quý giá nhất ♡</p>
   </Modal>;
+}
+
+function GiftCharacter({ role }: { role: 'groom' | 'bride' }) {
+  return <div className={`gift-character gift-character-${role}`} aria-hidden="true">
+    <Heart className="gift-character-heart" size={24} strokeWidth={1.5} />
+    <Image src={`/assets/wedding/qr/${role}-character.png`} alt="" width={941} height={1672} unoptimized />
+  </div>;
 }
