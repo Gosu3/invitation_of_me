@@ -401,6 +401,7 @@
 .guestbook-wishes::-webkit-scrollbar{width:8px}
 .guestbook-wishes::-webkit-scrollbar-track{background:transparent}
 .guestbook-wishes::-webkit-scrollbar-thumb{border-radius:999px;background:#6b804070}
+.guestbook-wishes-track{display:flow-root;will-change:transform;transform:translateZ(0);backface-visibility:hidden}
 .guestbook-wishes-loop{display:flow-root}
 .guestbook-wishes blockquote{margin:0 0 12px;padding:15px 16px;border:1px solid #30530f55;border-radius:8px;background:#ffffff8c;box-shadow:0 4px 12px #203a0d0d}
 .guestbook-wishes-loop blockquote:last-child{margin-bottom:12px}

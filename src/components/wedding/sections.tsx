@@ -345,28 +345,45 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
   useEffect(() => {
     const list = wishesRef.current;
     if (!list) return;
+    const track = list.querySelector<HTMLElement>('[data-wish-scroll-track]');
+    const copy = list.querySelector<HTMLElement>('[data-wish-loop-copy]');
+    if (!track || !copy) return;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
     let previous = 0;
     let position = list.scrollTop;
+    let loopPoint = copy.offsetTop;
     let visible = false;
     let holding = false;
+    let manualScrolling = false;
+    const render = () => { track.style.transform = `translate3d(0, ${-position}px, 0)`; };
+    const beginManualScroll = () => {
+      if (manualScrolling) return;
+      track.style.transform = 'none';
+      list.scrollTop = position;
+      manualScrolling = true;
+    };
     const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
     observer.observe(list);
-    const pause = () => { scrollPauseUntil.current = performance.now() + 4000; };
+    const resizeObserver = new ResizeObserver(() => { loopPoint = copy.offsetTop; });
+    resizeObserver.observe(track);
+    const pause = () => { beginManualScroll(); scrollPauseUntil.current = performance.now() + 4000; };
     const hold = () => { holding = true; pause(); };
     const release = () => { if (holding) { holding = false; pause(); } };
     const tick = (now: number) => {
       const delta = previous ? Math.min(now - previous, 50) : 0;
       previous = now;
-      const copy = list.querySelector<HTMLElement>('[data-wish-loop-copy]');
-      const loopPoint = copy?.offsetTop ?? 0;
       if (!visible || document.hidden || reducedMotion.matches || holding || now < scrollPauseUntil.current || loopPoint <= list.clientHeight) {
-        position = list.scrollTop;
+        if (manualScrolling) position = list.scrollTop;
       } else {
+        if (manualScrolling) {
+          position = list.scrollTop;
+          list.scrollTop = 0;
+          manualScrolling = false;
+        }
         position += delta * 0.018;
         if (position >= loopPoint) position %= loopPoint;
-        list.scrollTop = position;
+        render();
       }
       frame = requestAnimationFrame(tick);
     };
@@ -379,6 +396,8 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      resizeObserver.disconnect();
+      track.style.transform = '';
       list.removeEventListener('wheel', pause);
       list.removeEventListener('keydown', pause);
       list.removeEventListener('pointerdown', hold);
@@ -434,7 +453,7 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
         <span className="guestbook-status" role="status">{status}</span>
       </div>
     </div>
-    {wishes.length > 0 && <div ref={wishesRef} className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc">
+    {wishes.length > 0 && <div ref={wishesRef} className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc"><div className="guestbook-wishes-track" data-wish-scroll-track>
       <div className="guestbook-wishes-loop">
         {wishes.map((wish) => <blockquote key={wish.id}>
           <header><strong>{wish.guestName}</strong><time dateTime={wish.createdAt}>{wishDate(wish.createdAt)}</time></header>
@@ -446,7 +465,7 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
           <header><strong>{wish.guestName}</strong><time dateTime={wish.createdAt}>{wishDate(wish.createdAt)}</time></header>
           <p>{wish.message}</p>
         </blockquote>)}
-      </div>
+      </div></div>
     </div>}
   </section>;
 }
