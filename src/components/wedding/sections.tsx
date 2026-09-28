@@ -78,7 +78,7 @@ export function FamilyCeremonySection({ config }: { config: WeddingInvitationCon
       <i aria-hidden="true" />
       <ParentsColumn parents={config.family.brideParents} address={config.family.brideAddress} side="Nhà gái" />
     </div>}
-    <p className="wedding-invitation-copy"><span dir="auto">{'TRÂN TRỌNG KÍNH MỜI\nTỚI DỰ LỄ THÀNH HÔN CHUNG VUI CÙNG GIA ĐÌNH CHÚNG TÔI'}</span></p>
+    <p className="wedding-invitation-copy"><span dir="auto">TRÂN TRỌNG KÍNH MỜI</span><span className="wedding-invitation-detail" dir="auto">TỚI DỰ LỄ THÀNH HÔN CHUNG VUI CÙNG GIA ĐÌNH CHÚNG TÔI</span></p>
     <div className="wedding-couple-names"><h3 className="groom-name">{config.couple.groomFullName}</h3><span>{config.couple.groomRole}</span><em>&</em><h3 className="bride-name">{config.couple.brideFullName}</h3><span>{config.couple.brideRole}</span></div>
     {event && <div className="wedding-event-details ceremony-event-details">
       <div className="ceremony-venue"><span dir="auto">{'LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI\nTƯ GIA'}</span></div>

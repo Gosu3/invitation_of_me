@@ -177,6 +177,11 @@
   text-align:center;
   white-space:pre-line;
 }
+.botanical-theme .family-section .wedding-invitation-detail {
+  display:block;
+  white-space:nowrap;
+  font-size:clamp(7px,2.3vw,12px);
+}
 @media(min-width:768px) {
   .botanical-theme .family-section .wedding-invitation-copy {font-size:13px}
 }
