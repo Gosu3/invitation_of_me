@@ -92,7 +92,6 @@
 .botanical-theme .bank-card strong,
 .botanical-theme .bank-card>span:not(.bank-role) {font-family:var(--font-body)}
 .botanical-theme .bank-actions button {font:600 .95rem/1.3 var(--font-body)}
-.botanical-theme .album-hint,
 .botanical-theme .gift-dialog p,
 .botanical-theme .gift-section>p {font-family:var(--font-body);line-height:1.6}
 .botanical-theme .gift-section>.eyebrow {font:700 9px/1.4 'Times New Roman',serif;letter-spacing:.2em;color:#30530f;text-transform:uppercase}

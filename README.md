@@ -16,7 +16,7 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Mở `http://localhost:3000`. Khi chưa cấu hình Supabase, ứng dụng hiển thị **hai thiệp demo chỉ để xem giao diện** tại `/thiep/tho-va-tham` và `/thiep/lan-va-huy`. Biểu mẫu RSVP/lời chúc được tắt trong chế độ demo; chúng không giả vờ lưu dữ liệu. Tên Văn Thọ & Hồng Thắm, ảnh cưới và ngày 29/11/2026 trong thiệp đầu theo thông tin bạn cung cấp; giờ, địa điểm, hạn RSVP và lời mời vẫn là nội dung mẫu cần xác nhận.
+Mở `http://localhost:3000`. Khi chưa cấu hình Supabase, ứng dụng hiển thị **hai thiệp demo chỉ để xem giao diện** tại `/thiep/tho-va-tham` và `/thiep/lan-va-huy`. Biểu mẫu RSVP/lời chúc được tắt trong chế độ demo; chúng không giả vờ lưu dữ liệu. Dữ liệu production của thiệp nhà trai và nhà gái được đọc từ Supabase.
 
 ## Kết nối Supabase
 
@@ -56,11 +56,30 @@ node scripts/prepare-photos.mjs 'C:\duong-dan\den\anh-cuoi'
 ## Các lệnh kiểm tra
 
 ```powershell
+npm test
 npm run lint
 npm run typecheck
 npm run build
 npm run start
 ```
+
+`npm test` chạy bộ regression hiện có cho hàng đợi nhạc và CSV quản trị. Bộ test này không thay thế kiểm tra trực tiếp giao diện, animation và thao tác chạm trên điện thoại thật.
+
+## Cấu trúc chính
+
+```text
+src/app/                    Route Next.js, API và các stylesheet toàn cục
+src/components/             Giao diện quản trị và template thiệp
+src/components/wedding/     Các section, album, hộp quà và modal
+src/hooks/                  Nhạc, swipe và khóa cuộn trang
+src/lib/                    Kiểu dữ liệu, Supabase, validation và mapping
+public/                     Ảnh, hoa, QR, nhạc và ảnh demo được deploy
+supabase/migrations/        Lịch sử schema và dữ liệu production
+scripts/                    Chuẩn bị ảnh và regression test
+docs/                       Tài liệu cấu trúc, bàn giao và audit hiện tại
+```
+
+Ảnh dùng trực tiếp trên web phải nằm trong `public/` hoặc Supabase Storage. Không tham chiếu đường dẫn tuyệt đối trên máy cá nhân trong source code.
 
 ## Triển khai Vercel
 
@@ -74,7 +93,7 @@ npm run start
 
 - Sao lưu PostgreSQL **và** các tệp trong bucket `wedding-media`; bản sao lưu database không bao gồm nội dung tệp Storage.
 - Thiệp đã xuất bản mặc định dùng `noindex` để hạn chế xuất hiện trên công cụ tìm kiếm. Bất kỳ ai có đường dẫn vẫn xem được thiệp; `noindex` không phải mật khẩu.
-- RSVP và lời chúc là dữ liệu cá nhân. Chỉ quản trị viên có thể xem RSVP; lời chúc cần duyệt trước khi hiển thị.
+- RSVP và lời chúc là dữ liệu cá nhân. Chỉ quản trị viên có thể xem RSVP. Lời chúc mới được hiển thị ngay và đồng bộ realtime giữa hai thiệp Thọ–Thắm; quản trị viên có thể sửa, ẩn hoặc xóa trong trang quản trị.
 
 Xem [tài liệu cấu trúc](docs/CAU_TRUC_DU_AN.md) để biết vị trí mã nguồn và cách mở rộng.
 

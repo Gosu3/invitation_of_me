@@ -8,15 +8,15 @@ Tài liệu này là điểm bắt đầu khi tiếp tục dự án trên máy c
 - Phần đầu có phong bì, ảnh cưới và nhiều lớp hoa cân đối; nút mở tạo hiệu ứng bung hoa. Sau đó là lời mời, khung lễ cưới, album trượt ngang, khung tiệc cưới **chứa cả lịch tháng và đếm ngược**, RSVP, địa điểm, khung lịch trình, lời chúc, hộp quà và lời cảm ơn.
 - Hai khung lễ cưới/tiệc cưới khoảng 560px trên desktop, nền giấy xanh trầm với hoa trắng; lịch trình dùng nền giấy ghi chú. Không để chữ đè lên cụm hoa. Album là carousel ngang nhỏ, ảnh đứng, ảnh giữa nổi bật, có mũi tên và chấm điều hướng; nhấn ảnh mở lightbox.
 - Font đo từ F12 của mẫu đỏ đậm: nhãn `THÔNG TIN LỄ CƯỚI` là Times New Roman serif, 16px/24px, đậm, giãn chữ 0.48px; tên cô dâu/chú rể dùng `Viaoda Libre` khoảng 46px/60px trên mẫu gốc. Trong dự án font đã được cài bằng `@fontsource/viaoda-libre`, và cỡ được giảm phù hợp với tên tiếng Việt dài. Card mẫu gốc khoảng 560 × 848px, padding 36px 20px 40px, bo góc 13px; đây là tham chiếu thị giác, không phải kích thước cứng cho mọi nội dung.
-- Hoa và giấy gốc đã được đưa vào repo ở `public/decor/hoa-moc-xanh/`: `flower.webp`, `paper.webp`, `papernote-background.webp`, `boho_floral_green.webp` và `decoration_bar.webp`. Bản nguồn trên máy cá nhân nằm trong thư mục ảnh OneDrive `images_invitation`; máy khác **không cần thư mục đó** để chạy dự án vì asset dùng trên web đã được commit.
+- Hoa và giấy dùng trên web đã được commit trong `public/decor/hoa-moc-xanh/` và `public/assets/wedding/`. Máy khác không cần thư mục ảnh OneDrive để chạy dự án.
 
-## Nội dung hiện tại và những gì chưa xác nhận
+## Nội dung hiện tại
 
 - Tên trên bìa: **Văn Thọ & Hồng Thắm**. Tên đầy đủ trong khung lễ cưới: **Nguyễn Văn Thọ** và **Trương Thị Hồng Thắm**.
-- Cha mẹ dùng placeholder **Ông A · Bà B** và **Ông C · Bà D** theo yêu cầu, không tự suy đoán tên thật.
-- Ngày 29/11/2026 đã được chủ dự án nêu trước đây. Giờ, địa điểm lễ/tiệc, địa chỉ, lịch trình, hạn RSVP và một phần lời văn vẫn đang dùng dữ liệu mẫu để hoàn thiện bố cục; hãy đối chiếu thông tin chính xác khi chủ dự án cung cấp và cập nhật đồng bộ ở `src/lib/demo.ts` hoặc dữ liệu quản trị tương ứng.
-- Hộp quà mở popup với **hai ô QR trống** cho chú rể và cô dâu. Chủ dự án sẽ cung cấp tài khoản/QR sau; không tự thêm thông tin ngân hàng. Demo chưa kết nối Supabase sẽ không lưu RSVP và lời chúc.
-- Nhạc nền hiện dùng bộ phát tổng hợp bằng Web Audio khi chưa có file `music.src`. Nút play/pause và mute phải phản ánh trạng thái phát thực tế; test lại trên thiết bị thật khi thay file âm thanh.
+- Tên cha mẹ, địa chỉ, ngày giờ và lịch trình hiện đã được cập nhật trong dữ liệu production; `src/lib/demo.ts` là dữ liệu xem thử khi không kết nối Supabase.
+- Thiệp nhà trai dùng slug `tho-va-tham`; thiệp nhà gái dùng slug `tham-va-tho`. Hai thiệp đồng bộ lời chúc và giữ RSVP riêng.
+- Hộp quà có hai ảnh QR chính thức trong `public/assets/wedding/qr/`, hỗ trợ lưu hoặc chia sẻ trên mobile. Không ghi số tài khoản hoặc khóa bí mật vào tài liệu.
+- Nhạc nền dùng playlist MP3 trong `public/music/`, chỉ bắt đầu sau thao tác mở thiệp và lưu hàng đợi shuffle hợp lệ trong localStorage.
 
 ## Đường đi của mã
 
@@ -29,9 +29,9 @@ Tài liệu này là điểm bắt đầu khi tiếp tục dự án trên máy c
 | Bìa/phong bì và hiệu ứng mở | `src/components/wedding/envelope-intro.tsx` |
 | Lời mời, lễ cưới, tiệc cưới + lịch, timeline | `src/components/wedding/sections.tsx` |
 | Carousel và lightbox | `src/components/wedding/gallery.tsx` |
-| Hộp quà và hai QR placeholder | `src/components/wedding/gift.tsx` |
+| Hộp quà, QR và tải/chia sẻ ảnh | `src/components/wedding/gift.tsx`, `src/app/api/qr-download/[role]/route.ts` |
 | Nhạc và nút điều khiển | `src/hooks/use-wedding-music.ts`, `src/components/wedding/music-controller.tsx` |
-| CSS thiệp và responsive | `src/app/invitation-motion.css`, `src/app/globals.css` |
+| CSS thiệp và responsive | `src/app/invitation-motion.css`, `wedding-composition.css`, `wedding-typography.css`, `wedding-mobile.css`, `mobile-forms.css` |
 | Form quản trị và API/Supabase | `src/components/admin-editor.tsx`, `src/app/api/`, `src/lib/invitations.ts`, `supabase/migrations/` |
 
 `README.md` chỉ dẫn cài đặt, cấu hình Supabase và triển khai; `docs/CAU_TRUC_DU_AN.md` mô tả luồng dữ liệu. `docs/PHAN_TICH_HOA_MOC_XANH.md` lưu phân tích mẫu ban đầu. Lưu ý các tài liệu cũ có thể mô tả CSS và cấu trúc component trước khi tách thành `src/components/wedding/`; kiểm tra mã hiện tại nếu có khác biệt.

@@ -6,7 +6,7 @@ Tài liệu này là điểm bàn giao chung giữa máy công ty và máy ở n
 
 - Repository: `https://github.com/Gosu3/invitation_of_me.git`
 - Nhánh chính: `main`
-- Commit bàn giao nền: `96a95c5`
+- Điểm đồng bộ: luôn dùng commit mới nhất của `origin/main`; không dựa vào một hash bàn giao cố định.
 - Website production: `https://invitationofme.vercel.app`
 - Thiệp chính: `https://invitationofme.vercel.app/thiep/tho-va-tham`
 - Vercel project: `invitation_of_me`
@@ -15,16 +15,12 @@ Tài liệu này là điểm bàn giao chung giữa máy công ty và máy ở n
 - Supabase project ref: `lerfgehzqvyjvbklwggt`
 - Trang quản trị: `https://invitationofme.vercel.app/quan-tri/dang-nhap`
 
-Sáu migration production, trong đó migration thứ sáu đổi nhãn phân biệt thiệp nhà gái:
+Repository hiện có 14 migration theo thứ tự trong `supabase/migrations/`. Ngoài schema nền và link mời ngắn, các migration mới hơn cập nhật lịch riêng, địa điểm, slug và nhãn quản trị của hai thiệp. Không sửa migration đã chạy; mọi thay đổi dữ liệu tiếp theo phải tạo migration có timestamp mới.
 
-1. `202609210001_wedding_core.sql`
-2. `202609230001_seed_tho_tham.sql`
-3. `202609240001_guest_invite_links.sql`
-4. `202609240002_update_reception_schedule.sql`
-5. `202609240003_publish_bride_invitation.sql`
-6. `202609250001_label_bride_invitation.sql`
-
-Migration thứ ba tạo bảng link mời ngắn và bản thiệp `tho-va-tham-nha-gai`. Bản nhà gái đã được xuất bản với nhãn quản trị **Hồng Thắm & Văn Thọ - Nhà Gái** và giữ lịch trình riêng. Thiệp nhà trai `tho-va-tham` dùng giờ đón khách 08:30, khai tiệc 09:00 và kết thúc 11:30.
+- Nhà trai: `/thiep/tho-va-tham`, nhãn **Văn Thọ & Hồng Thắm (Thiệp Nhà Trai)**.
+- Nhà gái: `/thiep/tham-va-tho`, nhãn **Văn Thọ & Hồng Thắm (Thiệp Nhà Gái)**.
+- Alias cũ `/thiep/tho-va-tham-nha-gai` chuyển hướng sang slug nhà gái.
+- Hai thiệp dùng chung danh sách lời chúc nhưng giữ RSVP, lịch trình và địa điểm riêng.
 
 ## Bắt đầu trên máy ở nhà
 
@@ -99,10 +95,10 @@ Sau khi push, ghi lại thay đổi đáng chú ý trong mục **Nhật ký bàn
 
 ## Luồng dữ liệu đang hoạt động
 
-- Khách gửi lời chúc qua `POST /api/wishes`.
-- Lời chúc mới có trạng thái `pending`.
-- Quản trị viên duyệt hoặc ẩn tại tab **Phản hồi & lời chúc** trong trang chỉnh sửa thiệp.
-- Chỉ lời chúc `approved` được trả về từ `GET /api/wishes` và hiển thị công khai.
+- Khách gửi lời chúc qua `POST /api/wishes`; lời chúc hợp lệ được lưu ở trạng thái `approved`.
+- Lời chúc được phát tín hiệu realtime và đồng bộ giữa thiệp nhà trai/nhà gái; polling định kỳ là đường dự phòng khi mất broadcast.
+- Quản trị viên sửa, ẩn, hiện lại hoặc xóa tại tab **Tất cả lời chúc** trên dashboard.
+- `GET /api/wishes` chỉ trả các trường công khai của lời chúc đang ở trạng thái `approved`.
 - RSVP được gửi qua `POST /api/rsvp` và chỉ quản trị viên được xem.
 - Tài khoản quản trị được lưu trong Supabase Auth; quyền quản trị được cấp qua bảng `public.wedding_admins`.
 
@@ -114,7 +110,7 @@ Sau khi push, ghi lại thay đổi đáng chú ý trong mục **Nhật ký bàn
 - `src/components/wedding/gallery.tsx`: album coverflow và lightbox.
 - `src/app/api/wishes/route.ts`: đọc và gửi lời chúc.
 - `src/app/api/rsvp/route.ts`: gửi xác nhận tham dự.
-- `src/components/admin-editor.tsx`: quản lý RSVP và duyệt lời chúc.
+- `src/components/admin-dashboard.tsx`, `src/components/admin-responses.tsx`: quản lý link mời, RSVP và lời chúc.
 - `src/lib/demo.ts`: dữ liệu dự phòng cho thiệp Thọ & Thắm.
 - `src/lib/invitations.ts`: đọc dữ liệu thiệp từ Supabase.
 - `supabase/migrations/`: lịch sử schema và dữ liệu nền.
@@ -139,6 +135,14 @@ Sau khi push, ghi lại thay đổi đáng chú ý trong mục **Nhật ký bàn
 - Tạo và xác minh hai tài khoản quản trị trong Supabase Auth; thông tin đăng nhập không lưu trong Git.
 - Cập nhật danh sách lời chúc thành card rộng tối đa 600px, cao tối đa 500px, có tên, thời gian và nội dung.
 - Build và deploy thành công tại `invitationofme.vercel.app`.
+
+### 2026-09-28
+
+- Đồng bộ code mới nhất từ `origin/main`.
+- Lời chúc hiển thị ngay, đồng bộ realtime giữa hai thiệp và cuộn vòng tự động.
+- Trang quản trị tách phản hồi nhà trai/nhà gái, quản lý link mời và toàn bộ lời chúc.
+- Hộp quà dùng hai QR chính thức, hỗ trợ lưu/chia sẻ ảnh trên mobile.
+- Bổ sung regression test cho nhạc và CSV; lệnh chạy chuẩn là `npm test`.
 
 ## Cá nhân hóa tên khách mời
 

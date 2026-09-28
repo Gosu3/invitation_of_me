@@ -10,15 +10,22 @@ Project_Invitation/
 ├─ scripts/prepare-photos.mjs     Chuyển ảnh nguồn thành WebP cho web
 ├─ src/
 │  ├─ app/
-│  │  ├─ globals.css              Design tokens và toàn bộ style hiện tại
+│  │  ├─ globals.css              Design tokens, trang chủ và trang quản trị
+│  │  ├─ invitation-motion.css    Animation và các style thiệp nền
+│  │  ├─ wedding-composition.css  Bố cục các section của thiệp
+│  │  ├─ wedding-typography.css   Typography riêng của thiệp
+│  │  ├─ wedding-mobile.css       Điều chỉnh bố cục thiệp trên mobile
+│  │  ├─ mobile-forms.css         Chống focus zoom và tràn form trên mobile
 │  │  ├─ layout.tsx                HTML layout và metadata mặc định
 │  │  ├─ page.tsx                  Trang chủ, danh sách thiệp đã xuất bản
-│  │  ├─ invitation-motion.css     Phong bì mở thiệp, hiệu ứng rơi/cuộn, lịch và đếm ngược
 │  │  ├─ thiep/[slug]/             Thiệp công khai và ảnh Open Graph
 │  │  ├─ quan-tri/                Đăng nhập, danh sách và biên tập thiệp
 │  │  └─ api/                     RSVP, lời chúc, ảnh và thao tác quản trị
 │  ├─ components/
-│  │  └─ invitation-experience.tsx Template thiệp duy nhất
+│  │  ├─ invitation-experience.tsx Điều phối template thiệp duy nhất
+│  │  ├─ admin-*.tsx              Dashboard, editor và phản hồi quản trị
+│  │  └─ wedding/                 Bìa, section, album, quà, nhạc và modal
+│  ├─ hooks/                      Nhạc, swipe và khóa cuộn trang
 │  └─ lib/
 │     ├─ types.ts                 Kiểu dữ liệu dùng chung
 │     ├─ demo.ts                  Hai thiệp mẫu local
@@ -45,7 +52,7 @@ Khi thiếu biến môi trường Supabase, `src/lib/invitations.ts` dùng `src/
 
 | Nhu cầu | Vị trí |
 |---|---|
-| Đổi màu, font, khoảng cách | `src/app/globals.css`, các biến `:root` |
+| Đổi màu, font, khoảng cách | `src/app/*wedding*.css`, `src/lib/wedding-theme.ts` |
 | Đổi thứ tự hoặc cấu trúc phần thiệp | `src/components/invitation-experience.tsx` |
 | Thêm trường nội dung cho thiệp | Migration SQL → `src/lib/types.ts` → `src/lib/invitations.ts` → form quản trị → template |
 | Đổi nội dung demo | `src/lib/demo.ts` |
@@ -64,6 +71,9 @@ Khi thiếu biến môi trường Supabase, `src/lib/invitations.ts` dùng `src/
 - `wedding_wishes`: lời chúc, chỉ dòng `approved` được công khai.
 - `wedding_gift_accounts`: thông tin hộp quà bật/tắt theo thiệp.
 - `wedding_submission_limits`: giới hạn tần suất gửi biểu mẫu.
+- `wedding_guest_links`: link mời ngắn kèm tên khách.
+
+Lời chúc mới được lưu ở trạng thái `approved` và xuất hiện công khai ngay. Hai slug `tho-va-tham` và `tham-va-tho` dùng chung nguồn lời chúc; dashboard quản trị vẫn có thể sửa, ẩn hoặc xóa từng lời chúc.
 
 Các bảng và chính sách được định nghĩa trong `supabase/migrations/202609210001_wedding_core.sql`. Không sửa migration đã áp dụng trên production; tạo migration mới cho lần thay đổi sau.
 
