@@ -58,7 +58,9 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
   let query = db.from('wedding_invitations').select('*').eq('slug', slug);
   if (!includeDraft) query = query.eq('status', 'published');
   const { data: invitation, error } = await query.maybeSingle();
-  if (error || !invitation) return localFallback || null;
+  // Connected: never substitute demo content, it may carry stale dates/venues.
+  if (error) throw new Error(`Failed to load invitation "${slug}": ${error.message}`);
+  if (!invitation) return null;
   const id = invitation.id;
   const { data: wishInvitations } = await db.from('wedding_invitations')
     .select('id').in('slug', sharedWishSlugs(invitation.slug));
@@ -70,6 +72,9 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
     db.from('wedding_gift_accounts').select('*').eq('invitation_id', id),
     db.from('wedding_wishes').select('*').in('invitation_id', wishInvitationIds.length ? wishInvitationIds : [id]).eq('status', 'approved').order('created_at', { ascending: false }).limit(20),
   ]);
+  // Missing events/timeline would silently hide date, venue and schedule.
+  const detailError = events.error || timeline.error;
+  if (detailError) throw new Error(`Failed to load details for "${slug}": ${detailError.message}`);
   const mapped = mapInvitation(invitation, {
     events: arr(events.data), timeline: arr(timeline.data), media: arr(media.data),
     gifts: arr(gifts.data), wishes: arr(wishes.data),

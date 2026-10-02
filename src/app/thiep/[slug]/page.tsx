@@ -5,16 +5,7 @@ import { siteUrl } from '@/lib/utils';
 import { InvitationExperience } from '@/components/invitation-experience';
 import { isDatabaseConfigured } from '@/lib/supabase';
 
-type Props = {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
-
-function guestNameFromSearchParams(params: Record<string, string | string[] | undefined>) {
-  const raw = params.guest ?? params.khach;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  return value?.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80) || undefined;
-}
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -28,12 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function InvitationPage({ params, searchParams }: Props) {
+export default async function InvitationPage({ params }: Props) {
   const { slug } = await params;
   if (slug === 'tho-va-tham-nha-gai') redirect('/thiep/tham-va-tho');
   if (!isDatabaseConfigured() && slug === 'an-va-minh') redirect('/thiep/tho-va-tham');
   const invitation = await getInvitation(slug);
   if (!invitation) notFound();
-  const guestName = guestNameFromSearchParams(await searchParams);
-  return <InvitationExperience invitation={invitation} connected={isDatabaseConfigured()} guestName={guestName} />;
+  return <InvitationExperience invitation={invitation} connected={isDatabaseConfigured()} />;
 }

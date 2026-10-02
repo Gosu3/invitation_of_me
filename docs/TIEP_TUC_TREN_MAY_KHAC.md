@@ -154,15 +154,4 @@ Cách dùng chính là đăng nhập `/quan-tri`, nhập tên ở khung **Tạo 
 npx --yes supabase@latest db push
 ```
 
-Tham số `guest` dưới đây được giữ lại để tương thích với những link đã tạo trước đó.
-
-Tên khách ở bìa thiệp được lấy từ tham số `guest` trên URL. Không cần sửa code hoặc build lại cho từng khách.
-
-Ví dụ:
-
-```text
-http://localhost:3000/thiep/tho-va-tham?guest=B%E1%BA%A1n%20A%20%26%20ng%C6%B0%E1%BB%9Di%20th%C6%B0%C6%A1ng
-```
-
-Khi mở link trên, bìa thiệp hiển thị `Thân Mời: Bạn A & người thương`. Có thể dùng `khach` thay cho `guest`. Khi URL không có hai tham số này, bìa giữ nội dung mặc định `Thân Mời`.
-
+Tham số `guest`/`khach` trên URL `/thiep/[slug]` đã bị gỡ; link cũ dạng `?guest=` chỉ hiển thị bìa mặc định `Thân Mời`.
