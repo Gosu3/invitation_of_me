@@ -240,12 +240,23 @@ export function TimelineSection({ config }: { config: WeddingInvitationConfig })
   </section></ArchitectureSection>;
 }
 
+const sentWishStatus = 'Lời chúc của bạn đã đến tay cô dâu và chú rể';
+// Fixed burst pattern (no Math.random) so server/client render and screenshots stay stable.
+const sentWishPetals: CSSProperties[] = [
+  [-78, -96, -140, 0], [-52, -132, 120, 40], [-24, -150, -80, 80], [6, -118, 160, 20], [30, -146, -170, 60],
+  [56, -108, 90, 100], [-64, -70, 200, 120], [-8, -84, -120, 30], [44, -76, 140, 90], [72, -128, -60, 140],
+].map(([dx, dy, rot, delay]) => ({ '--petal-dx': `${dx}px`, '--petal-dy': `${dy}px`, '--petal-rot': `${rot}deg`, animationDelay: `${delay}ms` }) as CSSProperties);
+
 export function GuestbookSection({ config, connected }: { config: WeddingInvitationConfig; connected: boolean }) {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
   const [wishes, setWishes] = useState<PublicWish[]>(config.content.wishes);
   const [status, setStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [justSentId, setJustSentId] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
+  const [petalBurst, setPetalBurst] = useState(0);
+  const sentTimers = useRef<number[]>([]);
   const suggestionPool = useRef<number[]>([]);
   const lastSuggestion = useRef(-1);
   const wishesRef = useRef<HTMLDivElement>(null);
@@ -339,8 +350,9 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
   const newestWishId = wishes[0]?.id;
   useEffect(() => {
     if (wishesRef.current) wishesRef.current.scrollTop = 0;
-    scrollPauseUntil.current = performance.now() + 1800;
+    scrollPauseUntil.current = Math.max(scrollPauseUntil.current, performance.now() + 1800);
   }, [newestWishId]);
+  useEffect(() => () => sentTimers.current.forEach((timer) => window.clearTimeout(timer)), []);
 
   useEffect(() => {
     const list = wishesRef.current;
@@ -425,11 +437,26 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
         .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
       setName('');
       setMessage('');
+      celebrateSentWish(result.wish.id);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Chưa thể gửi lời chúc. Vui lòng thử lại.');
     } finally {
       setSubmitting(false);
     }
+  }
+  function celebrateSentWish(id: string) {
+    // Only the guest's own wish animates; realtime/polling updates render plainly.
+    sentTimers.current.forEach((timer) => window.clearTimeout(timer));
+    scrollPauseUntil.current = performance.now() + 5000;
+    setJustSentId(id);
+    setSent(true);
+    setPetalBurst((count) => count + 1);
+    setStatus(sentWishStatus);
+    sentTimers.current = [
+      window.setTimeout(() => setSent(false), 2600),
+      window.setTimeout(() => setStatus((current) => current === sentWishStatus ? '' : current), 4000),
+      window.setTimeout(() => setJustSentId(null), 4500),
+    ];
   }
   const wishDate = (value: string) => new Intl.DateTimeFormat('vi-VN', {
     timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit',
@@ -446,16 +473,18 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
             <textarea value={message} onChange={(event) => setMessage(event.target.value)} minLength={3} maxLength={1000} required disabled={submitting} rows={4} placeholder="Nhập lời chúc*" aria-label="Lời chúc" />
             <div className="guestbook-form-actions">
               <button type="button" className="guestbook-ai-button" title="Tạo lời chúc bằng AI" aria-label="Tạo lời chúc bằng AI" onClick={suggestWish}>🪄</button>
-              <button type="submit" className="guestbook-submit" disabled={submitting}><span dir="auto">{submitting ? 'ĐANG GỬI...' : 'GỬI LỜI CHÚC'}</span></button>
+              <button type="submit" className={`guestbook-submit${sent ? ' is-sent' : ''}`} disabled={submitting}>{sent ? <><Check size={14} aria-hidden="true" /><span dir="auto">ĐÃ GỬI</span></> : <span dir="auto">{submitting ? 'ĐANG GỬI...' : 'GỬI LỜI CHÚC'}</span>}</button>
+              {sent && <span key={petalBurst} className="guestbook-petals" aria-hidden="true">{sentWishPetals.map((petal, index) => <i key={index} style={petal} />)}</span>}
             </div>
           </div>
         </form>
-        <span className="guestbook-status" role="status">{status}</span>
+        <span className={`guestbook-status${status === sentWishStatus ? ' is-success' : ''}`} role="status">{status}</span>
       </div>
     </div>
     {wishes.length > 0 && <div ref={wishesRef} className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc"><div className="guestbook-wishes-track" data-wish-scroll-track>
       <div className="guestbook-wishes-loop">
-        {wishes.map((wish) => <blockquote key={wish.id}>
+        {wishes.map((wish) => <blockquote key={wish.id} className={wish.id === justSentId ? 'is-just-sent' : undefined}>
+          {wish.id === justSentId && <span className="wish-own-badge">Lời chúc của bạn</span>}
           <header><strong>{wish.guestName}</strong><time dateTime={wish.createdAt}>{wishDate(wish.createdAt)}</time></header>
           <p>{wish.message}</p>
         </blockquote>)}

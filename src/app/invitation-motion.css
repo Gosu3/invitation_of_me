@@ -403,3 +403,17 @@
 }
 @media(max-width:380px){.botanical-theme .wedding-info-card{padding-right:26px!important;padding-left:26px!important}.wedding-family-grid{gap:6px}.wedding-family-grid p{font-size:10px}.wedding-info-card>.wedding-info-flower{width:125px;height:125px}.wedding-info-flower-right{right:-46px}.wedding-info-flower-left{left:-46px}}
 @media(prefers-reduced-motion:reduce){.wedding-card-petals{display:none}.album-carousel .album-carousel-arrow{transition:none}}
+
+/* Guestbook: celebrate only the wish the guest just sent. */
+.botanical-theme .guestbook-form-actions .guestbook-submit.is-sent{gap:6px;background:#5c7d3a;animation:wish-sent-pop .35s ease-out}
+.guestbook-petals{position:absolute;right:48px;top:4px;width:0;height:0;pointer-events:none;z-index:2}
+.guestbook-petals i{position:absolute;left:0;top:0;width:9px;height:13px;border:.5px solid #b9c9a0;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#fffdf6;opacity:0;animation:wish-petal 1.6s ease-out both}
+.guestbook-status.is-success{position:relative;z-index:1;width:fit-content;max-width:none;align-self:center;padding:4px 14px;white-space:nowrap;border-radius:999px;background:#f6f2eaf2;box-shadow:0 0 0 1px #30530f26;color:#30530f}
+.botanical-theme .guestbook-wishes blockquote.is-just-sent{overflow:hidden;background:#eaf3de;border-color:#97c459;animation:wish-slide-in .7s cubic-bezier(.2,.8,.2,1) both,wish-highlight-fade 2.8s ease-out .7s forwards}
+.wish-own-badge{display:inline-block;margin-bottom:6px;padding:3px 9px;border-radius:999px;background:#c0dd97;color:#30530f;font:400 11px/1.4 'Times New Roman',serif;animation:wish-badge-fade .5s ease 4s forwards}
+@keyframes wish-sent-pop{0%{transform:scale(.92)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes wish-petal{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--petal-dx),var(--petal-dy)) rotate(var(--petal-rot))}}
+@keyframes wish-slide-in{0%{max-height:0;opacity:0;transform:translateY(-14px) scale(.97);padding-top:0;padding-bottom:0;margin-bottom:0}60%{opacity:1}100%{max-height:400px;opacity:1;transform:none}}
+@keyframes wish-highlight-fade{to{background:#ffffff8c;border-color:#30530f55}}
+@keyframes wish-badge-fade{to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.guestbook-petals{display:none}}
