@@ -54,4 +54,4 @@ Thêm trường thiệp: migration mới → `types.ts` → `invitations.ts` →
 - `next-env.d.ts` bị `next dev` tự đổi (`.next/dev/types`) — không commit thay đổi đó trừ khi được yêu cầu.
 
 ## Docs
-`README.md` (setup/deploy), `docs/CAU_TRUC_DU_AN.md` (cấu trúc), `docs/TIEP_TUC_TREN_MAY_KHAC.md` (bàn giao, nhật ký), `docs/CODEBASE_AUDIT_2026-09-28.md` (vùng rủi ro đã biết). `STUDY.md` mục "Kế hoạch tiếp theo"/"Prompt khởi động" đã lỗi thời (QR đã có, thông tin cưới đã cập nhật).
+`README.md` (setup/deploy), `docs/CAU_TRUC_DU_AN.md` (cấu trúc), `docs/CODEBASE_AUDIT_2026-09-28.md` (vùng rủi ro đã biết). `STUDY.md` mục "Kế hoạch tiếp theo"/"Prompt khởi động" đã lỗi thời (QR đã có, thông tin cưới đã cập nhật).

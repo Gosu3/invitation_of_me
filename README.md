@@ -76,7 +76,7 @@ src/lib/                    Kiểu dữ liệu, Supabase, validation và mapping
 public/                     Ảnh, hoa, QR, nhạc và ảnh demo được deploy
 supabase/migrations/        Lịch sử schema và dữ liệu production
 scripts/                    Chuẩn bị ảnh và regression test
-docs/                       Tài liệu cấu trúc, bàn giao và audit hiện tại
+docs/                       Tài liệu cấu trúc và audit hiện tại
 ```
 
 Ảnh dùng trực tiếp trên web phải nằm trong `public/` hoặc Supabase Storage. Không tham chiếu đường dẫn tuyệt đối trên máy cá nhân trong source code.
@@ -96,5 +96,3 @@ docs/                       Tài liệu cấu trúc, bàn giao và audit hiện 
 - RSVP và lời chúc là dữ liệu cá nhân. Chỉ quản trị viên có thể xem RSVP. Lời chúc mới được hiển thị ngay và đồng bộ realtime giữa hai thiệp Thọ–Thắm; quản trị viên có thể sửa, ẩn hoặc xóa trong trang quản trị.
 
 Xem [tài liệu cấu trúc](docs/CAU_TRUC_DU_AN.md) để biết vị trí mã nguồn và cách mở rộng.
-
-Khi chuyển sang máy khác, làm theo [tài liệu tiếp tục dự án](docs/TIEP_TUC_TREN_MAY_KHAC.md) để đồng bộ code, biến môi trường và trạng thái triển khai mà không làm lộ khóa bí mật.
