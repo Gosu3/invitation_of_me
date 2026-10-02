@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title, description: invitation.message,
     robots: { index: false, follow: false },
-    openGraph: { title, description: invitation.message, type: 'website', url: `${siteUrl()}/thiep/${slug}`, images: [`${siteUrl()}/thiep/${slug}/opengraph-image`] },
+    openGraph: { title, description: invitation.message, type: 'website', url: `${siteUrl()}/thiep/${slug}`, images: [{ url: `${siteUrl()}/photos/og-avatar.jpg`, width: 1200, height: 630 }] },
   };
 }
 

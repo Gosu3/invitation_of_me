@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { InvitationExperience } from '@/components/invitation-experience';
 import { getInvitation } from '@/lib/invitations';
 import { isDatabaseConfigured, serviceDb } from '@/lib/supabase';
+import { siteUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,10 +34,17 @@ const getPersonalizedInvitation = cache(async (code: string) => {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const result = await getPersonalizedInvitation((await params).code);
   if (!result) return { title: 'Không tìm thấy thiệp', robots: { index: false, follow: false } };
+  const { code } = await params;
+  const title = `Thiệp cưới ${result.invitation.partnerOne} & ${result.invitation.partnerTwo}`;
+  const description = result.invitation.message;
   return {
-    title: `Thiệp cưới ${result.invitation.partnerOne} & ${result.invitation.partnerTwo}`,
-    description: result.invitation.message,
+    title, description,
     robots: { index: false, follow: false },
+    // Without an explicit og:image, Messenger scrapes a random page image (the transparent flower PNG renders on black).
+    openGraph: {
+      title, description, type: 'website', url: `${siteUrl()}/m/${code}`,
+      images: [{ url: `${siteUrl()}/photos/og-avatar.jpg`, width: 1200, height: 630 }],
+    },
   };
 }
 
