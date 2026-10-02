@@ -74,14 +74,16 @@ export function Modal({ children, close, label, className = '', onArrow, swipeTo
     const element = dialog.current;
     const previousFocus = document.activeElement as HTMLElement | null;
     element?.showModal();
+    surface.current?.focus({ preventScroll: true });
     return () => { element?.close(); previousFocus?.focus({ preventScroll: true }); };
   }, []);
-  const closeButton = <button className="dialog-close" onClick={close} aria-label="Đóng" autoFocus><X size={21} /></button>;
+  const closeButton = <button className="dialog-close" onClick={close} aria-label="Đóng"><X size={21} /></button>;
   return <dialog ref={dialog} className={`wedding-dialog ${className}`} aria-label={label} onKeyDown={(event) => {
     if (onArrow && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) { event.preventDefault(); onArrow(event.key === 'ArrowLeft' ? -1 : 1); }
   }} onCancel={(event) => { event.preventDefault(); close(); }} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
     {overlay !== undefined && <>{overlay}{closeButton}</>}
-    <div className="dialog-surface" ref={surface}>
+    {/* Initial focus goes to the surface, not the close button, so the focus ring does not flash on open. */}
+    <div className="dialog-surface" ref={surface} tabIndex={-1}>
       {overlay === undefined && closeButton}
       {children}
     </div>
