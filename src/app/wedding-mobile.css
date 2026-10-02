@@ -69,7 +69,7 @@
   .botanical-theme .guestbook-wrapper {width:94%;aspect-ratio: auto;min-height:340px}
   .guestbook-background {object-fit: fill}
   .botanical-theme .guestbook-content {position: relative;inset: auto;width: 100%;padding:40px 17% 38px}
-  .botanical-theme .guestbook-content .guestbook-title {transform: none;font-size:16px}
+  .botanical-theme .guestbook-content .guestbook-title {width: 100%;margin: 0;transform: none;font-size:16px}
   .botanical-theme .guestbook-form {width: 100%;max-width: none;margin:16px auto 0}
   .botanical-theme .guestbook-form-panel {padding:0;gap:10px}
   .botanical-theme .guestbook-form textarea {height:88px}
