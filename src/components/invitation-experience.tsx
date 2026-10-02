@@ -67,6 +67,29 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     };
   }, [autoScrollPaused, giftOpen, phase, photoIndex]);
   useEffect(() => {
+    // In-app browsers (Messenger/iOS WebView) can come back from another app (e.g. Google Maps) with a blank,
+    // unpainted page while JS and music keep running; nudge a repaint whenever the page becomes visible again.
+    const repaint = () => {
+      if (document.hidden) return;
+      const root = document.documentElement;
+      root.style.opacity = '0.999';
+      void root.offsetHeight;
+      window.requestAnimationFrame(() => {
+        root.style.opacity = '';
+        window.scrollTo({ top: window.scrollY + 1, behavior: 'instant' });
+        window.scrollTo({ top: window.scrollY - 1, behavior: 'instant' });
+      });
+    };
+    document.addEventListener('visibilitychange', repaint);
+    window.addEventListener('pageshow', repaint);
+    window.addEventListener('focus', repaint);
+    return () => {
+      document.removeEventListener('visibilitychange', repaint);
+      window.removeEventListener('pageshow', repaint);
+      window.removeEventListener('focus', repaint);
+    };
+  }, []);
+  useEffect(() => {
     if (phase !== 'opened') return;
     const pauseForFormEntry = (event: FocusEvent) => {
       const target = event.target;

@@ -8,19 +8,22 @@ export function SectionTitle({ eyebrow, children, light = false }: { eyebrow: st
   return <><span className={`eyebrow${light ? ' light' : ''}`}>{eyebrow}</span><h2>{children}</h2></>;
 }
 
-// Touch drag-down on the surface closes the modal once pulled past the threshold; only starts when the surface is scrolled to the top.
-function useSwipeDownToClose(surface: RefObject<HTMLDivElement | null>, close: () => void, enabled: boolean) {
+// Touch drag up or down on the surface closes the modal once pulled past the threshold. A drag down only starts when the
+// surface is scrolled to the top, a drag up only when it is scrolled to the bottom, so scrolling the content still works.
+function useSwipeToClose(surface: RefObject<HTMLDivElement | null>, close: () => void, enabled: boolean) {
   useEffect(() => {
     const element = surface.current;
     if (!enabled || !element) return;
-    let startX = 0, startY = 0, startTime = 0, offset = 0, tracking = false, dragging = false;
+    let startX = 0, startY = 0, startTime = 0, offset = 0, direction = 0, atTop = false, atBottom = false, tracking = false, dragging = false;
     const reset = (animate: boolean) => {
       element.style.transition = animate ? 'transform .25s ease' : '';
       element.style.transform = '';
     };
     const start = (event: TouchEvent) => {
       if (event.touches.length !== 1) { tracking = false; return; }
-      tracking = element.scrollTop <= 0;
+      atTop = element.scrollTop <= 0;
+      atBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 1;
+      tracking = atTop || atBottom;
       dragging = false; offset = 0;
       startX = event.touches[0].clientX; startY = event.touches[0].clientY; startTime = event.timeStamp;
     };
@@ -28,16 +31,18 @@ function useSwipeDownToClose(surface: RefObject<HTMLDivElement | null>, close: (
       if (!tracking) return;
       const delta = event.touches[0].clientY - startY;
       if (!dragging) {
-        // Horizontal gestures (e.g. lightbox photo swipe) and upward scrolls are left alone.
+        // Horizontal gestures (e.g. lightbox photo swipe) and scrolls toward unscrolled content are left alone.
         if (Math.abs(event.touches[0].clientX - startX) > Math.abs(delta)) { tracking = false; return; }
-        if (delta < 8) { if (delta < 0) tracking = false; return; }
+        if (Math.abs(delta) < 8) return;
+        direction = delta > 0 ? 1 : -1;
+        if ((direction > 0 && !atTop) || (direction < 0 && !atBottom)) { tracking = false; return; }
         dragging = true;
         element.style.animation = 'none';
         element.style.transition = 'none';
       }
       event.preventDefault();
-      offset = Math.max(0, delta - 8);
-      element.style.transform = `translateY(${offset}px)`;
+      offset = Math.max(0, delta * direction - 8);
+      element.style.transform = `translateY(${offset * direction}px)`;
     };
     const end = (event: TouchEvent) => {
       if (!dragging) { tracking = false; return; }
@@ -45,7 +50,7 @@ function useSwipeDownToClose(surface: RefObject<HTMLDivElement | null>, close: (
       const velocity = offset / Math.max(1, event.timeStamp - startTime);
       if (offset > 110 || (offset > 40 && velocity > 0.6)) {
         element.style.transition = 'transform .2s ease-in, opacity .2s ease-in';
-        element.style.transform = `translateY(${window.innerHeight}px)`;
+        element.style.transform = `translateY(${window.innerHeight * direction}px)`;
         element.style.opacity = '0';
         window.setTimeout(close, 180);
       } else reset(true);
@@ -67,7 +72,7 @@ export function Modal({ children, close, label, className = '', onArrow, swipeTo
   const dialog = useRef<HTMLDialogElement>(null);
   const surface = useRef<HTMLDivElement>(null);
   useBodyScrollLock(true);
-  useSwipeDownToClose(surface, close, swipeToClose);
+  useSwipeToClose(surface, close, swipeToClose);
   useEffect(() => {
     const element = dialog.current;
     const previousFocus = document.activeElement as HTMLElement | null;
