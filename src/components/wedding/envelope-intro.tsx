@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
-import type { CSSProperties } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties } from 'react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { formatDate } from '@/lib/utils';
 
@@ -27,6 +27,46 @@ const burst = Array.from({ length: 22 }, (_, index) => {
 export function EnvelopeIntro({ config, phase, open, personalizedGuestName }: { config: WeddingInvitationConfig; phase: OpeningPhase; open: () => void; personalizedGuestName?: string }) {
   const { theme, couple, weddingDate } = config;
   const guestName = personalizedGuestName;
+  const guestNameRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    const name = guestNameRef.current;
+    const container = name?.parentElement;
+    if (!name || !container) return;
+    let disposed = false;
+    let previousWidth = 0;
+    const fitName = () => {
+      if (disposed) return;
+      name.style.removeProperty('font-size');
+      container.style.removeProperty('--guest-name-scale');
+      const availableWidth = name.clientWidth - 8;
+      if (availableWidth <= 0) return;
+      const preferredSize = parseFloat(getComputedStyle(name).fontSize);
+      const range = document.createRange();
+      range.selectNodeContents(name);
+      const textWidth = range.getBoundingClientRect().width * name.clientWidth / name.getBoundingClientRect().width;
+      const isLong = textWidth > availableWidth;
+      if (isLong) {
+        const fittedSize = Math.floor(preferredSize * availableWidth / textWidth * 10) / 10;
+        name.style.fontSize = `${fittedSize}px`;
+        container.style.setProperty('--guest-name-scale', String(fittedSize / preferredSize));
+      }
+    };
+    fitName();
+    const observer = new ResizeObserver(() => {
+      const width = container.clientWidth;
+      if (width !== previousWidth) {
+        previousWidth = width;
+        fitName();
+      }
+    });
+    observer.observe(container);
+    void document.fonts.ready.then(fitName);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+    };
+  }, [guestName]);
 
   return <section className={`cover-gate opening-${phase}`} aria-label="Mở thiệp cưới">
     <div className="cover-ambient-flowers" aria-hidden="true">
@@ -44,10 +84,10 @@ export function EnvelopeIntro({ config, phase, open, personalizedGuestName }: { 
         <div className="cover-divider cover-divider-top" aria-hidden="true"><i />❧<i /></div>
         <h1>{couple.groom}<em>&</em>{couple.bride}</h1>
         <div className="cover-divider cover-divider-date" aria-hidden="true"><i />♥<i /></div>
-        <p className="cover-wedding-date">{weddingDate ? formatDate(weddingDate) : 'Một ngày thật đẹp'}</p>
+        <p className="cover-wedding-date">{weddingDate ? `Ngày ${formatDate(weddingDate)}` : 'Một ngày thật đẹp'}</p>
         <div className={`cover-invite${guestName ? ' cover-invite-personalized' : ''}`}>
-          <span>Thân Mời{guestName ? ':' : ''}</span>
-          {guestName && <strong>{guestName}</strong>}
+          <span>Thân Mời</span>
+          {guestName && <strong ref={guestNameRef}>{guestName}</strong>}
         </div>
         <button className="cover-open-button" onClick={open} disabled={phase !== 'closed'} aria-busy={phase !== 'closed'}>{phase === 'closed' ? 'Mở thiệp' : 'Đang mở…'}</button>
       </div>
