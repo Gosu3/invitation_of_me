@@ -9,3 +9,5 @@ out
 coverage
 photo-contact-sheet.webp
 supabase/.temp/
+test-results
+playwright-report
