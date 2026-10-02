@@ -72,14 +72,18 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     // In-app browsers (Messenger/iOS WebView) can come back from another app (e.g. Google Maps) with a blank,
     // unpainted page while JS and music keep running. While hidden: stop music (it also delays closing the
     // in-app browser) and infinite animations; when visible again: rebuild the page's layers and resume music.
+    // Opening the maps app is the exception: music keeps playing and only auto-scroll pauses.
     const root = document.documentElement;
     let resumeMusic = false;
     let hidden = false;
+    let keepMusic = false;
+    const onOpenMap = () => { keepMusic = true; setAutoScrollPaused(true); };
     const leave = () => {
       if (hidden) return;
       hidden = true;
       root.classList.add('is-page-hidden');
-      resumeMusic = musicRef.current.playing;
+      resumeMusic = !keepMusic && musicRef.current.playing;
+      keepMusic = false;
       if (resumeMusic) void musicRef.current.pause();
     };
     const restore = () => {
@@ -98,10 +102,12 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     };
     const onVisibility = () => { if (document.hidden) leave(); else restore(); };
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('wedding:open-map', onOpenMap);
     window.addEventListener('pagehide', leave);
     window.addEventListener('pageshow', restore);
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('wedding:open-map', onOpenMap);
       window.removeEventListener('pagehide', leave);
       window.removeEventListener('pageshow', restore);
       root.classList.remove('is-page-hidden');

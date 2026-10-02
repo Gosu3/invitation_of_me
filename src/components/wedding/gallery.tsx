@@ -105,14 +105,13 @@ export function GalleryLightbox({ photos, initial, close }: { photos: WeddingMed
     });
     thumbnailRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }, [index, photos]);
-  return <Modal label="Album ảnh cưới" className="photo-dialog" close={close} onArrow={move} swipeToClose>
+  return <Modal label="Album ảnh cưới" className="photo-dialog" close={close} onArrow={move} swipeToClose overlay={<span className="lightbox-count" aria-live="polite">{index + 1} / {photos.length}</span>}>
     <div className="lightbox-stage" {...swipe}>
-      <span className="lightbox-count" aria-live="polite">{index + 1} / {photos.length}</span>
-      <div className="lightbox-frame" data-swipe-move>
+      <div className="lightbox-frame">
         <Image key={`${photos[index].id}-${direction}`} className={`lightbox-photo slide-${direction > 0 ? 'next' : 'previous'}`} src={photos[index].url} alt={photos[index].alt} fill sizes="(max-width: 650px) calc(100vw - 28px), min(1000px, 100vw)" style={{ objectFit: 'contain', objectPosition: `${(photos[index].position?.x ?? .5) * 100}% ${(photos[index].position?.y ?? .5) * 100}%` }} unoptimized={photos[index].url.startsWith('/api/')} />
       </div>
       {photos.length > 1 && <div className="lightbox-controls"><button className="previous" onClick={() => move(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><button className="next" onClick={() => move(1)} aria-label="Ảnh tiếp"><ChevronRight /></button></div>}
-      <div className="lightbox-thumbnails" aria-label="Chọn ảnh" data-swipe-move>{photos.map((photo, photoIndex) => <button ref={(element) => { thumbnailRefs.current[photoIndex] = element; }} key={photo.id} onClick={() => { setDirection(photoIndex >= index ? 1 : -1); setIndex(photoIndex); }} aria-label={`Chọn ảnh ${photoIndex + 1}`} aria-current={photoIndex === index ? 'true' : undefined}><Image src={photo.url} alt="" fill sizes="64px" unoptimized={photo.url.startsWith('/api/')} /></button>)}</div>
+      <div className="lightbox-thumbnails" aria-label="Chọn ảnh">{photos.map((photo, photoIndex) => <button ref={(element) => { thumbnailRefs.current[photoIndex] = element; }} key={photo.id} onClick={() => { setDirection(photoIndex >= index ? 1 : -1); setIndex(photoIndex); }} aria-label={`Chọn ảnh ${photoIndex + 1}`} aria-current={photoIndex === index ? 'true' : undefined}><Image src={photo.url} alt="" fill sizes="64px" unoptimized={photo.url.startsWith('/api/')} /></button>)}</div>
     </div>
   </Modal>;
 }

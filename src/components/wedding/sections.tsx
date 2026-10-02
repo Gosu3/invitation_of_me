@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode, type RefObject } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type MouseEvent, type ReactNode, type RefObject } from 'react';
 import Image from 'next/image';
 import { createClient } from '@supabase/supabase-js';
 import { Check, Heart, Navigation, X } from 'lucide-react';
@@ -188,6 +188,24 @@ function Countdown({ target }: { target: string }) {
   return <div className="countdown" aria-label={`Còn ${values[0]} ngày ${values[1]} giờ ${values[2]} phút ${values[3]} giây`}>{values.map((value, index) => <div key={index}><strong>{index ? String(value).padStart(2, '0') : value}</strong><span>{['Ngày', 'Giờ', 'Phút', 'Giây'][index]}</span></div>)}</div>;
 }
 
+// iOS (Safari and Messenger's in-app browser) loads a Google Maps web page in the current view before handing off to the
+// app, so coming back lands on that blank page. Open the maps app directly instead: Google Maps if installed, else Apple Maps.
+function openDirections(event: MouseEvent, destination: string) {
+  // Leaving for the maps app: keep the music playing, only pause the invitation's auto-scroll.
+  window.dispatchEvent(new Event('wedding:open-map'));
+  if (!/iPad|iPhone|iPod/.test(navigator.userAgent) && !(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return;
+  event.preventDefault();
+  const query = encodeURIComponent(destination);
+  let left = false;
+  const onHide = () => { if (document.hidden) left = true; };
+  document.addEventListener('visibilitychange', onHide);
+  window.setTimeout(() => {
+    document.removeEventListener('visibilitychange', onHide);
+    if (!left && !document.hidden) window.location.href = `maps://?daddr=${query}`;
+  }, 1200);
+  window.location.href = `comgooglemaps://?daddr=${query}&directionsmode=driving`;
+}
+
 export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   if (!config.venue) return null;
   const destination = [config.venue.title, config.venue.address].filter(Boolean).join(', ');
@@ -198,9 +216,10 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
       <h3><span dir="auto">Tiệc cưới sẽ tổ chức tại</span></h3>
       <p className="venue-address"><span dir="auto">{destination}</span></p>
     </div>
-    <div className="venue-map-actions">
+    {/* Touch devices: the map iframe ignores taps (its links open Google Maps in-page, leaving a blank page on back), so a tap on it lands here and opens directions. */}
+    <div className="venue-map-actions" onClick={(event) => { if (event.target === event.currentTarget && window.matchMedia('(pointer: coarse)').matches) { openDirections(event, destination); if (!event.defaultPrevented) window.open(directions, '_blank', 'noopener'); } }}>
       {config.features.showMap && <iframe className="venue-map" title={`Bản đồ ${config.venue.title}`} src={embed} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" />}
-      <a className="venue-directions" href={directions} target="_blank" rel="noopener noreferrer"><Navigation size={16} aria-hidden="true" /><span>Chỉ đường</span></a>
+      <a className="venue-directions" href={directions} target="_blank" rel="noopener noreferrer" onClick={(event) => openDirections(event, destination)}><Navigation size={16} aria-hidden="true" /><span>Chỉ đường</span></a>
     </div>
     <div className="venue-dress-code">
       <div className="venue-dress-code-copy">

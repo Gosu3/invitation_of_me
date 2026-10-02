@@ -15,10 +15,7 @@ function useSwipeToClose(surface: RefObject<HTMLDivElement | null>, close: () =>
     const element = surface.current;
     if (!enabled || !element) return;
     let startX = 0, startY = 0, startTime = 0, offset = 0, direction = 0, atTop = false, atBottom = false, tracking = false, dragging = false;
-    // Moving the surface would re-anchor its position:fixed children (lightbox counter/close); surfaces that have
-    // such children mark the parts that should follow the finger with data-swipe-move instead.
-    const targets = () => { const movers = element.querySelectorAll<HTMLElement>('[data-swipe-move]'); return movers.length ? [...movers] : [element]; };
-    const style = (values: Partial<CSSStyleDeclaration>) => targets().forEach((target) => Object.assign(target.style, values));
+    const style = (values: Partial<CSSStyleDeclaration>) => Object.assign(element.style, values);
     const reset = (animate: boolean) => style({ transition: animate ? 'transform .25s ease' : '', transform: '' });
     const start = (event: TouchEvent) => {
       if (event.touches.length !== 1) { tracking = false; return; }
@@ -66,7 +63,9 @@ function useSwipeToClose(surface: RefObject<HTMLDivElement | null>, close: () =>
   }, [surface, close, enabled]);
 }
 
-export function Modal({ children, close, label, className = '', onArrow, swipeToClose = false }: { children: ReactNode; close: () => void; label: string; className?: string; onArrow?: (step: number) => void; swipeToClose?: boolean }) {
+// `overlay` and the close button render outside the (animated, draggable) surface when `overlay` is given, so position:fixed
+// controls stay pinned to the screen corners instead of following the surface's transform.
+export function Modal({ children, close, label, className = '', onArrow, swipeToClose = false, overlay }: { children: ReactNode; close: () => void; label: string; className?: string; onArrow?: (step: number) => void; swipeToClose?: boolean; overlay?: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const surface = useRef<HTMLDivElement>(null);
   useBodyScrollLock(true);
@@ -77,11 +76,13 @@ export function Modal({ children, close, label, className = '', onArrow, swipeTo
     element?.showModal();
     return () => { element?.close(); previousFocus?.focus({ preventScroll: true }); };
   }, []);
+  const closeButton = <button className="dialog-close" onClick={close} aria-label="Đóng" autoFocus><X size={21} /></button>;
   return <dialog ref={dialog} className={`wedding-dialog ${className}`} aria-label={label} onKeyDown={(event) => {
     if (onArrow && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) { event.preventDefault(); onArrow(event.key === 'ArrowLeft' ? -1 : 1); }
   }} onCancel={(event) => { event.preventDefault(); close(); }} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
+    {overlay !== undefined && <>{overlay}{closeButton}</>}
     <div className="dialog-surface" ref={surface}>
-      <button className="dialog-close" onClick={close} aria-label="Đóng" autoFocus><X size={21} /></button>
+      {overlay === undefined && closeButton}
       {children}
     </div>
   </dialog>;
