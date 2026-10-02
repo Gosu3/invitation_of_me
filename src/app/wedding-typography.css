@@ -26,7 +26,7 @@
 }
 .botanical-theme .cover-card p,
 .botanical-theme .cover-invite {font-family:var(--font-display);line-height:1.45}
-.botanical-theme .cover-card .cover-wedding-date {font-family:"Times New Roman",Times,serif}
+.botanical-theme .cover-card .cover-wedding-date {font-family:"Times New Roman",Times,serif;font-style:italic}
 .botanical-theme .cover-invite>span {font-size:calc(24px * var(--guest-name-scale,1))}
 @media(max-width:650px) {.botanical-theme .cover-invite>span {font-size:calc(21px * var(--guest-name-scale,1))}}
 .botanical-theme .cover-invite-personalized {width:100%;min-width:0;margin-inline:auto;gap:6px}

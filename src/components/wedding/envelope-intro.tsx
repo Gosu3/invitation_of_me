@@ -84,7 +84,7 @@ export function EnvelopeIntro({ config, phase, open, personalizedGuestName }: { 
         <div className="cover-divider cover-divider-top" aria-hidden="true"><i />❧<i /></div>
         <h1>{couple.groom}<em>&</em>{couple.bride}</h1>
         <div className="cover-divider cover-divider-date" aria-hidden="true"><i />♥<i /></div>
-        <p className="cover-wedding-date">{weddingDate ? `Ngày ${formatDate(weddingDate)}` : 'Một ngày thật đẹp'}</p>
+        <p className="cover-wedding-date">{weddingDate ? `Ngày ${formatDate(weddingDate).replace(/^ngày\s+/i, '')}` : 'Một ngày thật đẹp'}</p>
         <div className={`cover-invite${guestName ? ' cover-invite-personalized' : ''}`}>
           <span>Thân Mời</span>
           {guestName && <strong ref={guestNameRef}>{guestName}</strong>}
