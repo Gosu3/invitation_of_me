@@ -105,7 +105,7 @@ export function GalleryLightbox({ photos, initial, close }: { photos: WeddingMed
     });
     thumbnailRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }, [index, photos]);
-  return <Modal label="Album ảnh cưới" className="photo-dialog" close={close} onArrow={move}>
+  return <Modal label="Album ảnh cưới" className="photo-dialog" close={close} onArrow={move} swipeToClose>
     <div className="lightbox-stage" {...swipe}>
       <span className="lightbox-count" aria-live="polite">{index + 1} / {photos.length}</span>
       <div className="lightbox-frame">

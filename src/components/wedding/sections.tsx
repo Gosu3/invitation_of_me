@@ -144,7 +144,7 @@ function RsvpModal({ config, close }: { config: WeddingInvitationConfig; close: 
     }
   }
 
-  return <Modal label="Xác nhận tham dự" className="rsvp-dialog" close={close}>
+  return <Modal label="Xác nhận tham dự" className="rsvp-dialog" close={close} swipeToClose>
     {status === 'success' ? <div className="rsvp-success" role="status">
       <span aria-hidden="true"><Check size={25} /></span>
       <h2>Đã gửi xác nhận</h2>
@@ -190,7 +190,6 @@ function Countdown({ target }: { target: string }) {
 
 export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   if (!config.venue) return null;
-  const isBrideInvitation = config.slug === 'tham-va-tho';
   const destination = [config.venue.title, config.venue.address].filter(Boolean).join(', ');
   const embed = `https://www.google.com/maps?q=${encodeURIComponent(destination)}&output=embed`;
   const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
@@ -206,20 +205,9 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
     <div className="venue-dress-code">
       <div className="venue-dress-code-copy">
         <h2>DRESS CODE</h2>
-        <p>Trang phục lịch sự - Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất <span className="dress-code-heart" aria-label="trái tim">♥</span></p>
+        <p>Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất <span className="dress-code-heart" aria-label="trái tim">♥</span></p>
       </div>
-      <div className={`venue-dress-code-swatches${isBrideInvitation ? ' is-bride-invitation' : ''}`} aria-label={isBrideInvitation ? 'Bảng màu trang phục phối nhiều màu' : 'Bảng màu trang phục gồm đỏ, trắng, hồng, kem, đen, nâu, vàng, tím, cam và phối nhiều màu'}>
-        {!isBrideInvitation && <>
-          <span className="dress-swatch dress-swatch-red" title="Đỏ" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-white" title="Trắng" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-pink" title="Hồng" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-cream" title="Kem" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-black" title="Đen" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-brown" title="Nâu" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-yellow" title="Vàng" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-purple" title="Tím" aria-hidden="true" />
-          <span className="dress-swatch dress-swatch-orange" title="Cam" aria-hidden="true" />
-        </>}
+      <div className="venue-dress-code-swatches" aria-label="Bảng màu trang phục phối nhiều màu">
         <span className="dress-swatch dress-swatch-multicolor" title="Phối màu" aria-hidden="true" />
       </div>
     </div>

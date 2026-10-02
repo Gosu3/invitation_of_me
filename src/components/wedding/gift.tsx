@@ -98,7 +98,7 @@ export function GiftSection({ accounts, inline, open, showClosingMessage = false
 }
 
 export function GiftModal({ accounts, close }: { accounts: GiftAccount[]; close: () => void }) {
-  return <Modal label="Hộp Quà Mừng" className="gift-dialog" close={close}>
+  return <Modal label="Hộp Quà Mừng" className="gift-dialog" close={close} swipeToClose>
     <div className="gift-modal-heading">
       <span className="gift-modal-icon"><Gift size={24} /></span>
       <span className="eyebrow">GỬI GẮM YÊU THƯƠNG</span>
