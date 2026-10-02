@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 export const weddingArtwork = {
   flower: '/assets/wedding/hoa-moc/flower-decoration-fresh.webp',
-  guestbook: '/assets/wedding/hoa-moc/papernote-background-green2.png',
+  guestbook: '/assets/wedding/hoa-moc/papernote-background-green-small-flower.webp',
 };
 
 export function ArchitectureSection({ children }: { children: ReactNode }) {

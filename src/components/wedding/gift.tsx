@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Check, Copy, Download, Gift, Heart, QrCode } from 'lucide-react';
 import type { GiftAccount } from '@/lib/types';
 import { downloadDataUrl, getBankQrDataUrl } from '@/lib/wedding-qr';
-import { Modal, SectionTitle } from './shared';
+import { Modal } from './shared';
 
 export function GiftBox({ open }: { open: () => void }) {
   const [opening, setOpening] = useState(false);
@@ -94,14 +94,13 @@ function BankCard({ account, fallbackRole, fallbackQr }: { account: GiftAccount 
 }
 
 export function GiftSection({ accounts, inline, open, showClosingMessage = false }: { accounts: GiftAccount[]; inline: boolean; open: () => void; showClosingMessage?: boolean }) {
-  return <section className="invite-section gift-section" id="qua-mung"><SectionTitle eyebrow="TẤM LÒNG CỦA BẠN"><span dir="auto">Hộp quà mừng</span></SectionTitle>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" fallbackQr="/assets/wedding/qr/chu-re.png" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" fallbackQr="/assets/wedding/qr/co-dau.png" /></div> : <GiftBox open={open} />}{showClosingMessage && <p><span dir="auto">Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình ♡</span></p>}</section>;
+  return <section className="invite-section gift-section" id="qua-mung"><h2><span dir="auto">Hộp quà mừng</span></h2>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" fallbackQr="/assets/wedding/qr/chu-re.png" /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" fallbackQr="/assets/wedding/qr/co-dau.png" /></div> : <GiftBox open={open} />}{showClosingMessage && <p><span dir="auto">Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình ♡</span></p>}</section>;
 }
 
 export function GiftModal({ accounts, close }: { accounts: GiftAccount[]; close: () => void }) {
   return <Modal label="Hộp Quà Mừng" className="gift-dialog" close={close} swipeToClose>
     <div className="gift-modal-heading">
       <span className="gift-modal-icon"><Gift size={24} /></span>
-      <span className="eyebrow">GỬI GẮM YÊU THƯƠNG</span>
       <h2>Hộp Quà Mừng</h2>
       <p>Cảm ơn bạn đã cùng chúng mình lưu giữ một ngày thật đẹp.</p>
       <span className="gift-heart-shower" aria-hidden="true"><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i><i>♥</i></span>

@@ -13,6 +13,10 @@ import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
 import { FamilyCeremonySection, GuestbookSection, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
+// Messenger on iPhone discards the page while the maps app is open; remember where the guest was so a reload
+// right after returning reopens the invitation at the same spot instead of the cover.
+const MAP_RETURN_KEY = 'wedding-map-return';
+const MAP_RETURN_TTL = 30 * 60 * 1000;
 const AUTO_SCROLL_SPEED = 67;
 const AUTO_SCROLL_START_DELAY = 1800;
 const AUTO_SCROLL_RESUME_DELAY = 4500;
@@ -26,12 +30,35 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
   const timers = useRef<number[]>([]);
   const heading = useRef<HTMLDivElement>(null);
   const autoScrollStarted = useRef(false);
+  const restoreScrollY = useRef<number | null>(null);
   const music = useWeddingMusic(config.music);
   const contentVisible = phase === 'revealing' || phase === 'opened';
 
   useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), []);
   useEffect(() => {
-    if (phase === 'opened') { window.scrollTo({ top: 0, behavior: 'instant' }); heading.current?.focus({ preventScroll: true }); }
+    let saved: { path?: string; y?: number; t?: number } | null = null;
+    try { saved = JSON.parse(window.localStorage.getItem(MAP_RETURN_KEY) || 'null'); } catch { /* storage unavailable */ }
+    if (!saved || saved.path !== window.location.pathname || typeof saved.y !== 'number' || Date.now() - (saved.t ?? 0) > MAP_RETURN_TTL) return;
+    restoreScrollY.current = saved.y;
+    autoScrollStarted.current = true;
+    const timer = window.setTimeout(() => {
+      try { window.localStorage.removeItem(MAP_RETURN_KEY); } catch { /* storage unavailable */ }
+      setAutoScrollPaused(true);
+      setPhase('opened');
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+  useEffect(() => {
+    if (phase !== 'opened') return;
+    const restoreY = restoreScrollY.current;
+    restoreScrollY.current = null;
+    heading.current?.focus({ preventScroll: true });
+    if (restoreY === null) { window.scrollTo({ top: 0, behavior: 'instant' }); return; }
+    // Lazy images and reveal-on-scroll sections settle over a moment; re-apply the position once they have.
+    const restore = () => window.scrollTo({ top: restoreY, behavior: 'instant' });
+    restore();
+    const timer = window.setTimeout(restore, 600);
+    return () => window.clearTimeout(timer);
   }, [phase]);
   useEffect(() => {
     if (phase !== 'opened' || autoScrollPaused || giftOpen || photoIndex !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -77,7 +104,11 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     let resumeMusic = false;
     let hidden = false;
     let keepMusic = false;
-    const onOpenMap = () => { keepMusic = true; setAutoScrollPaused(true); };
+    const onOpenMap = () => {
+      keepMusic = true;
+      setAutoScrollPaused(true);
+      try { window.localStorage.setItem(MAP_RETURN_KEY, JSON.stringify({ path: window.location.pathname, y: Math.round(window.scrollY), t: Date.now() })); } catch { /* storage unavailable */ }
+    };
     const leave = () => {
       if (hidden) return;
       hidden = true;
@@ -89,6 +120,8 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     const restore = () => {
       if (document.hidden || !hidden) return;
       hidden = false;
+      // Page survived the trip to the maps app: the saved position is no longer needed.
+      try { window.localStorage.removeItem(MAP_RETURN_KEY); } catch { /* storage unavailable */ }
       root.classList.remove('is-page-hidden');
       const page = document.querySelector<HTMLElement>('.invitation-page');
       if (page) {
@@ -161,8 +194,9 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
       <FamilyCeremonySection config={config} />
+      {/* The album sits outside the paper02 backdrop: the architecture drawing behind the sliding photos made them hard to see. */}
+      {config.gallery.length > 0 && <WeddingGallery photos={config.gallery} story={config.content.story} open={setPhotoIndex} />}
       <div className="paper02-flow">
-        {config.gallery.length > 0 && <WeddingGallery photos={config.gallery} story={config.content.story} open={setPhotoIndex} />}
         <ReceptionSection config={config} />
         {config.venue && <VenueSection config={config} />}
         {config.features.showTimeline && <TimelineSection config={config} />}

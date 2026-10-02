@@ -8,7 +8,7 @@
 .botanical-theme .architecture-section:has(.family-section)::before{content:'';position:absolute;top:-60px;left:0;width:100%;height:calc(56% + 60px);z-index:0;pointer-events:none;background:url('/assets/wedding/hoa-cuoi/paper01.png') center / cover no-repeat;opacity:.5;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 60%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 60%,transparent 100%)}
 .botanical-theme .paper02-flow{--paper02-start:57px;--paper02-gap:5cm;--paper02-cycle:calc(838px + var(--paper02-gap));position:relative;isolation:isolate}
 /* Preserve the first fade-in; each following band starts 5cm after the previous fade-out. */
-.botanical-theme .paper02-flow::before{content:'';position:absolute;top:clamp(-334px,-65vw,-250px);right:0;bottom:0;left:0;z-index:-1;pointer-events:none;background:url('/assets/wedding/hoa-cuoi/paper02.png') center top / 100% auto repeat-y;opacity:.4;-webkit-mask-image:repeating-linear-gradient(to bottom,transparent 0,var(--paper02-start),rgba(0,0,0,.35) 91px,#000 129px,#000 823px,rgba(0,0,0,.35) 861px,transparent 895px,transparent var(--paper02-cycle));mask-image:repeating-linear-gradient(to bottom,transparent 0,var(--paper02-start),rgba(0,0,0,.35) 91px,#000 129px,#000 823px,rgba(0,0,0,.35) 861px,transparent 895px,transparent var(--paper02-cycle))}
+.botanical-theme .paper02-flow::before{content:'';position:absolute;top:0;right:0;bottom:0;left:0;z-index:-1;pointer-events:none;background:url('/assets/wedding/hoa-cuoi/paper02.png') center top / 100% auto repeat-y;opacity:.4;-webkit-mask-image:repeating-linear-gradient(to bottom,transparent 0,var(--paper02-start),rgba(0,0,0,.35) 91px,#000 129px,#000 823px,rgba(0,0,0,.35) 861px,transparent 895px,transparent var(--paper02-cycle));mask-image:repeating-linear-gradient(to bottom,transparent 0,var(--paper02-start),rgba(0,0,0,.35) 91px,#000 129px,#000 823px,rgba(0,0,0,.35) 861px,transparent 895px,transparent var(--paper02-cycle))}
 .botanical-theme .invite-section::before{display:none}
 .botanical-theme .wedding-info-card{width:min(525px,calc(100% - 32px));border-radius:13px;padding:48px 30px 50px!important}
 .family-section>.wedding-info-content{width:100%;max-width:none}
@@ -120,10 +120,11 @@
 .botanical-theme .invite-footer::before,.botanical-theme .invite-footer::after{display:none}
 .botanical-theme .invite-footer p{max-width:390px;margin:15px auto 0;color:#6b8040;font:italic 16px/1.8 var(--w-body)}
 /* Compact corner trigger; the mobile dock stays in its own lane. */
-.wedding-music-player{position:fixed;right:20px;bottom:22px;z-index:45;color:#30530f}
-.music-player-trigger{width:46px;height:46px;display:grid;place-items:center;border:2px solid #f4f6e9;border-radius:50%;background:radial-gradient(circle at 32% 26%,#5e7f4d,#244d2c 72%);box-shadow:0 5px 18px #203a0d42,inset 0 1px 0 #ffffff33;color:#fffdf3;transition:transform .2s ease,box-shadow .2s ease}
-.music-player-trigger:hover{transform:translateY(-2px);box-shadow:0 8px 20px #203a0d52,inset 0 1px 0 #ffffff33}.music-player-trigger:disabled{opacity:.55;cursor:wait}
-.music-player-trigger svg{color:#fff;stroke:#fff}.music-equalizer{display:flex;height:22px;align-items:flex-end;justify-content:center;gap:3px}.music-equalizer i{display:block;width:3px;height:7px;border-radius:3px;background:#fff;box-shadow:0 0 4px #ffffff66;transform-origin:50% 100%;animation:music-equalizer-beat .82s ease-in-out infinite}.music-equalizer i:nth-child(2){height:15px;animation-delay:-.42s}.music-equalizer i:nth-child(3){height:11px;animation-delay:-.2s}.music-equalizer i:nth-child(4){height:18px;animation-delay:-.61s}@keyframes music-equalizer-beat{0%,100%{transform:scaleY(.42);opacity:.72}45%{transform:scaleY(1);opacity:1}70%{transform:scaleY(.66);opacity:.88}}
+/* Bottom inset matches .invitation-dock; +5.5px = (57px dock - 46px button) / 2 so both centres align. */
+.wedding-music-player{position:fixed;right:20px;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 5.5px);z-index:45;color:#30530f}
+.music-player-trigger{width:46px;height:46px;display:grid;place-items:center;border:1px solid #d0dac1;border-radius:50%;background:#fffaf7ed;box-shadow:0 6px 30px #203a0d22;backdrop-filter:blur(10px);color:#30530f;transition:transform .2s ease,box-shadow .2s ease}
+.music-player-trigger:hover{transform:translateY(-2px);box-shadow:0 8px 30px #203a0d33}.music-player-trigger:disabled{opacity:.55;cursor:wait}
+.music-player-trigger svg{color:#30530f;stroke:#30530f}.music-equalizer{display:flex;height:22px;align-items:flex-end;justify-content:center;gap:3px}.music-equalizer i{display:block;width:3px;height:7px;border-radius:3px;background:#30530f;transform-origin:50% 100%;animation:music-equalizer-beat .82s ease-in-out infinite}.music-equalizer i:nth-child(2){height:15px;animation-delay:-.42s}.music-equalizer i:nth-child(3){height:11px;animation-delay:-.2s}.music-equalizer i:nth-child(4){height:18px;animation-delay:-.61s}@keyframes music-equalizer-beat{0%,100%{transform:scaleY(.42);opacity:.72}45%{transform:scaleY(1);opacity:1}70%{transform:scaleY(.66);opacity:.88}}
 @media(prefers-reduced-motion:reduce){.music-equalizer i{animation:none;transform:none}}
 .music-transport,.music-volume{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
 .music-volume input{min-width:0;width:100%;accent-color:#30530f}
@@ -155,7 +156,7 @@
  .album-carousel .album-carousel-slide[data-coverflow-position="2"]{transform:translateX(96%) translateZ(-270px) rotateY(70deg) scale(.72);opacity:.48}
  .album-carousel .album-carousel-slide[data-coverflow-position="-3"]{transform:translateX(-150%) translateZ(-405px) rotateY(-110deg) scale(.68);opacity:.25}
  .album-carousel .album-carousel-slide[data-coverflow-position="3"]{transform:translateX(150%) translateZ(-405px) rotateY(110deg) scale(.68);opacity:.25}
- .wedding-music-player{right:12px;bottom:20px}
+ .wedding-music-player{right:12px;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 4.5px)}
  .music-player-trigger{width:40px;height:40px}
  .botanical-theme .invite-footer p{font-size:14px}
 }
@@ -164,7 +165,7 @@
 .botanical-theme .wedding-info-card.timeline-section{
  width:min(88%,560px);
  max-width:560px;
- margin:16px auto;
+ margin:34px auto;
  padding:26px 32px 28px!important;
  overflow:visible!important;
  border-radius:10px;
@@ -318,13 +319,13 @@
 @media(pointer:coarse){.venue-map{pointer-events:none}}
 .venue-directions{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:transparent;color:#30530fcc;font:600 16px/1.4 Baskerville,'Times New Roman',serif;transition:transform .2s ease,background-color .2s ease}
 .venue-directions:hover{transform:scale(1.03);background:#30530f0a}
-.venue-dress-code{display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;margin-top:22px;padding:32px 24px 8px;text-align:center}
-.venue-dress-code-copy{display:flex;flex-direction:column;align-items:center;gap:4px}
-.venue-dress-code-copy h2{margin:0;color:#30530f;font:700 18px/1.5 'Times New Roman',serif;letter-spacing:.03em;text-transform:uppercase}
-.venue-dress-code-copy p{max-width:440px;margin:0;color:#30530fcc;font:400 12px/1.625 Baskerville,'Times New Roman',serif;text-align:center;white-space:nowrap}
+.venue-dress-code{display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;margin-top:22px;padding:36px 24px 12px;text-align:center}
+.venue-dress-code-copy{display:flex;flex-direction:column;align-items:center;gap:8px}
+.venue-dress-code-copy h2{margin:0;color:#30530f;font:700 20px/1.4 'Times New Roman',serif;letter-spacing:.06em;text-transform:uppercase}
+.venue-dress-code-copy p{max-width:440px;margin:0;color:#30530fcc;font:400 14px/1.6 Baskerville,'Times New Roman',serif;text-align:center;white-space:nowrap}
 .dress-code-heart{display:inline-block;margin-left:2px;color:#b32635;font-family:'Times New Roman',serif;font-size:1.08em;line-height:1;transform:translateY(1px)}
-.venue-dress-code-swatches{display:grid;grid-template-columns:36px;justify-content:center;gap:12px 14px}
-.dress-swatch{display:block;width:36px;height:36px;overflow:hidden;border:2px solid #fffdf9;border-radius:50%;box-shadow:0 0 0 1px #30530f24,0 5px 14px #203a0d24;background-clip:padding-box}
+.venue-dress-code-swatches{display:grid;grid-template-columns:56px;justify-content:center;gap:12px 14px}
+.dress-swatch{display:block;width:56px;height:56px;overflow:hidden;border:3px solid #fffdf9;border-radius:50%;box-shadow:0 0 0 1px #30530f24,0 5px 14px #203a0d24;background-clip:padding-box}
 .dress-swatch-red{background:#9f1d2d}
 .dress-swatch-white{background:#fff;border-color:#30530f38}
 .dress-swatch-pink{background:#e9a6b2}
@@ -335,8 +336,8 @@
 .dress-swatch-purple{background:#876395}
 .dress-swatch-orange{background:#d9783d}
 .dress-swatch-multicolor{background:conic-gradient(from 18deg,#9f1d2d 0 14%,#e9a6b2 14% 28%,#efe2c6 28% 42%,#e4bd4c 42% 56%,#d9783d 56% 70%,#876395 70% 84%,#835b45 84% 100%)}
-@media(min-width:768px){.venue-dress-code{gap:24px;padding:38px 40px 12px}.venue-dress-code-copy h2{font-size:18px}.venue-dress-code-copy p{font-size:14px}.venue-dress-code-swatches{grid-template-columns:40px}.dress-swatch{width:40px;height:40px}}
-@media(max-width:650px){.venue-invitation-section{padding:32px 24px}.venue-invitation-copy h3{font-size:16px}.venue-invitation-copy .venue-address{max-width:260px;font-size:12px}.venue-map-actions{gap:16px}.venue-map{max-width:316px;height:238px}.venue-directions{font-size:14px}.venue-dress-code{margin-top:18px;padding:28px 10px 6px}.venue-dress-code-copy h2{font-size:16px}.venue-dress-code-copy p{max-width:none;font-size:min(12px,3.2vw)}}
+@media(min-width:768px){.venue-dress-code{gap:24px;padding:42px 40px 16px}.venue-dress-code-copy h2{font-size:22px}.venue-dress-code-copy p{font-size:15px}.venue-dress-code-swatches{grid-template-columns:64px}.dress-swatch{width:64px;height:64px}}
+@media(max-width:650px){.venue-invitation-section{padding:32px 24px}.venue-invitation-copy h3{font-size:16px}.venue-invitation-copy .venue-address{max-width:260px;font-size:12px}.venue-map-actions{gap:16px}.venue-map{max-width:316px;height:238px}.venue-directions{font-size:14px}.venue-dress-code{margin-top:18px;padding:32px 8px 8px;gap:18px}.venue-dress-code-copy h2{font-size:18px}.venue-dress-code-copy p{max-width:none;font-size:min(13px,3.5vw)}}
 @media(max-width:380px){
  .botanical-theme .wedding-info-card.family-section{padding-left:8px!important;padding-right:8px!important}
  .botanical-theme .family-section .wedding-couple-names h3{letter-spacing:-.02em!important}
@@ -414,8 +415,8 @@
 .botanical-theme .invite-footer p{max-width:430px;margin:16px auto 0;color:#5f7548;font:italic 15px/1.8 'Times New Roman',serif;letter-spacing:.01em}
 
 @media(max-width:650px){
- .botanical-theme .guestbook-section{margin:18px auto 34px}
- .botanical-theme .guestbook-wrapper{width:94%;margin:18px auto 16px;padding:0!important}
+ .botanical-theme .guestbook-section{margin:0 auto 34px}
+ .botanical-theme .guestbook-wrapper{width:94%;margin:0 auto 16px;padding:0!important}
  .guestbook-content{inset:12% 14% 8%}
  .botanical-theme .guestbook-content .guestbook-title{margin:0;font-size:18px}
  .guestbook-form{width:min(88%,320px);max-width:320px;margin-top:22px;margin-right:1%}
@@ -451,12 +452,12 @@
 }
 .botanical-theme .family-section .wedding-couple-names{display:flex;width:100%;flex-direction:column;align-items:center;text-align:center}
 .botanical-theme .family-section .wedding-couple-names h3{width:100%}
-.botanical-theme .family-section .wedding-couple-names>span{font-size:9px}
+.botanical-theme .family-section .wedding-couple-names>span{font-size:12px}
 .botanical-theme .family-section .wedding-couple-names>em{align-self:center;font-size:31px;text-align:center}
 .botanical-theme .family-section .ceremony-venue>span{font-size:15px}
-.botanical-theme .family-section .ceremony-time-row{font-size:12px}
+.botanical-theme .family-section .ceremony-time-row{font-size:14px}
 .botanical-theme .family-section .ceremony-date-numbers>strong{font-size:37px}
-.botanical-theme .family-section .ceremony-month-year>span{font-size:13px}
+.botanical-theme .family-section .ceremony-month-year>span{font-size:15px}
 .botanical-theme .family-section .ceremony-event-details .wedding-lunar-date{font-size:11px}
 
 .botanical-theme .events-section .reception-intro{font-size:clamp(13px,4vw,18px)}
@@ -474,7 +475,7 @@
 .botanical-theme .events-section .calendar-link{font-size:13px}
 .botanical-theme .events-section .countdown strong{font-size:18px}
 .botanical-theme .events-section .countdown span{font-size:7px}
-.botanical-theme .events-section .reception-rsvp-button{font-size:11px}
+.botanical-theme .events-section .reception-rsvp-button{font-size:14px}
 
 @media(min-width:768px){
  .letter-names p{font-size:54px}
@@ -564,8 +565,8 @@
 .gift-modal-heading{position:relative;isolation:isolate;max-width:620px;margin:0 auto;overflow:hidden}
 .gift-modal-heading>*:not(.gift-heart-shower){position:relative;z-index:1}
 .gift-dialog .gift-modal-icon{width:36px;height:36px;margin:0 auto 5px}
-.botanical-theme .gift-dialog .gift-modal-heading>.eyebrow{display:block;margin-bottom:2px;font:600 8px/1.2 'Times New Roman',serif;letter-spacing:.16em}
-.botanical-theme .gift-dialog .gift-modal-heading>h2{margin:5px 0 4px;font-size:clamp(1.45rem,3.2vw,1.65rem);line-height:1.15}
+/* Same face as the page's section titles (HỘP QUÀ MỪNG, SỔ LƯU BÚT). */
+.botanical-theme .gift-dialog .gift-modal-heading>h2{margin:5px 0 8px;font:700 clamp(1.35rem,3vw,1.55rem)/1.3 'Times New Roman',serif;letter-spacing:.05em;text-transform:uppercase}
 .botanical-theme .gift-dialog .gift-modal-heading>p{margin:0;font-size:12px;line-height:1.4;white-space:nowrap}
 .gift-heart-shower{position:absolute;z-index:0;inset:25px 6% 0;overflow:hidden;pointer-events:none}
 .gift-heart-shower i{position:absolute;top:14px;left:50%;color:#df7895;font:400 13px/1 Georgia,serif;opacity:0;filter:drop-shadow(0 1px 1px #fff);animation:gift-heart-drift 4.8s ease-out infinite}
@@ -592,11 +593,10 @@
  .gift-dialog .dialog-surface{width:min(370px,calc(100vw - 16px));max-height:calc(100dvh - 16px);padding:28px 10px 12px;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-x pan-y pinch-zoom;-webkit-overflow-scrolling:touch;border-radius:18px}
  .gift-dialog .dialog-surface::-webkit-scrollbar{display:none}
  .gift-dialog .dialog-close{top:7px;right:7px;width:31px;height:31px}
- .gift-dialog .gift-modal-icon{width:29px;height:29px;margin-bottom:2px}
- .gift-dialog .gift-modal-icon svg{width:18px;height:18px}
- .botanical-theme .gift-dialog .gift-modal-heading>.eyebrow{font-size:7px}
- .botanical-theme .gift-dialog .gift-modal-heading>h2{margin:4px 0 3px;font-size:22px}
- .botanical-theme .gift-dialog .gift-modal-heading>p{font-size:10px;line-height:1.3}
+ .gift-dialog .gift-modal-icon{width:40px;height:40px;margin-bottom:10px}
+ .gift-dialog .gift-modal-icon svg{width:22px;height:22px}
+ .botanical-theme .gift-dialog .gift-modal-heading>h2{margin:0 0 8px;font-size:22px}
+ .botanical-theme .gift-dialog .gift-modal-heading>p{max-width:290px;margin:0 auto;font-size:13px;line-height:1.5;white-space:normal;text-wrap:balance}
  .gift-heart-shower{inset:18px 3% 0}
  .gift-heart-shower i{font-size:10px}.gift-heart-shower i:nth-child(even){font-size:12px}
  .gift-couple-layout{grid-template-columns:1fr;gap:6px;max-width:294px;margin:8px auto}
@@ -604,14 +604,14 @@
  .gift-couple-bride{grid-template-columns:minmax(0,1fr) 82px}
  .gift-couple-pair .bank-card{padding:6px 5px;gap:3px;border-radius:12px}
  .gift-couple-pair .bank-qr-original{max-width:132px}
- .bank-save-qr{min-height:20px;padding:2px 8px;font-size:8px}
- .bank-save-qr svg{width:10px;height:10px}
+ .bank-save-qr{min-height:28px;padding:4px 12px;font-size:11px}
+ .bank-save-qr svg{width:13px;height:13px}
  .gift-couple-pair .bank-role{font-size:15px;line-height:1.15}
  .gift-character{padding-top:22px}
  .gift-character-groom{transform:translateX(10px)}
  .gift-character-bride{transform:translateX(-10px)}
  .gift-character-heart{top:2px;width:17px;height:17px}
- .gift-dialog p.gift-thanks{font-size:9px;line-height:1.3}
+ .gift-dialog p.gift-thanks{font-size:12px;line-height:1.4}
 }
 @media(max-width:760px) and (max-height:620px){
  .gift-dialog .dialog-surface{padding-top:24px}
