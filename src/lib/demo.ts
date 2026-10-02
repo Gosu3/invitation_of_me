@@ -14,7 +14,7 @@ export const demoInvitations: Invitation[] = [
     partnerOneAddress: 'Tiên Lãng, Hải Phòng',
     partnerTwoAddress: 'Khoái Châu, Hưng Yên',
     headline: 'Trân trọng kính mời',
-    message: 'Cùng gia đình, Văn Thọ và Hồng Thắm hân hạnh mời bạn đến chung vui trong ngày bắt đầu hành trình mới của chúng mình.',
+    message: 'Văn Thọ và Hồng Thắm cùng gia đình hân hạnh mời bạn đến chung vui trong ngày bắt đầu hành trình mới của chúng mình.',
     story: 'Giữa rất nhiều cuộc gặp gỡ, chúng mình đã tìm thấy một người để cùng đi qua những ngày bình thường đẹp nhất.',
     coverImage: '/photos/wedding-05.webp?v=20260923-2',
     coverAlt: 'Văn Thọ và Hồng Thắm trong bộ ảnh cưới',
