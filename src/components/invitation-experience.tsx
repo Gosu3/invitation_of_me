@@ -66,27 +66,45 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
       window.removeEventListener('keydown', pauseForKeyboard);
     };
   }, [autoScrollPaused, giftOpen, phase, photoIndex]);
+  const musicRef = useRef(music);
+  useEffect(() => { musicRef.current = music; });
   useEffect(() => {
     // In-app browsers (Messenger/iOS WebView) can come back from another app (e.g. Google Maps) with a blank,
-    // unpainted page while JS and music keep running; nudge a repaint whenever the page becomes visible again.
-    const repaint = () => {
-      if (document.hidden) return;
-      const root = document.documentElement;
-      root.style.opacity = '0.999';
-      void root.offsetHeight;
-      window.requestAnimationFrame(() => {
-        root.style.opacity = '';
-        window.scrollTo({ top: window.scrollY + 1, behavior: 'instant' });
-        window.scrollTo({ top: window.scrollY - 1, behavior: 'instant' });
-      });
+    // unpainted page while JS and music keep running. While hidden: stop music (it also delays closing the
+    // in-app browser) and infinite animations; when visible again: rebuild the page's layers and resume music.
+    const root = document.documentElement;
+    let resumeMusic = false;
+    let hidden = false;
+    const leave = () => {
+      if (hidden) return;
+      hidden = true;
+      root.classList.add('is-page-hidden');
+      resumeMusic = musicRef.current.playing;
+      if (resumeMusic) void musicRef.current.pause();
     };
-    document.addEventListener('visibilitychange', repaint);
-    window.addEventListener('pageshow', repaint);
-    window.addEventListener('focus', repaint);
+    const restore = () => {
+      if (document.hidden || !hidden) return;
+      hidden = false;
+      root.classList.remove('is-page-hidden');
+      const page = document.querySelector<HTMLElement>('.invitation-page');
+      if (page) {
+        const top = window.scrollY;
+        page.style.display = 'none';
+        void page.offsetHeight;
+        page.style.display = '';
+        window.scrollTo({ top, behavior: 'instant' });
+      }
+      if (resumeMusic) { resumeMusic = false; void musicRef.current.play(); }
+    };
+    const onVisibility = () => { if (document.hidden) leave(); else restore(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', leave);
+    window.addEventListener('pageshow', restore);
     return () => {
-      document.removeEventListener('visibilitychange', repaint);
-      window.removeEventListener('pageshow', repaint);
-      window.removeEventListener('focus', repaint);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', leave);
+      window.removeEventListener('pageshow', restore);
+      root.classList.remove('is-page-hidden');
     };
   }, []);
   useEffect(() => {

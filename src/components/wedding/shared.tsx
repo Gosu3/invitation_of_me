@@ -15,10 +15,11 @@ function useSwipeToClose(surface: RefObject<HTMLDivElement | null>, close: () =>
     const element = surface.current;
     if (!enabled || !element) return;
     let startX = 0, startY = 0, startTime = 0, offset = 0, direction = 0, atTop = false, atBottom = false, tracking = false, dragging = false;
-    const reset = (animate: boolean) => {
-      element.style.transition = animate ? 'transform .25s ease' : '';
-      element.style.transform = '';
-    };
+    // Moving the surface would re-anchor its position:fixed children (lightbox counter/close); surfaces that have
+    // such children mark the parts that should follow the finger with data-swipe-move instead.
+    const targets = () => { const movers = element.querySelectorAll<HTMLElement>('[data-swipe-move]'); return movers.length ? [...movers] : [element]; };
+    const style = (values: Partial<CSSStyleDeclaration>) => targets().forEach((target) => Object.assign(target.style, values));
+    const reset = (animate: boolean) => style({ transition: animate ? 'transform .25s ease' : '', transform: '' });
     const start = (event: TouchEvent) => {
       if (event.touches.length !== 1) { tracking = false; return; }
       atTop = element.scrollTop <= 0;
@@ -37,21 +38,18 @@ function useSwipeToClose(surface: RefObject<HTMLDivElement | null>, close: () =>
         direction = delta > 0 ? 1 : -1;
         if ((direction > 0 && !atTop) || (direction < 0 && !atBottom)) { tracking = false; return; }
         dragging = true;
-        element.style.animation = 'none';
-        element.style.transition = 'none';
+        style({ animation: 'none', transition: 'none' });
       }
       event.preventDefault();
       offset = Math.max(0, delta * direction - 8);
-      element.style.transform = `translateY(${offset * direction}px)`;
+      style({ transform: `translateY(${offset * direction}px)` });
     };
     const end = (event: TouchEvent) => {
       if (!dragging) { tracking = false; return; }
       tracking = dragging = false;
       const velocity = offset / Math.max(1, event.timeStamp - startTime);
       if (offset > 110 || (offset > 40 && velocity > 0.6)) {
-        element.style.transition = 'transform .2s ease-in, opacity .2s ease-in';
-        element.style.transform = `translateY(${window.innerHeight * direction}px)`;
-        element.style.opacity = '0';
+        style({ transition: 'transform .2s ease-in, opacity .2s ease-in', transform: `translateY(${window.innerHeight * direction}px)`, opacity: '0' });
         window.setTimeout(close, 180);
       } else reset(true);
     };
