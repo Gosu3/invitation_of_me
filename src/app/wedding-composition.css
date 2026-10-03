@@ -556,7 +556,7 @@
 
 @media(max-width:650px){
  .rsvp-dialog[open]{align-items:center;padding:max(12px,env(safe-area-inset-top)) 16px max(12px,env(safe-area-inset-bottom));overflow-x:hidden}
- .rsvp-dialog .dialog-surface{width:100%;max-height:calc(100dvh - max(24px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));padding:26px 22px 22px;overflow-x:hidden}
+ .rsvp-dialog .dialog-surface{width:100%;max-height:calc(100dvh - max(24px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));padding:26px 22px 22px;overflow-x:hidden;overscroll-behavior:contain}
  .timeline-section .wedding-timeline{width:100%;max-width:310px;margin-right:auto;margin-left:auto}
 }
 
