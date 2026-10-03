@@ -64,7 +64,7 @@ Khi thiếu biến môi trường Supabase, `src/lib/invitations.ts` dùng `src/
 
 - `wedding_admins`: tài khoản được phép quản trị.
 - `wedding_invitations`: nội dung chính, slug và trạng thái `draft/published/archived`.
-- `wedding_events`: lễ cưới, tiệc cưới và địa điểm.
+- `wedding_events`: lễ cưới, tiệc cưới và địa điểm. `address` là chữ hiển thị; `map_query` (tùy chọn) là địa danh bản đồ nhúng dò theo, để trống thì dùng `venue` + `address`; `map_url` là link nút "Chỉ đường".
 - `wedding_timeline_items`: lịch trình trong ngày.
 - `wedding_media`: metadata ảnh và đường dẫn tệp trong Storage.
 - `wedding_rsvps`: phản hồi tham dự, chỉ quản trị được đọc.

@@ -15,7 +15,7 @@ export function mapInvitation(row: Row, relations: {
   const events: WeddingEvent[] = (relations.events || []).map((e) => ({
     id: str(e.id), title: str(e.title), dateTime: str(e.date_time),
     arrivalTime: opt(e.arrival_time), lunarDate: opt(e.lunar_date),
-    venue: str(e.venue), address: str(e.address), mapUrl: opt(e.map_url), sortOrder: Number(e.sort_order || 0),
+    venue: str(e.venue), address: str(e.address), mapUrl: opt(e.map_url), mapQuery: opt(e.map_query), sortOrder: Number(e.sort_order || 0),
   })).sort((a, b) => a.sortOrder - b.sortOrder);
   const timeline: TimelineItem[] = (relations.timeline || []).map((t) => ({
     id: str(t.id), time: str(t.time), title: str(t.title), description: opt(t.description), sortOrder: Number(t.sort_order || 0),

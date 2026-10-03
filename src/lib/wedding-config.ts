@@ -46,7 +46,7 @@ export function createWeddingConfig(invitation: Invitation) {
     ceremony,
     reception,
     events: invitation.events,
-    venue: reception ? { title: reception.venue, address: reception.address, mapUrl: reception.mapUrl } : undefined,
+    venue: reception ? { title: reception.venue, address: reception.address, mapUrl: reception.mapUrl, mapQuery: reception.mapQuery } : undefined,
     gallery,
     timeline: invitation.timeline,
     bankAccounts: invitation.gifts,

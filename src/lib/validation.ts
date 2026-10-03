@@ -22,7 +22,7 @@ export const guestLinkSchema = z.object({
 
 const eventSchema = z.object({
   title: safeText(100), dateTime: z.iso.datetime({ offset: true }), arrivalTime: optionalText(30),
-  lunarDate: optionalText(120), venue: safeText(200), address: safeText(400), mapUrl: optionalUrl,
+  lunarDate: optionalText(120), venue: safeText(200), address: safeText(400), mapUrl: optionalUrl, mapQuery: optionalText(400),
   sortOrder: z.number().int().min(0).max(1000),
 });
 const timelineSchema = z.object({

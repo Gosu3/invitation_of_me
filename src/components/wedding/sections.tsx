@@ -209,17 +209,19 @@ function openDirections(event: MouseEvent, destination: string) {
 export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   if (!config.venue) return null;
   const destination = [config.venue.title, config.venue.address].filter(Boolean).join(', ');
-  const embed = `https://www.google.com/maps?q=${encodeURIComponent(destination)}&output=embed`;
-  const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+  // The map can search a different place name than the address shown (e.g. a nearby landmark Google knows).
+  const mapPlace = config.venue.mapQuery || destination;
+  const embed = `https://www.google.com/maps?q=${encodeURIComponent(mapPlace)}&output=embed`;
+  const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapPlace)}`;
   return <section id="dia-diem" className="venue-invitation-section" data-landing-screenshot-id="invite-map">
     <div className="venue-invitation-copy">
       <h3><span dir="auto">Tiệc cưới sẽ tổ chức tại</span></h3>
       <p className="venue-address"><span dir="auto">{destination}</span></p>
     </div>
     {/* Touch devices: the map iframe ignores taps (its links open Google Maps in-page, leaving a blank page on back), so a tap on it lands here and opens directions. */}
-    <div className="venue-map-actions" onClick={(event) => { if (event.target === event.currentTarget && window.matchMedia('(pointer: coarse)').matches) { openDirections(event, destination); if (!event.defaultPrevented) window.open(directions, '_blank', 'noopener'); } }}>
+    <div className="venue-map-actions" onClick={(event) => { if (event.target === event.currentTarget && window.matchMedia('(pointer: coarse)').matches) { openDirections(event, mapPlace); if (!event.defaultPrevented) window.open(directions, '_blank', 'noopener'); } }}>
       {config.features.showMap && <iframe className="venue-map" title={`Bản đồ ${config.venue.title}`} src={embed} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" />}
-      <a className="venue-directions" href={directions} target="_blank" rel="noopener noreferrer" onClick={(event) => openDirections(event, destination)}><Navigation size={16} aria-hidden="true" /><span>Chỉ đường</span></a>
+      <a className="venue-directions" href={directions} target="_blank" rel="noopener noreferrer" onClick={(event) => openDirections(event, mapPlace)}><Navigation size={16} aria-hidden="true" /><span>Chỉ đường</span></a>
     </div>
     <div className="venue-dress-code">
       <div className="venue-dress-code-copy">

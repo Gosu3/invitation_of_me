@@ -9,6 +9,8 @@ export type WeddingEvent = {
   venue: string;
   address: string;
   mapUrl?: string;
+  /** What the embedded map searches for; defaults to venue + address. */
+  mapQuery?: string;
   sortOrder: number;
 };
 
