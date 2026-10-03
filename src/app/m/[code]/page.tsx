@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { InvitationExperience } from '@/components/invitation-experience';
 import { getInvitation } from '@/lib/invitations';
 import { isDatabaseConfigured, serviceDb } from '@/lib/supabase';
+import { shareDescription, shareImage } from '@/lib/share-metadata';
 import { siteUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -42,8 +43,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     robots: { index: false, follow: false },
     // Without an explicit og:image, Messenger scrapes a random page image (the transparent flower PNG renders on black).
     openGraph: {
-      title, description, type: 'website', url: `${siteUrl()}/m/${code}`,
-      images: [{ url: `${siteUrl()}/photos/og-avatar.jpg`, width: 1200, height: 630 }],
+      title, description: shareDescription(result.invitation), type: 'website', url: `${siteUrl()}/m/${code}`,
+      images: [shareImage(result.invitation)],
     },
   };
 }

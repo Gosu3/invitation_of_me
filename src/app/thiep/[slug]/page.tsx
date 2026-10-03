@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { getInvitation } from '@/lib/invitations';
+import { shareDescription, shareImage } from '@/lib/share-metadata';
 import { siteUrl } from '@/lib/utils';
 import { InvitationExperience } from '@/components/invitation-experience';
 import { isDatabaseConfigured } from '@/lib/supabase';
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title, description: invitation.message,
     robots: { index: false, follow: false },
-    openGraph: { title, description: invitation.message, type: 'website', url: `${siteUrl()}/thiep/${slug}`, images: [{ url: `${siteUrl()}/photos/og-avatar.jpg`, width: 1200, height: 630 }] },
+    openGraph: { title, description: shareDescription(invitation), type: 'website', url: `${siteUrl()}/thiep/${slug}`, images: [shareImage(invitation)] },
   };
 }
 
