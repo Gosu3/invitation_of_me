@@ -306,7 +306,7 @@
 
 /* Compact ceremony icons sit beside their corresponding timeline times. */
 .timeline-section .wedding-timeline{grid-template-columns:28px 58px 16px minmax(138px,156px);justify-content:center;width:max-content;max-width:100%;column-gap:10px}
-.timeline-section .wedding-timeline .timeline-icon{display:grid;align-self:center;justify-self:end;width:28px;height:28px;place-items:center;transform:translateX(4px);pointer-events:none}
+.timeline-section .wedding-timeline .timeline-icon{display:flex;align-self:center;justify-self:end;width:28px;height:28px;align-items:center;justify-content:center;transform:translateX(4px);pointer-events:none}
 .timeline-section .wedding-timeline .timeline-icon img{display:block;width:100%!important;height:100%!important;object-fit:contain;transform:scale(.8);transform-origin:center;filter:drop-shadow(0 1px 2px #122b0d30)}
 .timeline-section .wedding-timeline .timeline-icon-empty{visibility:hidden}
 @media(max-width:650px){.timeline-section .wedding-timeline{grid-template-columns:26px 48px 14px minmax(126px,1fr);width:100%;max-width:260px;column-gap:8px}.timeline-section .wedding-timeline .timeline-icon{width:24px;height:24px;transform:translateX(3px)}}

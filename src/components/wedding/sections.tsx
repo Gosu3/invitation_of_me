@@ -234,15 +234,13 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
 }
 
 export function TimelineSection({ config }: { config: WeddingInvitationConfig }) {
-  const timelineIcons: Record<string, string> = {
-    'Khai tiệc': '/assets/wedding/timeline-icons/gate.webp',
-    'Rót rượu, cắt bánh': '/assets/wedding/timeline-icons/cake.webp',
-    'Lễ ăn hỏi - dẫn cưới': '/assets/wedding/timeline-icons/cake.webp',
-    'Phục vụ món chính': '/assets/wedding/timeline-icons/water.webp',
-  };
+  // Icons follow position, not title, so both families' schedules read the same: the middle milestones get
+  // gate → cake → water; the first (đón khách) and last (kết thúc) items keep an empty slot for alignment.
+  const timelineIcons = ['gate', 'cake', 'water'];
+  const iconAt = (index: number) => index > 0 && index < config.timeline.length - 1 ? timelineIcons[index - 1] : undefined;
   return <ArchitectureSection><section className="invite-section paper-info-card wedding-info-card timeline-section">
     <div className="wedding-info-content"><h2 className="wedding-info-title timeline-title"><span dir="auto">LỊCH TRÌNH NGÀY CƯỚI</span></h2>
-      <ol className="wedding-timeline">{config.timeline.map((item) => <li key={item.id}>{timelineIcons[item.title] ? <span className="timeline-icon" aria-hidden="true"><Image src={timelineIcons[item.title]} alt="" width={320} height={320} /></span> : <span className="timeline-icon timeline-icon-empty" aria-hidden="true" />}<time>{item.time}</time><span className="timeline-node" aria-hidden="true" /><div><strong><span dir="auto">{item.title}</span></strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
+      <ol className="wedding-timeline">{config.timeline.map((item, index) => <li key={item.id}>{iconAt(index) ? <span className="timeline-icon" aria-hidden="true"><Image src={`/assets/wedding/timeline-icons/${iconAt(index)}.webp`} alt="" width={320} height={320} /></span> : <span className="timeline-icon timeline-icon-empty" aria-hidden="true" />}<time>{item.time}</time><span className="timeline-node" aria-hidden="true" /><div><strong><span dir="auto">{item.title}</span></strong>{item.description && <p>{item.description}</p>}</div></li>)}</ol>
     </div><TimelineFlowers />
   </section></ArchitectureSection>;
 }
