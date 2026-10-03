@@ -144,7 +144,7 @@ function RsvpModal({ config, close }: { config: WeddingInvitationConfig; close: 
     }
   }
 
-  return <Modal label="Xác nhận tham dự" className="rsvp-dialog" close={close} swipeToClose>
+  return <Modal label="Xác nhận tham dự" className="rsvp-dialog" close={close}>
     {status === 'success' ? <div className="rsvp-success" role="status">
       <span aria-hidden="true"><Check size={25} /></span>
       <h2>Đã gửi xác nhận</h2>

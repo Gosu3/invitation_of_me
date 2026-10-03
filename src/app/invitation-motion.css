@@ -324,7 +324,7 @@
 .reception-calendar .countdown div{padding:6px 2px}
 .reception-calendar .countdown strong{font-size:20px}
 .reception-calendar .calendar-link{padding:7px 12px}
-.reception-rsvp-button{display:inline-flex;min-height:44px;align-items:center;justify-content:center;margin:4px auto 0;padding:10px 26px;border:0;border-radius:999px;background:#eaf0df;color:#244d12;font:400 12px/1.4 Baskerville,'Times New Roman',serif;letter-spacing:.02em;transition:transform .2s ease,background-color .2s ease}.reception-rsvp-button:hover{background:#fffaf7;transform:scale(1.03)}
+.reception-rsvp-button{display:inline-flex;min-height:32px;align-items:center;justify-content:center;margin:4px auto 0;padding:7px 20px;border:0;border-radius:999px;background:#eaf0df;color:#244d12;font:400 12px/1.4 Baskerville,'Times New Roman',serif;letter-spacing:.02em;transition:transform .2s ease,background-color .2s ease}.reception-rsvp-button:hover{background:#fffaf7;transform:scale(1.03)}
 .album-carousel-slide{flex-basis:40%}
 .album-carousel-arrow.previous{left:18%}
 .album-carousel-arrow.next{right:18%}

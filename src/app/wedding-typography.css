@@ -372,8 +372,8 @@
 .botanical-theme .events-section .calendar-link:hover {background:none;opacity:.8}
 .botanical-theme .events-section .countdown {width:min(100%,310px);margin:0;gap:6px}
 .botanical-theme .events-section .countdown div {padding:6px 2px;border:1px solid rgba(236,228,216,.25);background:rgba(236,228,216,.06)}
-.botanical-theme .events-section .countdown strong {font:400 22px/1 'Times New Roman',serif;color:rgb(236,228,216)}
-.botanical-theme .events-section .countdown span {font:400 10px/1.3 Baskerville,'Times New Roman',serif;letter-spacing:.1em;color:rgba(236,228,216,.7)}
+.botanical-theme .events-section .countdown strong {font:400 20px/1 'Times New Roman',serif;color:rgb(236,228,216)}
+.botanical-theme .events-section .countdown span {font:400 8px/1.3 Baskerville,'Times New Roman',serif;letter-spacing:.12em;color:rgba(236,228,216,.7)}
 .botanical-theme .events-section .reception-rsvp-link {display:inline-flex;align-items:center;justify-content:center;margin-top:4px;padding:10px 24px;border-radius:999px;background:rgb(236,228,216);font:400 14px/1.3 Baskerville,'Times New Roman',serif;letter-spacing:.04em;color:#30530f;transition:transform .2s}
 .botanical-theme .events-section .reception-rsvp-link:hover {transform:scale(1.03)}
 @media(min-width:768px) {

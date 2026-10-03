@@ -68,20 +68,20 @@
   .botanical-theme .guestbook-section {padding-inline: 8px}
   .botanical-theme .guestbook-wrapper {width:94%;aspect-ratio: auto;min-height:340px}
   .guestbook-background {object-fit: fill}
-  .botanical-theme .guestbook-content {position: relative;inset: auto;width: 100%;padding:38px 14% 40px}
-  .botanical-theme .guestbook-content .guestbook-title {width: 100%;margin: 0;transform: none;font-size:20px}
-  .botanical-theme .guestbook-form {width: 100%;max-width: none;margin:18px auto 0}
-  .botanical-theme .guestbook-form-panel {padding:0;gap:12px}
-  .botanical-theme .guestbook-form textarea {height:88px}
-  .botanical-theme .guestbook-form input,.botanical-theme .guestbook-form textarea {font-size: 16px!important}
-  .botanical-theme .guestbook-form input::placeholder,.botanical-theme .guestbook-form textarea::placeholder {font-size:15px}
-  .guestbook-form-actions {gap:10px;margin-top:4px}
-  .guestbook-form-actions .guestbook-ai-button {width:36px;height:36px;flex-basis:36px;padding:6px;font-size:16px!important}
-  .guestbook-form-actions .guestbook-submit {min-height:36px;padding:7px 20px;font-size:13px!important}
+  .botanical-theme .guestbook-content {position: relative;inset: auto;width: 100%;padding:54px 15% 46px}
+  .botanical-theme .guestbook-content .guestbook-title {width: 100%;margin: 0;transform: none;font-size:18px}
+  .botanical-theme .guestbook-form {width: 100%;max-width: none;margin:14px auto 0}
+  .botanical-theme .guestbook-form-panel {padding:0;gap:9px}
+  .botanical-theme .guestbook-form textarea {height:64px}
+  .botanical-theme .guestbook-form input,.botanical-theme .guestbook-form textarea {padding:6px 11px;font-size: 16px!important;line-height:1.35}
+  .botanical-theme .guestbook-form input::placeholder,.botanical-theme .guestbook-form textarea::placeholder {font-size:14px}
+  .guestbook-form-actions {gap:8px;margin-top:2px}
+  .guestbook-form-actions .guestbook-ai-button {width:32px;height:32px;flex-basis:32px;padding:6px;font-size:14px!important}
+  .guestbook-form-actions .guestbook-submit {min-height:32px;padding:6px 18px;font-size:12px!important}
   .guestbook-wishes blockquote header {flex-wrap: wrap;gap: 4px 12px}
   .venue-invitation-section {padding-inline:16px}
   .venue-map {width:86%;max-width:270px;height:200px;margin-right:auto;margin-left:auto}
-  .venue-directions {padding:6px 16px;font-size:12px}
+  .venue-directions {padding:6px 16px;font-size:min(13px,3.5vw)}
   .album-carousel {max-width:360px;padding-block:6px 10px}
   .album-carousel-track {height:clamp(340px,95vw,390px)}
   .album-carousel .album-carousel-slide {width:min(62%,235px);border-width:4px;border-radius:8px}

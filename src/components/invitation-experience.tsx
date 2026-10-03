@@ -20,6 +20,7 @@ const MAP_RETURN_TTL = 30 * 60 * 1000;
 const AUTO_SCROLL_SPEED = 67;
 const AUTO_SCROLL_START_DELAY = 1800;
 const AUTO_SCROLL_RESUME_DELAY = 4500;
+const AUTO_SCROLL_RETURN_DELAY = 3000;
 
 export function InvitationExperience({ invitation, connected, guestName }: { invitation: Invitation; connected: boolean; guestName?: string }) {
   const config = useMemo(() => createWeddingConfig(invitation), [invitation]);
@@ -72,11 +73,14 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     const pauseForKeyboard = (event: KeyboardEvent) => {
       if (['ArrowDown', 'ArrowUp', 'End', 'Home', 'PageDown', 'PageUp', ' '].includes(event.key)) pauseForInteraction();
     };
+    // Back from another app/tab: hold the current position, then continue after 3s unless the guest interacts.
+    const pauseForReturn = () => { if (!document.hidden) pausedUntil = Math.max(pausedUntil, performance.now() + AUTO_SCROLL_RETURN_DELAY); };
     const scroll = (time: number) => {
       if (!lastFrame) lastFrame = time;
       const elapsed = Math.min(time - lastFrame, 50);
       lastFrame = time;
-      if (time >= pausedUntil) {
+      // Any open dialog (RSVP, wishes…) holds the page still so typing is never interrupted.
+      if (time >= pausedUntil && !document.querySelector('dialog[open]')) {
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
         autoScrollPosition = Math.min(maxScroll, Math.max(autoScrollPosition, window.scrollY) + AUTO_SCROLL_SPEED * elapsed / 1000);
         if (window.scrollY < maxScroll - 1) window.scrollTo({ top: autoScrollPosition, behavior: 'instant' });
@@ -86,9 +90,13 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
 
     window.addEventListener('wheel', pauseForInteraction, { passive: true });
     window.addEventListener('keydown', pauseForKeyboard);
+    document.addEventListener('visibilitychange', pauseForReturn);
+    window.addEventListener('pageshow', pauseForReturn);
     animationFrame = window.requestAnimationFrame(scroll);
     return () => {
       window.cancelAnimationFrame(animationFrame);
+      document.removeEventListener('visibilitychange', pauseForReturn);
+      window.removeEventListener('pageshow', pauseForReturn);
       window.removeEventListener('wheel', pauseForInteraction);
       window.removeEventListener('keydown', pauseForKeyboard);
     };
@@ -97,15 +105,13 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
   useEffect(() => { musicRef.current = music; });
   useEffect(() => {
     // In-app browsers (Messenger/iOS WebView) can come back from another app (e.g. Google Maps) with a blank,
-    // unpainted page while JS and music keep running. While hidden: stop music (it also delays closing the
-    // in-app browser) and infinite animations; when visible again: rebuild the page's layers and resume music.
-    // Opening the maps app is the exception: music keeps playing and only auto-scroll pauses.
+    // unpainted page while JS keeps running. Switching to another app/tab keeps the invitation alive in the
+    // background: music keeps playing, only infinite animations (and auto-scroll, see above) pause. Music stops
+    // only when the page is actually being closed (pagehide); when visible again the page's layers are rebuilt.
     const root = document.documentElement;
     let resumeMusic = false;
     let hidden = false;
-    let keepMusic = false;
     const onOpenMap = () => {
-      keepMusic = true;
       setAutoScrollPaused(true);
       try { window.localStorage.setItem(MAP_RETURN_KEY, JSON.stringify({ path: window.location.pathname, y: Math.round(window.scrollY), t: Date.now() })); } catch { /* storage unavailable */ }
     };
@@ -113,9 +119,11 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
       if (hidden) return;
       hidden = true;
       root.classList.add('is-page-hidden');
-      resumeMusic = !keepMusic && musicRef.current.playing;
-      keepMusic = false;
-      if (resumeMusic) void musicRef.current.pause();
+    };
+    const close = () => {
+      leave();
+      resumeMusic = resumeMusic || musicRef.current.playing;
+      if (musicRef.current.playing) void musicRef.current.pause();
     };
     const restore = () => {
       if (document.hidden || !hidden) return;
@@ -136,12 +144,12 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     const onVisibility = () => { if (document.hidden) leave(); else restore(); };
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('wedding:open-map', onOpenMap);
-    window.addEventListener('pagehide', leave);
+    window.addEventListener('pagehide', close);
     window.addEventListener('pageshow', restore);
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('wedding:open-map', onOpenMap);
-      window.removeEventListener('pagehide', leave);
+      window.removeEventListener('pagehide', close);
       window.removeEventListener('pageshow', restore);
       root.classList.remove('is-page-hidden');
     };
