@@ -7,7 +7,3 @@ export function shareImage(invitation: Pick<Invitation, 'partnerOne' | 'partnerT
   return { url: `${siteUrl()}/photos/og-cover.jpg`, width: 1200, height: 630, alt: `Ảnh cưới ${invitation.partnerOne} & ${invitation.partnerTwo}` };
 }
 
-// Short enough (< 90 chars) to show in full under the preview image instead of being cut mid-sentence.
-export function shareDescription(invitation: Pick<Invitation, 'partnerOne' | 'partnerTwo'>) {
-  return `Trân trọng kính mời bạn đến chung vui cùng ${invitation.partnerOne} & ${invitation.partnerTwo} ♡`;
-}
