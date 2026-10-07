@@ -60,9 +60,9 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .drawSurface{cursor:crosshair;touch-action:none}
 .hint text{fill:#fffaf7;font:500 34px var(--w-ui);paint-order:stroke;stroke:rgba(48,83,15,.45);stroke-width:6px;animation:hint-pulse 2.2s ease-in-out infinite}
 @keyframes hint-pulse{50%{opacity:.55}}
-.placeSurface{cursor:grab;touch-action:none}
-.placeSurface.isDragging{cursor:grabbing}
-.draggable{outline:none}
+.placeSurface{touch-action:none}
+.placeSurface.isDragging,.placeSurface.isDragging .draggable{cursor:grabbing}
+.draggable{outline:none;cursor:grab}
 .selection{fill:rgba(255,250,247,.12);stroke:#fffaf7;stroke-width:1.5;stroke-dasharray:6 5}
 .selection.isWarning{stroke:#e24b4a;fill:rgba(226,75,74,.12)}
 .draggable:focus-visible .selection{stroke-width:2.5}

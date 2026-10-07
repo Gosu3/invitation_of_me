@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Download, Hand, Link2, PenLine, RotateCcw, Type, Undo2, X } from 'lucide-react';
 import {
-  SIGNATURE_LIMITS, SIGNATURE_VIEW_H as VIEW_H, SIGNATURE_VIEW_W as VIEW_W,
+  SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE as MAX_ROTATE, SIGNATURE_SCALE, SIGNATURE_VIEW_H as VIEW_H, SIGNATURE_VIEW_W as VIEW_W,
   centreStrokes, signatureFootprint as footprint, signatureInks, signaturePath as pathFromPoints, textSignature,
   type PublicSignature, type SignatureInk as Ink, type SignatureMark as Mark, type SignaturePlacement, type SignatureZone as Zone,
 } from '@/lib/signature-mark';
@@ -253,8 +253,9 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   const [submitting, setSubmitting] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const drawingRef = useRef<number | null>(null);
-  const dragOffset = useRef({ dx: 0, dy: 0 });
-  const dragPointer = useRef<number | null>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const gesture = useRef<{ pos: SignaturePlacement; mid: { x: number; y: number }; dist: number; angle: number } | null>(null);
+  const livePos = useRef<SignaturePlacement | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef(onCancel);
   useEffect(() => { cancelRef.current = onCancel; }, [onCancel]);
@@ -306,7 +307,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   const goPlace = () => {
     const next = mode === 'draw' ? centreStrokes(strokes) : typed.trim() ? textSignature(typed.trim()) : null;
     if (!next) { setError(mode === 'draw' ? 'Hãy ký vài nét lên ảnh trước nhé.' : 'Hãy nhập tên để tạo chữ ký.'); return; }
-    const scale = Math.max(0.25, Math.min(1, 280 / next.w, 160 / next.h));
+    const scale = clamp(Math.min(1, 280 / next.w, 160 / next.h), SIGNATURE_SCALE.min, SIGNATURE_SCALE.max);
     const spot = suggestSpot(next, scale, avoidZones, placed);
     setMark(next);
     setPos({ ...spot, scale: Math.round(scale * 100) / 100, rotate: -4 });
@@ -314,26 +315,66 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
     setStep('place');
   };
 
-  // Step 2: a finger anywhere on the photo moves the signature by the same amount (no need to hit the thin
-  // strokes, and no jump). The whole photo has touch-action:none so the sheet never scrolls mid-drag.
-  const startDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (dragPointer.current !== null) return;
-    capturePointer(event.currentTarget, event.pointerId);
+  // Step 2, Instagram-style: one finger on the signature moves it by the same amount (no jump);
+  // two fingers also pinch to resize and twist to tilt. Every move is
+  // relative to the placement when the current set of fingers went down, so adding/lifting a finger re-bases
+  // instead of jumping. The whole photo has touch-action:none so the sheet never scrolls or zooms mid-gesture.
+  const rebaseGesture = (from: SignaturePlacement) => {
+    const [a, b = a] = [...pointers.current.values()];
+    gesture.current = a ? { pos: from, mid: toView({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 }), dist: Math.hypot(b.x - a.x, b.y - a.y), angle: Math.atan2(b.y - a.y, b.x - a.x) } : null;
+  };
+
+  // The first finger has to land on the signature (its dashed box, padded to a ~48px touch target when it is
+  // small); a second finger may land anywhere so a tiny signature can still be pinched.
+  const hitsSignature = (event: { clientX: number; clientY: number }) => {
+    if (!mark) return false;
     const p = toView(event);
-    dragPointer.current = event.pointerId;
-    dragOffset.current = { dx: pos.x - p.x / VIEW_W, dy: pos.y - p.y / VIEW_H };
+    const angle = (-pos.rotate * Math.PI) / 180;
+    const dx = p.x - pos.x * VIEW_W;
+    const dy = p.y - pos.y * VIEW_H;
+    const lx = (dx * Math.cos(angle) - dy * Math.sin(angle)) / pos.scale;
+    const ly = (dx * Math.sin(angle) + dy * Math.cos(angle)) / pos.scale;
+    const viewPerPx = VIEW_W / svgRef.current!.getBoundingClientRect().width;
+    const pad = Math.max(22, (24 * viewPerPx) / pos.scale);
+    return Math.abs(lx) <= Math.max(mark.w / 2 + 22, pad) && Math.abs(ly) <= Math.max(mark.h / 2 + 22, pad);
+  };
+
+  const startDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (pointers.current.size >= 2) return;
+    if (pointers.current.size === 0 && !hitsSignature(event)) return;
+    capturePointer(event.currentTarget, event.pointerId);
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    rebaseGesture(livePos.current ?? pos);
     setDragging(true);
   };
 
   const moveDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (dragPointer.current !== event.pointerId) return;
-    const p = toView(event);
-    setPos((current) => ({ ...current, x: clamp(p.x / VIEW_W + dragOffset.current.dx, 0.04, 0.96), y: clamp(p.y / VIEW_H + dragOffset.current.dy, 0.03, 0.97) }));
+    const start = gesture.current;
+    if (!start || !pointers.current.has(event.pointerId)) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const [a, b = a] = [...pointers.current.values()];
+    const mid = toView({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
+    let next = { ...start.pos, x: clamp(start.pos.x + (mid.x - start.mid.x) / VIEW_W, 0.04, 0.96), y: clamp(start.pos.y + (mid.y - start.mid.y) / VIEW_H, 0.03, 0.97) };
+    if (start.dist > 0) {
+      const turn = ((Math.atan2(b.y - a.y, b.x - a.x) - start.angle) * 180) / Math.PI;
+      const rotate = clamp(start.pos.rotate + (((turn + 540) % 360) - 180), -MAX_ROTATE, MAX_ROTATE);
+      next = {
+        ...next,
+        scale: Math.round(clamp((start.pos.scale * Math.hypot(b.x - a.x, b.y - a.y)) / start.dist, SIGNATURE_SCALE.min, SIGNATURE_SCALE.max) * 100) / 100,
+        // Snaps level near 0° like Instagram, so a straight signature is easy to get.
+        rotate: Math.abs(rotate) < 2 ? 0 : Math.round(rotate),
+      };
+    }
+    livePos.current = next;
+    setPos(next);
   };
 
   const endDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (dragPointer.current !== event.pointerId) return;
-    dragPointer.current = null;
+    if (!pointers.current.delete(event.pointerId)) return;
+    const current = livePos.current ?? pos;
+    rebaseGesture(current);
+    if (pointers.current.size) return;
+    livePos.current = null;
     setDragging(false);
     navigator.vibrate?.(8);
   };
@@ -418,7 +459,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
           </g>}
         </svg>
         {step === 'place' && <p className={`${styles.placeHint}${onFace || onOther ? ` ${styles.isWarning}` : ''}`} role="status">
-          {onFace ? 'Chữ ký đang che mặt cô dâu chú rể' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />Kéo để đổi vị trí</>}
+          {onFace ? 'Chữ ký đang che mặt cô dâu chú rể' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />Giữ chữ ký để kéo · 2 ngón để phóng to, xoay</>}
         </p>}
       </div>
 
@@ -444,8 +485,8 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
           </div>
         </> : <>
           <div className={styles.sliders}>
-            <label>Kích thước<input type="range" min={0.25} max={1.4} step={0.01} value={pos.scale} onChange={(event) => setPos((current) => ({ ...current, scale: Number(event.target.value) }))} /></label>
-            <label>Nghiêng<input type="range" min={-25} max={25} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>
+            <label>Kích thước<input type="range" min={SIGNATURE_SCALE.min} max={SIGNATURE_SCALE.max} step={0.01} value={pos.scale} onChange={(event) => setPos((current) => ({ ...current, scale: Number(event.target.value) }))} /></label>
+            <label>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>
           </div>
           <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />
           {myWish

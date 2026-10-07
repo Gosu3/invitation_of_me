@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SIGNATURE_LIMITS } from './signature-mark';
+import { SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE, SIGNATURE_SCALE } from './signature-mark';
 
 const safeText = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => z.string().trim().max(max).optional().nullable();
@@ -31,7 +31,7 @@ export const signatureSchema = z.object({
   invitationId: z.uuid(), guestName: safeText(100),
   mark: signatureMarkSchema, ink: z.enum(['moss', 'ivory', 'gold']),
   x: z.number().min(0).max(1), y: z.number().min(0).max(1),
-  scale: z.number().min(0.2).max(1.5), rotate: z.number().min(-30).max(30),
+  scale: z.number().min(SIGNATURE_SCALE.min).max(SIGNATURE_SCALE.max), rotate: z.number().min(-SIGNATURE_MAX_ROTATE).max(SIGNATURE_MAX_ROTATE),
   wishId: z.uuid().optional(), wishToken: z.string().max(100).optional(),
   website: z.string().optional().default(''),
 });
