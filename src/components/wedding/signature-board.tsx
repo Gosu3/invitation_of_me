@@ -253,9 +253,16 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   const [submitting, setSubmitting] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const drawingRef = useRef<number | null>(null);
+  const [selected, setSelected] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const sigRef = useRef<SVGGElement>(null);
+  const handleRef = useRef<HTMLDivElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const gesture = useRef<{ pos: SignaturePlacement; mid: { x: number; y: number }; dist: number; angle: number } | null>(null);
+  const gesture = useRef<{ pos: SignaturePlacement; rect: DOMRect; mid: { x: number; y: number }; dist: number; angle: number } | null>(null);
   const livePos = useRef<SignaturePlacement | null>(null);
+  const frame = useRef(0);
+  const oneFingerMoves = useRef(false);
+  const tap = useRef<{ id: number; x: number; y: number } | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef(onCancel);
   useEffect(() => { cancelRef.current = onCancel; }, [onCancel]);
@@ -312,49 +319,69 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
     setMark(next);
     setPos({ ...spot, scale: Math.round(scale * 100) / 100, rotate: -4 });
     if (mode === 'type' && !name) setName(typed.trim());
+    setSelected(false);
     setStep('place');
   };
 
-  // Step 2, Instagram-style: one finger on the signature moves it by the same amount (no jump);
-  // two fingers also pinch to resize and twist to tilt. Every move is
-  // relative to the placement when the current set of fingers went down, so adding/lifting a finger re-bases
-  // instead of jumping. The whole photo has touch-action:none so the sheet never scrolls or zooms mid-gesture.
+  // Step 2 works like a text sticker on Instagram/Canva. Tapping the signature selects it; only then does the
+  // photo swallow touches (touch-action:none) — one finger on the signature drags it, two fingers anywhere on the
+  // photo pinch to resize and twist to tilt. Tapping empty photo deselects it so the sheet scrolls normally
+  // down to the save button. During a gesture the transform is written straight to the DOM once per frame and
+  // committed to state on release, so the composer never re-renders mid-gesture. Every move is relative to the
+  // placement when the current set of fingers went down, so adding/lifting a finger re-bases instead of jumping.
   const rebaseGesture = (from: SignaturePlacement) => {
     const [a, b = a] = [...pointers.current.values()];
-    gesture.current = a ? { pos: from, mid: toView({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 }), dist: Math.hypot(b.x - a.x, b.y - a.y), angle: Math.atan2(b.y - a.y, b.x - a.x) } : null;
+    const rect = wrapRef.current!.getBoundingClientRect();
+    gesture.current = a ? {
+      pos: from, rect,
+      mid: { x: ((a.x + b.x) / 2 - rect.left) / rect.width, y: ((a.y + b.y) / 2 - rect.top) / rect.height },
+      dist: Math.hypot(b.x - a.x, b.y - a.y), angle: Math.atan2(b.y - a.y, b.x - a.x),
+    } : null;
   };
 
-  // The first finger has to land on the signature (its dashed box, padded to a ~48px touch target when it is
-  // small); a second finger may land anywhere so a tiny signature can still be pinched.
-  const hitsSignature = (event: { clientX: number; clientY: number }) => {
-    if (!mark) return false;
-    const p = toView(event);
-    const angle = (-pos.rotate * Math.PI) / 180;
-    const dx = p.x - pos.x * VIEW_W;
-    const dy = p.y - pos.y * VIEW_H;
-    const lx = (dx * Math.cos(angle) - dy * Math.sin(angle)) / pos.scale;
-    const ly = (dx * Math.sin(angle) + dy * Math.cos(angle)) / pos.scale;
-    const viewPerPx = VIEW_W / svgRef.current!.getBoundingClientRect().width;
-    const pad = Math.max(22, (24 * viewPerPx) / pos.scale);
-    return Math.abs(lx) <= Math.max(mark.w / 2 + 22, pad) && Math.abs(ly) <= Math.max(mark.h / 2 + 22, pad);
+  const handleStyle = (p: SignaturePlacement): CSSProperties => ({
+    left: `${p.x * 100}%`, top: `${p.y * 100}%`,
+    width: `${(((mark?.w ?? 0) + 44) * p.scale * 100) / VIEW_W}%`, height: `${(((mark?.h ?? 0) + 44) * p.scale * 100) / VIEW_H}%`,
+    transform: `translate(-50%, -50%) rotate(${p.rotate}deg)`,
+  });
+
+  const paint = () => {
+    frame.current = 0;
+    const p = livePos.current;
+    if (!p) return;
+    sigRef.current?.setAttribute('transform', signatureTransform(p));
+    if (handleRef.current) Object.assign(handleRef.current.style, handleStyle(p));
   };
 
-  const startDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (pointers.current.size >= 2) return;
-    if (pointers.current.size === 0 && !hitsSignature(event)) return;
+  const startGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!mark || pointers.current.size >= 2) return;
+    if (pointers.current.size === 0) {
+      const onSignature = !!(event.target as Element).closest('[data-signature-handle]');
+      if (!onSignature && !selected) return; // chưa chọn chữ ký: để khung cuộn bình thường
+      oneFingerMoves.current = onSignature;
+      tap.current = onSignature ? null : { id: event.pointerId, x: event.clientX, y: event.clientY };
+      if (onSignature) { setSelected(true); setDragging(true); }
+    } else {
+      oneFingerMoves.current = true;
+      tap.current = null;
+      setDragging(true);
+    }
     capturePointer(event.currentTarget, event.pointerId);
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     rebaseGesture(livePos.current ?? pos);
-    setDragging(true);
   };
 
-  const moveDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
+  const moveGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     const start = gesture.current;
     if (!start || !pointers.current.has(event.pointerId)) return;
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (tap.current?.id === event.pointerId && Math.hypot(event.clientX - tap.current.x, event.clientY - tap.current.y) > 8) tap.current = null;
+    if (pointers.current.size === 1 && !oneFingerMoves.current) return;
     const [a, b = a] = [...pointers.current.values()];
-    const mid = toView({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
-    let next = { ...start.pos, x: clamp(start.pos.x + (mid.x - start.mid.x) / VIEW_W, 0.04, 0.96), y: clamp(start.pos.y + (mid.y - start.mid.y) / VIEW_H, 0.03, 0.97) };
+    const { rect } = start;
+    const midX = ((a.x + b.x) / 2 - rect.left) / rect.width;
+    const midY = ((a.y + b.y) / 2 - rect.top) / rect.height;
+    let next = { ...start.pos, x: clamp(start.pos.x + midX - start.mid.x, 0.04, 0.96), y: clamp(start.pos.y + midY - start.mid.y, 0.03, 0.97) };
     if (start.dist > 0) {
       const turn = ((Math.atan2(b.y - a.y, b.x - a.x) - start.angle) * 180) / Math.PI;
       const rotate = clamp(start.pos.rotate + (((turn + 540) % 360) - 180), -MAX_ROTATE, MAX_ROTATE);
@@ -362,21 +389,30 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
         ...next,
         scale: Math.round(clamp((start.pos.scale * Math.hypot(b.x - a.x, b.y - a.y)) / start.dist, SIGNATURE_SCALE.min, SIGNATURE_SCALE.max) * 100) / 100,
         // Snaps level near 0° like Instagram, so a straight signature is easy to get.
-        rotate: Math.abs(rotate) < 2 ? 0 : Math.round(rotate),
+        rotate: Math.abs(rotate) < 2 ? 0 : Math.round(rotate * 10) / 10,
       };
     }
     livePos.current = next;
-    setPos(next);
+    if (!frame.current) frame.current = requestAnimationFrame(paint);
   };
 
-  const endDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
+  const endGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!pointers.current.delete(event.pointerId)) return;
-    const current = livePos.current ?? pos;
-    rebaseGesture(current);
+    if (tap.current?.id === event.pointerId) {
+      if (event.type === 'pointerup') setSelected(false);
+      tap.current = null;
+    }
+    const moved = livePos.current;
+    rebaseGesture(moved ?? pos);
     if (pointers.current.size) return;
-    livePos.current = null;
+    if (moved) {
+      cancelAnimationFrame(frame.current);
+      frame.current = 0;
+      livePos.current = null;
+      setPos(moved);
+      navigator.vibrate?.(8);
+    }
     setDragging(false);
-    navigator.vibrate?.(8);
   };
 
   const nudge = (event: KeyboardEvent<SVGGElement>) => {
@@ -413,17 +449,24 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
         <button type="button" className={styles.iconButton} onClick={onCancel} aria-label="Đóng"><X size={18} /></button>
       </header>
 
-      <div className={styles.canvasWrap}>
+      <div
+        ref={wrapRef}
+        className={`${styles.canvasWrap}${step === 'place' && !selected ? ` ${styles.canScroll}` : ''}${dragging ? ` ${styles.isDragging}` : ''}`}
+        onPointerDown={step === 'place' ? startGesture : undefined}
+        onPointerMove={step === 'place' ? moveGesture : undefined}
+        onPointerUp={step === 'place' ? endGesture : undefined}
+        onPointerCancel={step === 'place' ? endGesture : undefined}
+      >
         <BoardPhoto src={photo} alt={photoAlt} sizes="(max-width: 520px) 100vw, 460px" />
         <div className={`${styles.wash}${step === 'place' ? ` ${styles.washLight}` : ''}`} aria-hidden="true" />
         <svg
           ref={svgRef}
-          className={`${styles.overlay} ${step === 'draw' && mode === 'draw' ? styles.drawSurface : step === 'place' ? styles.placeSurface : ''}${dragging ? ` ${styles.isDragging}` : ''}`}
+          className={`${styles.overlay}${step === 'draw' && mode === 'draw' ? ` ${styles.drawSurface}` : ''}`}
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-          onPointerDown={step === 'place' ? startDrag : startStroke}
-          onPointerMove={step === 'place' ? moveDrag : moveStroke}
-          onPointerUp={step === 'place' ? endDrag : endStroke}
-          onPointerCancel={step === 'place' ? endDrag : endStroke}
+          onPointerDown={step === 'draw' ? startStroke : undefined}
+          onPointerMove={step === 'draw' ? moveStroke : undefined}
+          onPointerUp={step === 'draw' ? endStroke : undefined}
+          onPointerCancel={step === 'draw' ? endStroke : undefined}
           aria-label={step === 'draw' ? 'Vùng ký tên trên ảnh' : 'Vị trí chữ ký trên ảnh'}
         >
           <g opacity={step === 'draw' ? 0.25 : 0.6}>
@@ -446,6 +489,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
           </g>}
 
           {step === 'place' && mark && <g
+            ref={sigRef}
             transform={signatureTransform(pos)}
             className={styles.draggable}
             tabIndex={0}
@@ -453,13 +497,17 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
             aria-label="Chữ ký — kéo hoặc dùng phím mũi tên để di chuyển"
             aria-valuetext={`Ngang ${Math.round(pos.x * 100)}%, dọc ${Math.round(pos.y * 100)}%`}
             onKeyDown={nudge}
+            onFocus={() => setSelected(true)}
           >
-            <rect className={`${styles.selection}${onFace ? ` ${styles.isWarning}` : ''}`} x={-mark.w / 2 - 22} y={-mark.h / 2 - 22} width={mark.w + 44} height={mark.h + 44} rx={14} vectorEffect="non-scaling-stroke" />
+            {(selected || onFace) && <rect className={`${styles.selection}${onFace ? ` ${styles.isWarning}` : ''}`} x={-mark.w / 2 - 22} y={-mark.h / 2 - 22} width={mark.w + 44} height={mark.h + 44} rx={14} vectorEffect="non-scaling-stroke" />}
             <MarkPaths mark={mark} ink={ink} animate={false} />
           </g>}
         </svg>
+        {/* HTML hit box over the signature: unlike SVG children it reliably takes touch-action:none, so a drag
+            that starts on the signature never turns into a sheet scroll. */}
+        {step === 'place' && mark && <div ref={handleRef} className={styles.handle} style={handleStyle(pos)} data-signature-handle aria-hidden="true" />}
         {step === 'place' && <p className={`${styles.placeHint}${onFace || onOther ? ` ${styles.isWarning}` : ''}`} role="status">
-          {onFace ? 'Chữ ký đang che mặt cô dâu chú rể' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />Giữ chữ ký để kéo · 2 ngón để phóng to, xoay</>}
+          {onFace ? 'Chữ ký đang che mặt cô dâu chú rể' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />{selected ? 'Kéo để di chuyển · 2 ngón để phóng to, xoay' : 'Chạm vào chữ ký để chỉnh sửa'}</>}
         </p>}
       </div>
 

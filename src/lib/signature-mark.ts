@@ -4,8 +4,7 @@
 export const SIGNATURE_VIEW_W = 1000;
 export const SIGNATURE_VIEW_H = 1500;
 export const SIGNATURE_LIMITS = { strokes: 40, numbersPerStroke: 800, numbersTotal: 6000, textLength: 28 } as const;
-// Scale ceiling is 40% of the old 1.4 slider max — full size covered too much of the photo.
-export const SIGNATURE_SCALE = { min: 0.2, max: 0.56 } as const;
+export const SIGNATURE_SCALE = { min: 0.2, max: 1.4 } as const;
 export const SIGNATURE_MAX_ROTATE = 30;
 
 export type SignatureInk = 'moss' | 'ivory' | 'gold';
