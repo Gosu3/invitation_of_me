@@ -20,6 +20,7 @@ export function createWeddingConfig(invitation: Invitation) {
     showGuestbook: invitation.wishesEnabled,
     showTimeline: invitation.timeline.length > 0,
     showThankYou: true,
+    showSignatures: Boolean(invitation.signaturesEnabled && invitation.signatureImage),
     showFamilyInfo: Boolean(invitation.partnerOneParents || invitation.partnerTwoParents || invitation.partnerOneFullName || invitation.partnerTwoFullName),
     ...invitation.features,
   };
@@ -48,6 +49,11 @@ export function createWeddingConfig(invitation: Invitation) {
     events: invitation.events,
     venue: reception ? { title: reception.venue, address: reception.address, mapUrl: reception.mapUrl, mapQuery: reception.mapQuery } : undefined,
     gallery,
+    signatureBoard: invitation.signatureImage ? {
+      image: invitation.signatureImage,
+      alt: `Ảnh cưới ${invitation.partnerOne} & ${invitation.partnerTwo}`,
+      avoidZones: invitation.signatureAvoidZones ?? [],
+    } : undefined,
     timeline: invitation.timeline,
     bankAccounts: invitation.gifts,
     music: invitation.music ?? { enabled: true, title: 'Khúc nhạc ngày chung đôi', volume: .22 },

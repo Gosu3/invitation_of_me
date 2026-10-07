@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Check, Heart, Navigation, X } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { weddingSubmissions, type PublicWish } from '@/lib/wedding-submissions';
+import { rememberMyWish } from '@/lib/my-wish';
 import { dateParts, formatTime } from '@/lib/utils';
 import { ArchitectureSection, CardFlower, CeremonyFlowers, ReceptionFlower, TimelineFlowers, weddingArtwork } from './decorations';
 import { Modal } from './shared';
@@ -439,6 +440,7 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
     setStatus('');
     try {
       const result = await weddingSubmissions.wish({ invitationId: config.id, guestName: name.trim(), message: message.trim(), website: '' });
+      rememberMyWish(config.id, { wishId: result.wish.id, token: result.signatureToken, guestName: result.wish.guestName });
       wishesRevision.current += 1;
       setWishes((current) => [result.wish, ...current.filter((wish) => wish.id !== result.wish.id)]
         .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));

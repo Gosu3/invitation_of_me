@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SIGNATURE_LIMITS } from './signature-mark';
 
 const safeText = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => z.string().trim().max(max).optional().nullable();
@@ -13,6 +14,26 @@ export const rsvpSchema = z.object({
 export const wishSchema = z.object({
   invitationId: z.uuid(), guestName: safeText(100).min(2),
   message: safeText(1000).min(3), website: z.string().optional().default(''),
+});
+
+const coordinate = z.number().finite().min(-1500).max(1500);
+const signatureMarkSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('draw'),
+    strokes: z.array(z.array(coordinate).min(2).max(SIGNATURE_LIMITS.numbersPerStroke).refine((stroke) => stroke.length % 2 === 0))
+      .min(1).max(SIGNATURE_LIMITS.strokes)
+      .refine((strokes) => strokes.reduce((sum, stroke) => sum + stroke.length, 0) <= SIGNATURE_LIMITS.numbersTotal),
+  }),
+  z.object({ kind: z.literal('text'), text: safeText(SIGNATURE_LIMITS.textLength) }),
+]);
+
+export const signatureSchema = z.object({
+  invitationId: z.uuid(), guestName: safeText(100),
+  mark: signatureMarkSchema, ink: z.enum(['moss', 'ivory', 'gold']),
+  x: z.number().min(0).max(1), y: z.number().min(0).max(1),
+  scale: z.number().min(0.2).max(1.5), rotate: z.number().min(-30).max(30),
+  wishId: z.uuid().optional(), wishToken: z.string().max(100).optional(),
+  website: z.string().optional().default(''),
 });
 
 export const guestLinkSchema = z.object({

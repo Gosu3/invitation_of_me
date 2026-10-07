@@ -1,5 +1,6 @@
 import { demoInvitations } from './demo';
 import { isDatabaseConfigured, publicDb, serviceDb } from './supabase';
+import type { SignatureZone } from './signature-mark';
 import type { GiftAccount, Invitation, WeddingEvent, WeddingMedia, TimelineItem, Wish } from './types';
 import { sharedWishSlugs } from './wedding-wish-groups';
 
@@ -8,6 +9,10 @@ const str = (value: unknown) => typeof value === 'string' ? value : '';
 const opt = (value: unknown) => typeof value === 'string' && value ? value : undefined;
 const bool = (value: unknown) => value === true;
 const arr = (value: unknown) => Array.isArray(value) ? value as Row[] : [];
+const unit = (value: unknown) => typeof value === 'number' && value >= 0 && value <= 1;
+const zones = (value: unknown): SignatureZone[] => arr(value)
+  .filter((zone) => unit(zone.x) && unit(zone.y) && unit(zone.w) && unit(zone.h))
+  .map((zone) => ({ x: Number(zone.x), y: Number(zone.y), w: Number(zone.w), h: Number(zone.h) }));
 
 export function mapInvitation(row: Row, relations: {
   events?: Row[]; timeline?: Row[]; media?: Row[]; gifts?: Row[]; wishes?: Row[];
@@ -43,7 +48,9 @@ export function mapInvitation(row: Row, relations: {
     coverAlt: opt(row.cover_alt), dressCode: opt(row.dress_code),
     closingMessage: str(row.closing_message), rsvpEnabled: bool(row.rsvp_enabled),
     rsvpDeadline: opt(row.rsvp_deadline), wishesEnabled: bool(row.wishes_enabled),
-    giftsEnabled: bool(row.gifts_enabled), events, timeline, media, gifts, wishes,
+    giftsEnabled: bool(row.gifts_enabled),
+    signaturesEnabled: bool(row.signatures_enabled), signatureImage: opt(row.signature_image),
+    signatureAvoidZones: zones(row.signature_avoid_zones), events, timeline, media, gifts, wishes,
     createdAt: opt(row.created_at), updatedAt: opt(row.updated_at),
   };
 }

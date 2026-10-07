@@ -4,6 +4,7 @@ import { webcrypto } from 'node:crypto';
 import { Script, createContext } from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
+import * as zod from 'zod';
 
 // Run actual source with isolated browser/DB boundaries: no production writes.
 function loadSource(path, imports = {}, globals = {}) {
@@ -132,4 +133,39 @@ test('CSV preserves Vietnamese, quotes, newlines, numeric count, BOM and downloa
 test('CSV retains authentication and database error responses', async () => {
   assert.equal((await csvRoute([], { authorized: false })).status, 401);
   assert.equal((await csvRoute([], { error: { message: 'unavailable' } })).status, 500);
+});
+
+const signatureMark = loadSource('src/lib/signature-mark.ts');
+const { signatureSchema } = loadSource('src/lib/validation.ts', { zod, './signature-mark': signatureMark });
+const { SIGNATURE_LIMITS: limits } = signatureMark;
+
+test('drawn signatures are centred and thinned to the storage limits', () => {
+  const strokes = Array.from({ length: 60 }, (_, s) => Array.from({ length: 1200 }, (_, i) => (i % 2 === 0 ? 100 + i / 4 : 300 + s)));
+  const mark = signatureMark.centreStrokes(strokes);
+  assert.equal(mark.kind, 'draw');
+  assert.ok(mark.strokes.length <= limits.strokes);
+  assert.ok(mark.strokes.every((stroke) => stroke.length % 2 === 0 && stroke.length <= limits.numbersPerStroke));
+  assert.ok(mark.strokes.reduce((sum, stroke) => sum + stroke.length, 0) <= limits.numbersTotal);
+  const xs = mark.strokes.flatMap((stroke) => stroke.filter((_, i) => i % 2 === 0));
+  assert.ok(Math.abs(Math.min(...xs) + Math.max(...xs)) < 0.2, 'centred horizontally');
+  assert.equal(signatureMark.centreStrokes([[]]), null);
+});
+
+test('stored signature size is recomputed, never taken from the client', () => {
+  const drawn = signatureMark.measureMark({ kind: 'draw', strokes: [[-50, -10, 50, 10]], w: 9999, h: 9999 });
+  assert.deepEqual([drawn.w, drawn.h], [100, 20]);
+  const typed = signatureMark.measureMark({ kind: 'text', text: 'Minh Anh', w: 1, h: 1 });
+  assert.deepEqual([typed.w, typed.h], [8 * 38, 120]);
+});
+
+test('signature payload validation rejects malformed or oversized marks', () => {
+  const base = { invitationId: '00000000-0000-4000-8000-000000000000', guestName: 'Khách', ink: 'moss', x: 0.5, y: 0.1, scale: 0.5, rotate: -4 };
+  assert.ok(signatureSchema.safeParse({ ...base, mark: { kind: 'draw', strokes: [[0, 0, 10, 10]] } }).success);
+  assert.ok(signatureSchema.safeParse({ ...base, mark: { kind: 'text', text: 'Minh Anh' } }).success);
+  assert.ok(!signatureSchema.safeParse({ ...base, mark: { kind: 'draw', strokes: [[0, 0, 10]] } }).success, 'odd coordinate count');
+  assert.ok(!signatureSchema.safeParse({ ...base, mark: { kind: 'draw', strokes: [[0, 0, 1e6, 1]] } }).success, 'coordinate out of range');
+  assert.ok(!signatureSchema.safeParse({ ...base, mark: { kind: 'draw', strokes: Array.from({ length: limits.strokes + 1 }, () => [0, 0, 1, 1]) } }).success, 'too many strokes');
+  assert.ok(!signatureSchema.safeParse({ ...base, mark: { kind: 'text', text: 'x'.repeat(limits.textLength + 1) } }).success, 'text too long');
+  assert.ok(!signatureSchema.safeParse({ ...base, scale: 3, mark: { kind: 'text', text: 'A' } }).success, 'scale out of range');
+  assert.ok(!signatureSchema.safeParse({ ...base, ink: 'red', mark: { kind: 'text', text: 'A' } }).success, 'unknown ink');
 });

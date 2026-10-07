@@ -11,6 +11,7 @@ import { EnvelopeIntro, type OpeningPhase } from './wedding/envelope-intro';
 import { GalleryLightbox, WeddingGallery } from './wedding/gallery';
 import { GiftModal, GiftSection } from './wedding/gift';
 import { MusicController } from './wedding/music-controller';
+import { SignatureSection } from './wedding/signature-section';
 import { FamilyCeremonySection, GuestbookSection, ReceptionSection, ThankYouSection, TimelineSection, VenueSection, WeddingHero } from './wedding/sections';
 
 // Messenger on iPhone discards the page while the maps app is open; remember where the guest was so a reload
@@ -28,6 +29,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
   const [giftOpen, setGiftOpen] = useState(false);
   const [autoScrollPaused, setAutoScrollPaused] = useState(false);
+  const [signing, setSigning] = useState(false);
   const timers = useRef<number[]>([]);
   const heading = useRef<HTMLDivElement>(null);
   const autoScrollStarted = useRef(false);
@@ -62,7 +64,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     return () => window.clearTimeout(timer);
   }, [phase]);
   useEffect(() => {
-    if (phase !== 'opened' || autoScrollPaused || giftOpen || photoIndex !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (phase !== 'opened' || autoScrollPaused || giftOpen || signing || photoIndex !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let animationFrame = 0;
     let lastFrame = 0;
@@ -100,7 +102,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
       window.removeEventListener('wheel', pauseForInteraction);
       window.removeEventListener('keydown', pauseForKeyboard);
     };
-  }, [autoScrollPaused, giftOpen, phase, photoIndex]);
+  }, [autoScrollPaused, giftOpen, phase, photoIndex, signing]);
   const musicRef = useRef(music);
   useEffect(() => { musicRef.current = music; });
   useEffect(() => {
@@ -193,7 +195,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
   function toggleAutoScroll(event: ReactPointerEvent<HTMLElement>) {
     if (phase !== 'opened' || event.button !== 0) return;
     const target = event.target as HTMLElement;
-    if (target.closest('a, button, input, textarea, select, label, [role="dialog"]')) return;
+    if (target.closest('a, button, input, textarea, select, label, [role="button"], [role="dialog"]')) return;
     setAutoScrollPaused((paused) => !paused);
   }
 
@@ -209,6 +211,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
         {config.venue && <VenueSection config={config} />}
         {config.features.showTimeline && <TimelineSection config={config} />}
         {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
+        {config.features.showSignatures && <SignatureSection config={config} connected={connected} onSigningChange={setSigning} />}
         {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} showClosingMessage={config.features.showThankYou} />}
         {config.features.showThankYou && !config.features.showBank && <ThankYouSection />}
       </div>

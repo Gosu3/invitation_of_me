@@ -69,6 +69,7 @@ Khi thiếu biến môi trường Supabase, `src/lib/invitations.ts` dùng `src/
 - `wedding_media`: metadata ảnh và đường dẫn tệp trong Storage.
 - `wedding_rsvps`: phản hồi tham dự, chỉ quản trị được đọc.
 - `wedding_wishes`: lời chúc, chỉ dòng `approved` được công khai.
+- `wedding_signatures`: chữ ký khách ký lên ảnh cưới (vector, viewBox 1000×1500), tách riêng khỏi lời chúc; `wish_id` liên kết tới lời chúc của chính khách đó (xác thực bằng token HMAC trả về khi gửi lời chúc). Chỉ hiện khi thiệp bật `signatures_enabled` và có `signature_image` (ảnh dọc tỉ lệ 2:3); `signature_avoid_zones` là các vùng không nên ký (mặt, bó hoa…). Migration `202610070001_wedding_signatures.sql`.
 - `wedding_gift_accounts`: thông tin hộp quà bật/tắt theo thiệp.
 - `wedding_submission_limits`: giới hạn tần suất gửi biểu mẫu.
 - `wedding_guest_links`: link mời ngắn kèm tên khách.

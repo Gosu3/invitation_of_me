@@ -19,6 +19,7 @@ Visual regression (Playwright, `tests/visual/`, baseline trong `tests/visual/__s
 - `/thiep/[slug]` và `/m/[code]` (link mời ngắn, tên khách trong `wedding_guest_links`) → `getInvitation` (`src/lib/invitations.ts`: DB row → `Invitation`) → `createWeddingConfig` (`src/lib/wedding-config.ts`: config + feature flags) → `InvitationExperience` (client).
 - Thiếu env Supabase → dùng `src/lib/demo.ts`. Có DB: lỗi query thì throw (trang lỗi), không tìm thấy thì 404 — không bao giờ thay bằng nội dung demo; chỉ ảnh/cover còn thiếu mới mượn từ demo (`public/photos`).
 - Tên khách trên bìa chỉ đến từ link `/m/[code]` (tạo ở trang quản trị); `?guest=` đã bị gỡ.
+- Chữ ký trên ảnh: `wedding/signature-section.tsx` (GET/POST `/api/signatures`, realtime + polling 15s) → `signature-board.tsx` (UI thuần); hình học/giới hạn ở `src/lib/signature-mark.ts`. Bật theo thiệp bằng `signatures_enabled` + `signature_image`; chưa có UI admin. Trang thử không cần DB: `/thu-ky-ten`.
 - Lời chúc: `POST /api/wishes` lưu `approved` ngay, realtime + polling 5s; `tho-va-tham` & `tham-va-tho` dùng chung lời chúc (`src/lib/wedding-wish-groups.ts`), RSVP/lịch/địa điểm riêng.
 - Admin: `/quan-tri/*` + `/api/admin/*` → `requireAdmin()` (`src/lib/supabase.ts`, bảng `wedding_admins`) → service-role client.
 
@@ -33,7 +34,7 @@ Visual regression (Playwright, `tests/visual/`, baseline trong `tests/visual/__s
 | CSS thiệp (import order trong `layout.tsx`, đừng đổi) | `src/app/invitation-motion.css`, `wedding-composition.css`, `wedding-typography.css`, `wedding-mobile.css`, `mobile-forms.css`; `globals.css` cho home/admin |
 | Kiểu dữ liệu / validation | `src/lib/types.ts` / `src/lib/validation.ts` |
 | Admin UI | `src/components/admin-{dashboard,editor,responses}.tsx` |
-| Schema | `supabase/migrations/` (14 file; core = `202609210001_wedding_core.sql`) |
+| Schema | `supabase/migrations/` (15 file; core = `202609210001_wedding_core.sql`) |
 
 Thêm trường thiệp: migration mới → `types.ts` → `invitations.ts` → form admin → template → docs.
 

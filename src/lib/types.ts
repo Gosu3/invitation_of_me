@@ -1,3 +1,5 @@
+import type { SignatureZone } from './signature-mark';
+
 export type InvitationStatus = 'draft' | 'published' | 'archived';
 
 export type WeddingEvent = {
@@ -53,6 +55,7 @@ export type InvitationFeatures = {
   showTimeline: boolean;
   showThankYou: boolean;
   showFamilyInfo: boolean;
+  showSignatures: boolean;
 };
 
 export type WeddingMusic = {
@@ -93,6 +96,9 @@ export type Invitation = {
   rsvpDeadline?: string;
   wishesEnabled: boolean;
   giftsEnabled: boolean;
+  signaturesEnabled?: boolean;
+  signatureImage?: string;
+  signatureAvoidZones?: SignatureZone[];
   events: WeddingEvent[];
   timeline: TimelineItem[];
   media: WeddingMedia[];
