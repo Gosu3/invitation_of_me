@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import type { PublicSignature } from '@/lib/signature-mark';
-import { useMyWish } from '@/lib/my-wish';
+import { useMyWish, useGuestName } from '@/lib/my-wish';
 import { weddingSubmissions } from '@/lib/wedding-submissions';
 import { SignatureBoard, type SignatureDraft } from './signature-board';
 
@@ -13,6 +13,7 @@ export function SignatureSection({ config, connected, onSigningChange }: { confi
   const [signatures, setSignatures] = useState<PublicSignature[]>([]);
   const revision = useRef(0);
   const myWish = useMyWish(config.id);
+  const rsvpName = useGuestName(config.id);
 
   useEffect(() => {
     if (!connected) return;
@@ -69,6 +70,7 @@ export function SignatureSection({ config, connected, onSigningChange }: { confi
     avoidZones={board.avoidZones}
     signatures={signatures}
     myWish={myWish ? { guestName: myWish.guestName } : null}
+    knownName={rsvpName}
     onSign={sign}
     onComposerChange={onSigningChange}
     onGoToWishes={() => document.getElementById('so-luu-but')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}

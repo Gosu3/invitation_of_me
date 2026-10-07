@@ -28,6 +28,8 @@ export type SignatureBoardProps = {
   signatures: PublicSignature[];
   /** The wish this browser sent in the guestbook above, if any; the new signature links to it. */
   myWish: { guestName: string } | null;
+  /** Name the guest already gave elsewhere (e.g. RSVP), used to prefill the signer's name. */
+  knownName?: string;
   onSign: (draft: SignatureDraft) => Promise<PublicSignature>;
   onGoToWishes?: () => void;
   /** Lets the host pause page auto-scroll while the guest is signing. */
@@ -111,7 +113,7 @@ function BoardPhoto({ src, alt, sizes, priority }: { src: string; alt: string; s
   return <Image className={styles.photo} src={src} alt={alt} width={1400} height={2100} sizes={sizes} priority={priority} unoptimized={src.startsWith('/api/')} />;
 }
 
-export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish, onSign, onGoToWishes, onComposerChange }: SignatureBoardProps) {
+export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish, knownName, onSign, onGoToWishes, onComposerChange }: SignatureBoardProps) {
   // The sheet is portalled to the page's <main>: ancestors such as .paper02-flow use `isolation:isolate`,
   // which would otherwise trap its z-index below later sections. <main> still carries the theme's --w-* vars.
   const [composerHost, setComposerHost] = useState<Element | null>(null);
@@ -128,6 +130,9 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
   // "Viết lời chúc" closes the sheet first and scrolls only after it unmounts: the sheet's body scroll lock
   // restores the old scroll position on cleanup and would cancel a scroll started while it is still open.
   const goToWishesAfterClose = useRef(false);
+  // Work in progress kept while the guest goes up to write a wish, so the button reopens straight at step 2.
+  // Cleared when the guest signs or closes the sheet.
+  const [draft, setDraft] = useState<ComposerDraft | null>(null);
   useEffect(() => {
     if (composerHost || !goToWishesAfterClose.current) return;
     goToWishesAfterClose.current = false;
@@ -187,6 +192,7 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
 
   const sign = async (draft: SignatureDraft) => {
     const saved = await onSign(draft);
+    setDraft(null);
     setComposerOpen(false);
     setJustSigned(saved.id);
     setActive(null);
@@ -231,41 +237,45 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
       </div>
     </div>
 
-    <button type="button" className={styles.cta} onClick={() => { setActive(null); setComposerOpen(true); }}><PenLine size={17} aria-hidden="true" />Ký tên lên ảnh</button>
+    <button type="button" className={styles.cta} onClick={() => { setActive(null); setComposerOpen(true); }}><PenLine size={17} aria-hidden="true" />{draft ? 'Tiếp tục ký tên' : 'Ký tên lên ảnh'}</button>
     <p className={styles.steps}><span>1</span>Ký trên ảnh<i>·</i><span>2</span>Đặt vị trí</p>
 
-    {composerHost && createPortal(<SignatureComposer photo={photo} photoAlt={photoAlt} avoidZones={avoidZones} placed={signatures} myWish={myWish} onGoToWishes={onGoToWishes && (() => { goToWishesAfterClose.current = true; setComposerOpen(false); })} onCancel={() => setComposerOpen(false)} onSubmit={sign} />, composerHost)}
+    {composerHost && createPortal(<SignatureComposer photo={photo} photoAlt={photoAlt} avoidZones={avoidZones} placed={signatures} myWish={myWish} knownName={knownName} resume={draft} onGoToWishes={onGoToWishes && ((saved) => { setDraft(saved); goToWishesAfterClose.current = true; setComposerOpen(false); })} onCancel={() => { setDraft(null); setComposerOpen(false); }} onSubmit={sign} />, composerHost)}
   </section>;
 }
 
 type Step = 'draw' | 'place';
+type ComposerDraft = { mode: 'draw' | 'type'; ink: Ink; font: SignatureFont; strokes: number[][]; typed: string; mark: Mark; pos: SignaturePlacement; name: string };
 
-function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoToWishes, onCancel, onSubmit }: {
+function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownName, resume, onGoToWishes, onCancel, onSubmit }: {
   photo: string;
   photoAlt: string;
   avoidZones: Zone[];
   placed: PublicSignature[];
   myWish: { guestName: string } | null;
-  onGoToWishes?: () => void;
+  knownName?: string;
+  /** Saved step-2 state from a trip to the guestbook; reopens at step 2 with it. */
+  resume: ComposerDraft | null;
+  onGoToWishes?: (draft: ComposerDraft) => void;
   onCancel: () => void;
   onSubmit: (draft: SignatureDraft) => Promise<void>;
 }) {
-  const [step, setStep] = useState<Step>('draw');
-  const [mode, setMode] = useState<'draw' | 'type'>('draw');
-  const [ink, setInk] = useState<Ink>('moss');
-  const [strokes, setStrokes] = useState<number[][]>([]);
-  const [typed, setTyped] = useState('');
-  const [mark, setMark] = useState<Mark | null>(null);
-  const [pos, setPos] = useState<SignaturePlacement>({ x: 0.5, y: 0.1, scale: 0.5, rotate: -4 });
+  const [step, setStep] = useState<Step>(resume ? 'place' : 'draw');
+  const [mode, setMode] = useState<'draw' | 'type'>(resume?.mode ?? 'draw');
+  const [ink, setInk] = useState<Ink>(resume?.ink ?? 'moss');
+  const [strokes, setStrokes] = useState<number[][]>(resume?.strokes ?? []);
+  const [typed, setTyped] = useState(resume?.typed ?? '');
+  const [mark, setMark] = useState<Mark | null>(resume?.mark ?? null);
+  const [pos, setPos] = useState<SignaturePlacement>(resume?.pos ?? { x: 0.5, y: 0.1, scale: 0.5, rotate: -4 });
   const [dragging, setDragging] = useState(false);
-  const [name, setName] = useState(myWish?.guestName ?? '');
+  const [name, setName] = useState(myWish?.guestName || resume?.name || knownName || '');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const drawingRef = useRef<number | null>(null);
   const [selected, setSelected] = useState(false);
   const [inkOpen, setInkOpen] = useState(false);
-  const [font, setFont] = useState<SignatureFont>('madi');
+  const [font, setFont] = useState<SignatureFont>(resume?.font ?? 'madi');
   const [fontOpen, setFontOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const sigRef = useRef<SVGGElement>(null);
@@ -594,7 +604,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
           <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />
           {myWish
             ? <p className={styles.linkNote}><Link2 size={13} aria-hidden="true" />Chữ ký sẽ gắn với lời chúc bạn đã gửi — bấm vào chữ ký để xem lại.</p>
-            : <p className={styles.linkNote}>Bạn chưa gửi lời chúc. {onGoToWishes && <button type="button" onClick={onGoToWishes}>Viết lời chúc ở phía trên</button>}</p>}
+            : <p className={styles.linkNote}>Bạn chưa gửi lời chúc. {onGoToWishes && <button type="button" onClick={() => mark && onGoToWishes({ mode, ink, font, strokes, typed, mark, pos, name })}>Viết lời chúc ở phía trên</button>}</p>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={styles.actionRow}>
             <button type="button" className={`${styles.ghost} ${styles.redo}`} onClick={() => { setStep('draw'); setError(''); }} disabled={submitting}><PenLine size={14} aria-hidden="true" />Ký lại</button>

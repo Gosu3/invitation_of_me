@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Check, Heart, Navigation, X } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { weddingSubmissions, type PublicWish } from '@/lib/wedding-submissions';
-import { rememberMyWish } from '@/lib/my-wish';
+import { rememberGuestName, rememberMyWish } from '@/lib/my-wish';
 import { dateParts, formatTime } from '@/lib/utils';
 import { ArchitectureSection, CardFlower, CeremonyFlowers, ReceptionFlower, TimelineFlowers, weddingArtwork } from './decorations';
 import { Modal } from './shared';
@@ -138,6 +138,7 @@ function RsvpModal({ config, close }: { config: WeddingInvitationConfig; close: 
         message: '',
         website: '',
       });
+      rememberGuestName(config.id, guestName.trim());
       setStatus('success');
     } catch (error) {
       setStatus('error');

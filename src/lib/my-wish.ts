@@ -32,6 +32,20 @@ function parse(raw: string | null): MyWish | null {
   return null;
 }
 
+// The name a guest typed when confirming attendance, so the signature sheet can prefill it.
+const nameKey = (invitationId: string) => `net-duyen:guest-name:${invitationId}`;
+
+export function rememberGuestName(invitationId: string, guestName: string) {
+  try { window.localStorage.setItem(nameKey(invitationId), guestName); } catch { /* private mode: guest types it again */ }
+  window.dispatchEvent(new Event(EVENT));
+}
+
+export function useGuestName(invitationId: string) {
+  return useSyncExternalStore(subscribe, () => {
+    try { return window.localStorage.getItem(nameKey(invitationId)) ?? ''; } catch { return ''; }
+  }, () => '');
+}
+
 export function useMyWish(invitationId: string) {
   const raw = useSyncExternalStore(subscribe, () => {
     try { return window.localStorage.getItem(storageKey(invitationId)); } catch { return null; }

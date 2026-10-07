@@ -140,5 +140,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
   .typedInk{opacity:1}
 }
 .noWish{font-style:italic}
-.linkNote{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0;font:12px/1.5 var(--w-ui);color:var(--w-text-secondary)}
-.linkNote button{padding:0;border:0;background:none;color:var(--w-primary);font:500 12px var(--w-ui);text-decoration:underline;cursor:pointer}
+/* Inline flow so the link icon stays on the first line when the note wraps. */
+.linkNote{display:block;margin:0;font:12px/1.5 var(--w-ui);color:var(--w-text-secondary)}
+.linkNote svg{margin-right:5px;vertical-align:-2px}
+.linkNote button{margin-left:4px;padding:0;border:0;background:none;color:var(--w-primary);font:500 12px var(--w-ui);text-decoration:underline;cursor:pointer}
