@@ -3,7 +3,6 @@ export type WeddingTrack = { id: string; title: string; artist?: string; src: st
 // Add entries only after placing the corresponding real audio files in public/music.
 export const weddingPlaylist: WeddingTrack[] = [
   { id: 'vaycuoi', title: 'Váy cưới', artist: 'Wedding', src: '/music/vaycuoi.mp3' },
-  { id: 'bai-nay-khong-de-di-dien', title: 'Bài này không để đi diễn', artist: 'Anh Tú Atus x @DieuNhiOfficial', src: '/music/Bài này không để đi diễn - Anh Tu Atus x @DieuNhiOfficial Wedding.mp3' },
   { id: 'le-duong', title: 'Lễ Đường', artist: 'Kai Đình x meChill', src: '/music/Lễ Đường - Kai Đinh x meChill Lofi - Lyrics Video.mp3' },
   { id: 'ngay-dau-tien', title: 'Ngày Đầu Tiên', artist: 'Đức Phúc', src: '/music/Đức Phúc - Ngày Đầu Tiên (Dance Performance).mp3' },
   { id: 'em-dong-y-i-do', title: 'Em Đồng Ý (I Do)', artist: 'Đức Phúc x 911', src: '/music/Em Đồng Ý (I Do) - Đức Phúc x 911.mp3' },

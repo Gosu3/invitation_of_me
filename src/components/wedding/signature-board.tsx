@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { ArrowRight, ChevronLeft, Download, Hand, Link2, PenLine, RotateCcw, Trash2, Type, Undo2, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Hand, Link2, PenLine, RotateCcw, Trash2, Type, Undo2, X } from 'lucide-react';
 import {
   SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE as MAX_ROTATE, SIGNATURE_SCALE, SIGNATURE_VIEW_H as VIEW_H, SIGNATURE_VIEW_W as VIEW_W,
   centreStrokes, signatureFontFamily as fontFamily, signatureFontIds, signatureFonts, signatureFootprint as footprint, signatureInks, signaturePath as pathFromPoints, textSignature,
@@ -125,6 +125,14 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
   const [replayKey, setReplayKey] = useState(0);
   const boardRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
+  // "Viết lời chúc" closes the sheet first and scrolls only after it unmounts: the sheet's body scroll lock
+  // restores the old scroll position on cleanup and would cancel a scroll started while it is still open.
+  const goToWishesAfterClose = useRef(false);
+  useEffect(() => {
+    if (composerHost || !goToWishesAfterClose.current) return;
+    goToWishesAfterClose.current = false;
+    onGoToWishes?.();
+  }, [composerHost, onGoToWishes]);
 
   useEffect(() => {
     const node = boardRef.current;
@@ -185,47 +193,6 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
     requestAnimationFrame(() => boardRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }));
   };
 
-  const exportImage = async () => {
-    const image = new window.Image();
-    image.src = photo;
-    await image.decode();
-    await Promise.all([...new Set(signatures.map((sig) => sig.mark.kind === 'text' ? fontFamily(sig.mark.font) : null).filter(Boolean))].map((family) => document.fonts.load(`110px ${family}`)));
-    const canvas = document.createElement('canvas');
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.drawImage(image, 0, 0);
-    ctx.scale(canvas.width / VIEW_W, canvas.height / VIEW_H);
-    for (const sig of signatures) {
-      const color = inks[sig.ink];
-      ctx.save();
-      ctx.translate(sig.x * VIEW_W, sig.y * VIEW_H);
-      ctx.rotate((sig.rotate * Math.PI) / 180);
-      ctx.scale(sig.scale, sig.scale);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      if (sig.mark.kind === 'text') {
-        ctx.font = `110px ${fontFamily(sig.mark.font)}`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.lineWidth = 7; ctx.strokeStyle = color.halo; ctx.strokeText(sig.mark.text, 0, 0);
-        ctx.fillStyle = color.stroke; ctx.fillText(sig.mark.text, 0, 0);
-        ctx.lineWidth = 1.6; ctx.strokeStyle = color.stroke; ctx.strokeText(sig.mark.text, 0, 0);
-      } else {
-        for (const [width, style] of [[15, color.halo], [7, color.stroke]] as const) {
-          ctx.lineWidth = width; ctx.strokeStyle = style;
-          for (const stroke of sig.mark.strokes) ctx.stroke(new Path2D(pathFromPoints(stroke)));
-        }
-      }
-      ctx.restore();
-    }
-    const link = document.createElement('a');
-    link.download = 'so-luu-but-chu-ky.jpg';
-    link.href = canvas.toDataURL('image/jpeg', 0.9);
-    link.click();
-  };
-
   const animate = inView && !reduced;
 
   return <section className={styles.section} aria-labelledby="signature-board-title">
@@ -261,14 +228,13 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
       <span className={styles.count}>{signatures.length} chữ ký</span>
       <div className={styles.barActions}>
         {!reduced && signatures.length > 0 && <button type="button" className={styles.ghost} onClick={() => setReplayKey((key) => key + 1)}><RotateCcw size={14} aria-hidden="true" />Viết lại</button>}
-        {signatures.length > 0 && <button type="button" className={styles.ghost} onClick={exportImage}><Download size={14} aria-hidden="true" />Tải ảnh</button>}
       </div>
     </div>
 
     <button type="button" className={styles.cta} onClick={() => { setActive(null); setComposerOpen(true); }}><PenLine size={17} aria-hidden="true" />Ký tên lên ảnh</button>
     <p className={styles.steps}><span>1</span>Ký trên ảnh<i>·</i><span>2</span>Đặt vị trí</p>
 
-    {composerHost && createPortal(<SignatureComposer photo={photo} photoAlt={photoAlt} avoidZones={avoidZones} placed={signatures} myWish={myWish} onGoToWishes={onGoToWishes} onCancel={() => setComposerOpen(false)} onSubmit={sign} />, composerHost)}
+    {composerHost && createPortal(<SignatureComposer photo={photo} photoAlt={photoAlt} avoidZones={avoidZones} placed={signatures} myWish={myWish} onGoToWishes={onGoToWishes && (() => { goToWishesAfterClose.current = true; setComposerOpen(false); })} onCancel={() => setComposerOpen(false)} onSubmit={sign} />, composerHost)}
   </section>;
 }
 
@@ -628,7 +594,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
           <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />
           {myWish
             ? <p className={styles.linkNote}><Link2 size={13} aria-hidden="true" />Chữ ký sẽ gắn với lời chúc bạn đã gửi — bấm vào chữ ký để xem lại.</p>
-            : <p className={styles.linkNote}>Bạn chưa gửi lời chúc. {onGoToWishes && <button type="button" onClick={() => { onCancel(); onGoToWishes(); }}>Viết lời chúc ở phía trên</button>}</p>}
+            : <p className={styles.linkNote}>Bạn chưa gửi lời chúc. {onGoToWishes && <button type="button" onClick={onGoToWishes}>Viết lời chúc ở phía trên</button>}</p>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={styles.actionRow}>
             <button type="button" className={`${styles.ghost} ${styles.redo}`} onClick={() => { setStep('draw'); setError(''); }} disabled={submitting}><PenLine size={14} aria-hidden="true" />Ký lại</button>

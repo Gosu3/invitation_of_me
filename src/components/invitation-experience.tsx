@@ -90,6 +90,9 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
       animationFrame = window.requestAnimationFrame(scroll);
     };
 
+    // A finger on the screen (drag or fling) holds auto-scroll so it never fights the guest's own scrolling.
+    window.addEventListener('touchstart', pauseForInteraction, { passive: true });
+    window.addEventListener('touchmove', pauseForInteraction, { passive: true });
     window.addEventListener('wheel', pauseForInteraction, { passive: true });
     window.addEventListener('keydown', pauseForKeyboard);
     document.addEventListener('visibilitychange', pauseForReturn);
@@ -99,6 +102,8 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
       window.cancelAnimationFrame(animationFrame);
       document.removeEventListener('visibilitychange', pauseForReturn);
       window.removeEventListener('pageshow', pauseForReturn);
+      window.removeEventListener('touchstart', pauseForInteraction);
+      window.removeEventListener('touchmove', pauseForInteraction);
       window.removeEventListener('wheel', pauseForInteraction);
       window.removeEventListener('keydown', pauseForKeyboard);
     };
@@ -192,14 +197,26 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     ];
   }
 
-  function toggleAutoScroll(event: ReactPointerEvent<HTMLElement>) {
+  // Only a tap toggles auto-scroll: toggling on pointerdown restarted it at the start of every swipe, so a guest
+  // dragging back up to re-read something was pulled down again. A drag ends in pointercancel (the browser takes
+  // over to scroll) or moves too far, and is ignored.
+  const tapStart = useRef<{ id: number; x: number; y: number; time: number } | null>(null);
+  function startTap(event: ReactPointerEvent<HTMLElement>) {
+    tapStart.current = null;
     if (phase !== 'opened' || event.button !== 0) return;
     const target = event.target as HTMLElement;
     if (target.closest('a, button, input, textarea, select, label, [role="button"], [role="dialog"]')) return;
+    tapStart.current = { id: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp };
+  }
+  function toggleAutoScroll(event: ReactPointerEvent<HTMLElement>) {
+    const tap = tapStart.current;
+    tapStart.current = null;
+    if (!tap || tap.id !== event.pointerId || event.timeStamp - tap.time > 500) return;
+    if (Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 10) return;
     setAutoScrollPaused((paused) => !paused);
   }
 
-  return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase} data-auto-scroll={autoScrollPaused ? 'paused' : 'playing'} data-signing={signing || undefined} onPointerDown={toggleAutoScroll}>
+  return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase} data-auto-scroll={autoScrollPaused ? 'paused' : 'playing'} data-signing={signing || undefined} onPointerDown={startTap} onPointerUp={toggleAutoScroll} onPointerCancel={() => { tapStart.current = null; }}>
     {phase !== 'opened' && <EnvelopeIntro config={config} phase={phase} open={openInvitation} personalizedGuestName={guestName} />}
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
