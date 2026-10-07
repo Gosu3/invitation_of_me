@@ -228,16 +228,11 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
         <strong>{activeSig.guestName}</strong>
         {activeSig.wish ? <p>{activeSig.wish.message}</p> : <p className={styles.noWish}>Đã ký tên chúc phúc</p>}
       </div>}
+      {/* Replays the write-on animation; a quiet corner button so the photo and the sign button stay the focus. */}
+      {!reduced && signatures.length > 0 && <button type="button" className={styles.replay} onClick={() => { setActive(null); setReplayKey((key) => key + 1); }} aria-label="Xem lại hiệu ứng viết chữ ký" title="Xem lại hiệu ứng viết"><RotateCcw size={16} aria-hidden="true" /></button>}
     </div>
 
-    <div className={styles.boardBar}>
-      <span className={styles.count}>{signatures.length} chữ ký</span>
-      <div className={styles.barActions}>
-        {!reduced && signatures.length > 0 && <button type="button" className={styles.ghost} onClick={() => setReplayKey((key) => key + 1)}><RotateCcw size={14} aria-hidden="true" />Viết lại</button>}
-      </div>
-    </div>
-
-    <button type="button" className={styles.cta} onClick={() => { setActive(null); setComposerOpen(true); }}><PenLine size={17} aria-hidden="true" />{draft ? 'Tiếp tục ký tên' : 'Ký tên lên ảnh'}</button>
+    <button type="button" className={styles.cta} onClick={() => { setActive(null); setComposerOpen(true); }}><span className={styles.ctaShine} aria-hidden="true" /><PenLine className={styles.ctaPen} size={17} aria-hidden="true" />{draft ? 'Tiếp tục ký tên' : 'Ký tên lên ảnh'}</button>
     <p className={styles.steps}><span>1</span>Ký trên ảnh<i>·</i><span>2</span>Đặt vị trí</p>
 
     {composerHost && createPortal(<SignatureComposer photo={photo} photoAlt={photoAlt} avoidZones={avoidZones} placed={signatures} myWish={myWish} knownName={knownName} resume={draft} onGoToWishes={onGoToWishes && ((saved) => { setDraft(saved); goToWishesAfterClose.current = true; setComposerOpen(false); })} onCancel={() => { setDraft(null); setComposerOpen(false); }} onSubmit={sign} />, composerHost)}

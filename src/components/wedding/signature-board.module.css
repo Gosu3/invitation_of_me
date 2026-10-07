@@ -1,5 +1,7 @@
 .section{display:flex;flex-direction:column;align-items:center;width:min(480px,100%);margin:0 auto;padding:40px 16px 56px;color:var(--w-primary,#30530f);font-family:var(--w-body)}
-.eyebrow{margin:0;font:500 12px/1.4 var(--w-ui);letter-spacing:.24em;text-transform:uppercase;color:var(--w-secondary,#6b8040)}
+/* Same face and size as the venue's DRESS CODE heading (wedding-composition.css): 20px, 22px ≥768px, 18px ≤650px. */
+.eyebrow{margin:0;font:700 20px/1.4 'Times New Roman',serif;letter-spacing:.06em;text-transform:uppercase;color:var(--w-primary,#30530f)}
+@media (min-width:768px){.eyebrow{font-size:22px}}
 .title{margin:6px 0 0;font:400 clamp(30px,8vw,40px)/1.15 'Ms Madi',cursive;color:var(--w-primary,#30530f)}
 .subtitle{margin:8px 0 22px;font-style:italic;font-size:14px;text-align:center;color:var(--w-text-secondary)}
 
@@ -25,14 +27,23 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .popoverClose{position:absolute;top:5px;right:5px;display:grid;place-items:center;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--w-secondary);cursor:pointer}
 @keyframes pop-in{from{opacity:0}}
 
-.boardBar{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:12px}
-.count{padding:4px 12px;border-radius:999px;background:#eaf3de;font:500 12px/1.5 var(--w-ui)}
-.barActions{display:flex;gap:6px}
+.replay{position:absolute;right:10px;bottom:10px;z-index:2;display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:rgba(255,250,247,.82);color:var(--w-primary);box-shadow:0 4px 12px -6px rgba(23,39,8,.55);backdrop-filter:blur(4px);cursor:pointer}
+.replay:active{scale:.94}
 
-.cta{position:relative;display:inline-flex;align-items:center;gap:9px;margin-top:22px;padding:13px 28px;border:0;border-radius:999px;background:var(--w-primary,#30530f);color:var(--w-ivory,#fffaf7);font:500 14px/1 var(--w-ui);letter-spacing:.02em;cursor:pointer;box-shadow:0 12px 24px -12px rgba(48,83,15,.8);transition:transform .2s ease}
+.cta{position:relative;display:inline-flex;align-items:center;gap:9px;margin-top:26px;padding:13px 28px;border:0;border-radius:999px;background:var(--w-primary,#30530f);color:var(--w-ivory,#fffaf7);font:500 14px/1 var(--w-ui);letter-spacing:.02em;cursor:pointer;box-shadow:0 12px 24px -12px rgba(48,83,15,.8);transition:transform .2s ease}
 .cta::after{content:'';position:absolute;inset:-6px;border:1px solid rgba(48,83,15,.35);border-radius:inherit;animation:cta-breathe 2.6s ease-in-out infinite}
-.cta:active{transform:scale(.97)}
+.cta:active{scale:.97}
 @keyframes cta-breathe{0%,100%{opacity:0;transform:scale(.96)}50%{opacity:1;transform:scale(1)}}
+/* Invitation to sign: the button floats gently, a light sweep crosses it and the pen scribbles, all on one
+   4.8s loop so the motion reads as one gesture rather than three competing ones. */
+.cta{animation:cta-float 4.8s ease-in-out infinite}
+.ctaShine{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none}
+.ctaShine::before{content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(105deg,transparent,rgba(255,250,247,.38),transparent);transform:skewX(-18deg);animation:cta-shine 4.8s ease-in-out infinite}
+.ctaPen{position:relative;transform-origin:15% 85%;animation:cta-pen 4.8s ease-in-out infinite}
+@keyframes cta-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes cta-shine{0%,55%{left:-60%}80%,100%{left:130%}}
+@keyframes cta-pen{0%,8%,32%,100%{transform:translate(0,0) rotate(0)}12%{transform:translate(1px,-1px) rotate(-14deg)}16%{transform:translate(3px,0) rotate(8deg)}20%{transform:translate(5px,-1px) rotate(-12deg)}24%{transform:translate(6px,0) rotate(6deg)}28%{transform:translate(3px,0) rotate(0)}}
+.cta:hover .ctaPen,.cta:focus-visible .ctaPen{animation-duration:1.6s}
 .steps{display:flex;align-items:center;gap:6px;margin:14px 0 0;font:12px/1.4 var(--w-ui);color:var(--w-text-secondary)}
 .steps span{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#eaf3de;color:var(--w-primary);font-size:10px;font-weight:600}
 .steps i{font-style:normal;opacity:.4}
@@ -124,6 +135,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .error{margin:0;font:13px var(--w-ui);color:#a32d2d}
 
 @media (max-width:650px){
+  .eyebrow{font-size:18px}
   .section{padding:32px 12px 48px}
   .backdrop{align-items:flex-end;padding:0}
   .sheet{width:100%;height:100%;border-radius:22px 22px 0 0}
@@ -134,7 +146,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 }
 
 @media (prefers-reduced-motion:reduce){
-  .writeOn,.typedInk,.justSigned,.cta::after,.hint text,.popover,.backdrop,.sheet,.floatTools,.sizeSlider,.sideTools,.fontRow{animation:none}
+  .writeOn,.typedInk,.justSigned,.cta,.ctaShine::before,.ctaPen,.cta::after,.hint text,.popover,.backdrop,.sheet,.floatTools,.sizeSlider,.sideTools,.fontRow{animation:none}
   .writeOn{stroke-dashoffset:0}
   text.writeOn{stroke-dashoffset:0}
   .typedInk{opacity:1}
