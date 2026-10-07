@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE, SIGNATURE_SCALE } from './signature-mark';
+import { SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE, SIGNATURE_SCALE, signatureFontIds } from './signature-mark';
 
 const safeText = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => z.string().trim().max(max).optional().nullable();
@@ -24,7 +24,7 @@ const signatureMarkSchema = z.discriminatedUnion('kind', [
       .min(1).max(SIGNATURE_LIMITS.strokes)
       .refine((strokes) => strokes.reduce((sum, stroke) => sum + stroke.length, 0) <= SIGNATURE_LIMITS.numbersTotal),
   }),
-  z.object({ kind: z.literal('text'), text: safeText(SIGNATURE_LIMITS.textLength) }),
+  z.object({ kind: z.literal('text'), text: safeText(SIGNATURE_LIMITS.textLength), font: z.enum(signatureFontIds).optional() }),
 ]);
 
 export const signatureSchema = z.object({

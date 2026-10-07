@@ -1,20 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Download, Hand, Link2, PenLine, RotateCcw, Type, Undo2, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Download, Hand, Link2, PenLine, RotateCcw, Trash2, Type, Undo2, X } from 'lucide-react';
 import {
   SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE as MAX_ROTATE, SIGNATURE_SCALE, SIGNATURE_VIEW_H as VIEW_H, SIGNATURE_VIEW_W as VIEW_W,
-  centreStrokes, signatureFootprint as footprint, signatureInks, signaturePath as pathFromPoints, textSignature,
-  type PublicSignature, type SignatureInk as Ink, type SignatureMark as Mark, type SignaturePlacement, type SignatureZone as Zone,
+  centreStrokes, signatureFontFamily as fontFamily, signatureFontIds, signatureFonts, signatureFootprint as footprint, signatureInks, signaturePath as pathFromPoints, textSignature,
+  type PublicSignature, type SignatureFont, type SignatureInk as Ink, type SignatureMark as Mark, type SignaturePlacement, type SignatureZone as Zone,
 } from '@/lib/signature-mark';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
+import '@fontsource/dancing-script/400.css';
+import '@fontsource/great-vibes/400.css';
+import '@fontsource/pacifico/400.css';
+import '@fontsource/patrick-hand/400.css';
+import '@fontsource/charmonman/400.css';
 import styles from './signature-board.module.css';
 
 // Board photo must be portrait 2:3 — it is rendered with that ratio to line up with the 1000x1500 viewBox.
-
-const TYPED_FONT = "'Ms Madi', cursive";
 
 export type SignatureDraft = SignaturePlacement & { guestName: string; mark: Mark; ink: Ink };
 
@@ -63,8 +66,8 @@ function MarkPaths({ mark, ink, animate, delay = 0, highlight }: { mark: Mark; i
   const cls = animate ? styles.writeOn : undefined;
   if (mark.kind === 'text') {
     return <g className={highlight ? styles.justSigned : undefined}>
-      <text className={cls} style={{ animationDelay: `${delay}s` } as CSSProperties} textAnchor="middle" dominantBaseline="central" fontFamily={TYPED_FONT} fontSize={110} fill="none" stroke={color.halo} strokeWidth={7} strokeOpacity={0.9} strokeLinejoin="round">{mark.text}</text>
-      <text className={animate ? styles.typedInk : undefined} style={{ animationDelay: `${delay}s` } as CSSProperties} textAnchor="middle" dominantBaseline="central" fontFamily={TYPED_FONT} fontSize={110} fill={color.stroke} stroke={color.stroke} strokeWidth={1.6}>{mark.text}</text>
+      <text className={cls} style={{ animationDelay: `${delay}s` } as CSSProperties} textAnchor="middle" dominantBaseline="central" fontFamily={fontFamily(mark.font)} fontSize={110} fill="none" stroke={color.halo} strokeWidth={7} strokeOpacity={0.9} strokeLinejoin="round">{mark.text}</text>
+      <text className={animate ? styles.typedInk : undefined} style={{ animationDelay: `${delay}s` } as CSSProperties} textAnchor="middle" dominantBaseline="central" fontFamily={fontFamily(mark.font)} fontSize={110} fill={color.stroke} stroke={color.stroke} strokeWidth={1.6}>{mark.text}</text>
     </g>;
   }
   const total = mark.strokes.length;
@@ -132,6 +135,47 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
   }, []);
 
   const activeSig = signatures.find((sig) => sig.id === active);
+  // Places the wish card inside the photo: tries above/below the signature and centred/left/right of it, keeps
+  // the spots where it fits (else caps its height and scrolls inside) and picks the one covering the least of the
+  // no-sign zones (faces, bouquet), preferring above and centred on ties.
+  const popoverRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const board = boardRef.current;
+    const card = popoverRef.current;
+    if (!activeSig || !board || !card) return;
+    const gap = 10, edge = 8;
+    const { width: W, height: H } = board.getBoundingClientRect();
+    const zone = footprint(activeSig);
+    const top = Math.max(zone.y * H, 0), bottom = Math.min((zone.y + zone.h) * H, H);
+    card.style.maxHeight = 'none';
+    const { width: w, height: h } = card.getBoundingClientRect();
+    const clampX = (x: number) => Math.min(Math.max(x, edge), W - w - edge);
+    const lefts = [clampX(activeSig.x * W - w / 2), clampX(zone.x * W), clampX((zone.x + zone.w) * W - w)];
+    const sides = [
+      { room: top - gap - edge, place: (height: number) => Math.max(top - gap - height, edge) },
+      { room: H - bottom - gap - edge, place: (height: number) => Math.min(bottom + gap, H - height - edge) },
+    ];
+    const covered = (x: number, y: number, height: number) => avoidZones.reduce((sum, z) => {
+      const ox = Math.min(x + w, (z.x + z.w) * W) - Math.max(x, z.x * W);
+      const oy = Math.min(y + height, (z.y + z.h) * H) - Math.max(y, z.y * H);
+      return sum + (ox > 0 && oy > 0 ? ox * oy : 0);
+    }, 0);
+    let best: { x: number; y: number; room: number; score: number } | null = null;
+    sides.forEach((side, sideIndex) => {
+      const room = Math.max(side.room, 72);
+      const height = Math.min(h, room);
+      const y = side.place(height);
+      lefts.forEach((x, leftIndex) => {
+        // Not fitting costs more than any overlap; earlier candidates (above, centred) win ties.
+        const score = (h > room ? 1e7 + (h - room) * W : 0) + covered(x, y, height) + sideIndex + leftIndex * 0.5;
+        if (!best || score < best.score) best = { x, y, room, score };
+      });
+    });
+    const chosen = best!;
+    card.style.maxHeight = `${chosen.room}px`;
+    card.style.left = `${chosen.x}px`;
+    card.style.top = `${chosen.y}px`;
+  }, [activeSig, avoidZones]);
 
   const sign = async (draft: SignatureDraft) => {
     const saved = await onSign(draft);
@@ -145,7 +189,7 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
     const image = new window.Image();
     image.src = photo;
     await image.decode();
-    await document.fonts.load(`110px ${TYPED_FONT}`);
+    await Promise.all([...new Set(signatures.map((sig) => sig.mark.kind === 'text' ? fontFamily(sig.mark.font) : null).filter(Boolean))].map((family) => document.fonts.load(`110px ${family}`)));
     const canvas = document.createElement('canvas');
     canvas.width = image.naturalWidth;
     canvas.height = image.naturalHeight;
@@ -162,7 +206,7 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       if (sig.mark.kind === 'text') {
-        ctx.font = `110px ${TYPED_FONT}`;
+        ctx.font = `110px ${fontFamily(sig.mark.font)}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.lineWidth = 7; ctx.strokeStyle = color.halo; ctx.strokeText(sig.mark.text, 0, 0);
@@ -206,7 +250,7 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
           <MarkPaths mark={sig.mark} ink={sig.ink} animate={animate} delay={sig.id === justSigned ? 0.2 : Math.min(index, 12) * 0.45} highlight={sig.id === justSigned} />
         </g>)}
       </svg>
-      {activeSig && <div className={`${styles.popover}${activeSig.y < 0.35 ? ` ${styles.popoverBelow}` : ''}`} style={{ left: `${Math.min(Math.max(activeSig.x, 0.22), 0.78) * 100}%`, top: `${activeSig.y * 100}%` }} role="dialog" aria-label={`Chữ ký của ${activeSig.guestName}`}>
+      {activeSig && <div ref={popoverRef} key={activeSig.id} className={styles.popover} role="dialog" aria-label={`Chữ ký của ${activeSig.guestName}`}>
         <button type="button" className={styles.popoverClose} onClick={() => setActive(null)} aria-label="Đóng"><X size={14} /></button>
         <strong>{activeSig.guestName}</strong>
         {activeSig.wish ? <p>{activeSig.wish.message}</p> : <p className={styles.noWish}>Đã ký tên chúc phúc</p>}
@@ -254,6 +298,9 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   const svgRef = useRef<SVGSVGElement>(null);
   const drawingRef = useRef<number | null>(null);
   const [selected, setSelected] = useState(false);
+  const [inkOpen, setInkOpen] = useState(false);
+  const [font, setFont] = useState<SignatureFont>('madi');
+  const [fontOpen, setFontOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const sigRef = useRef<SVGGElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
@@ -268,6 +315,19 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   useEffect(() => { cancelRef.current = onCancel; }, [onCancel]);
 
   useBodyScrollLock(true);
+  // Keep the sheet inside the visible viewport: when the on-screen keyboard opens (typing a name), the backdrop
+  // shrinks to the area above it and the photo scales down, so the live preview stays in view while typing.
+  const backdropRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const backdrop = backdropRef.current;
+    if (!viewport || !backdrop) return;
+    const fit = () => Object.assign(backdrop.style, { top: `${viewport.offsetTop}px`, bottom: 'auto', height: `${viewport.height}px` });
+    fit();
+    viewport.addEventListener('resize', fit);
+    viewport.addEventListener('scroll', fit);
+    return () => { viewport.removeEventListener('resize', fit); viewport.removeEventListener('scroll', fit); };
+  }, []);
 
   useEffect(() => {
     dialogRef.current?.focus();
@@ -312,7 +372,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   };
 
   const goPlace = () => {
-    const next = mode === 'draw' ? centreStrokes(strokes) : typed.trim() ? textSignature(typed.trim()) : null;
+    const next = mode === 'draw' ? centreStrokes(strokes) : typed.trim() ? textSignature(typed.trim(), font) : null;
     if (!next) { setError(mode === 'draw' ? 'Hãy ký vài nét lên ảnh trước nhé.' : 'Hãy nhập tên để tạo chữ ký.'); return; }
     const scale = clamp(Math.min(1, 280 / next.w, 160 / next.h), SIGNATURE_SCALE.min, SIGNATURE_SCALE.max);
     const spot = suggestSpot(next, scale, avoidZones, placed);
@@ -399,7 +459,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   const endGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!pointers.current.delete(event.pointerId)) return;
     if (tap.current?.id === event.pointerId) {
-      if (event.type === 'pointerup') setSelected(false);
+      if (event.type === 'pointerup') { setSelected(false); setInkOpen(false); setFontOpen(false); }
       tap.current = null;
     }
     const moved = livePos.current;
@@ -441,14 +501,17 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
     }
   };
 
-  return <div className={styles.backdrop} onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
+  return <div ref={backdropRef} className={styles.backdrop} onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
     <div ref={dialogRef} className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="signature-composer-title" tabIndex={-1}>
       <header className={styles.sheetHead}>
         <div className={styles.progress} aria-hidden="true"><span className={styles.isDone} /><span className={step === 'place' ? styles.isDone : undefined} /></div>
+        {step === 'place' && <button type="button" className={styles.iconButton} onClick={() => { setStep('draw'); setError(''); }} disabled={submitting} aria-label="Quay lại bước 1"><ChevronLeft size={20} /></button>}
         <h3 id="signature-composer-title">{step === 'draw' ? 'Bước 1/2 · Ký tên lên ảnh' : 'Bước 2/2 · Đặt vị trí chữ ký'}</h3>
         <button type="button" className={styles.iconButton} onClick={onCancel} aria-label="Đóng"><X size={18} /></button>
       </header>
 
+      {/* Sizes the 2:3 photo to whatever height the header and controls leave, so the sheet never scrolls. */}
+      <div className={styles.canvasArea}>
       <div
         ref={wrapRef}
         className={`${styles.canvasWrap}${step === 'place' && !selected ? ` ${styles.canScroll}` : ''}${dragging ? ` ${styles.isDragging}` : ''}`}
@@ -484,8 +547,8 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
           {step === 'draw' && mode === 'draw' && strokes.length === 0 && <g className={styles.hint} aria-hidden="true">
             <text x={VIEW_W / 2} y={VIEW_H * 0.5} textAnchor="middle">Dùng ngón tay ký thẳng lên ảnh</text>
           </g>}
-          {step === 'draw' && mode === 'type' && <g transform={`translate(${VIEW_W / 2} ${VIEW_H * 0.14}) rotate(-4)`}>
-            {typed.trim() && <MarkPaths mark={textSignature(typed.trim())} ink={ink} animate={false} />}
+          {step === 'draw' && mode === 'type' && <g transform={`translate(${VIEW_W / 2} ${VIEW_H * 0.7}) rotate(-4)`}>
+            {typed.trim() && <MarkPaths mark={textSignature(typed.trim(), font)} ink={ink} animate={false} />}
           </g>}
 
           {step === 'place' && mark && <g
@@ -506,9 +569,36 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
         {/* HTML hit box over the signature: unlike SVG children it reliably takes touch-action:none, so a drag
             that starts on the signature never turns into a sheet scroll. */}
         {step === 'place' && mark && <div ref={handleRef} className={styles.handle} style={handleStyle(pos)} data-signature-handle aria-hidden="true" />}
-        {step === 'place' && <p className={`${styles.placeHint}${onFace || onOther ? ` ${styles.isWarning}` : ''}`} role="status">
-          {onFace ? 'Chữ ký đang che mặt cô dâu chú rể' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />{selected ? 'Kéo để di chuyển · 2 ngón để phóng to, xoay' : 'Chạm vào chữ ký để chỉnh sửa'}</>}
+        {/* Undo/clear float on the photo so they stay in reach while the photo fills the screen. */}
+        {step === 'draw' && mode === 'draw' && strokes.length > 0 && <div className={styles.floatTools}>
+          <button type="button" className={styles.floatButton} onClick={() => setStrokes((list) => list.slice(0, -1))} aria-label="Hoàn tác nét vừa ký" title="Hoàn tác"><Undo2 size={18} aria-hidden="true" /></button>
+          <button type="button" className={styles.floatButton} onClick={() => setStrokes([])} aria-label="Xoá hết chữ ký" title="Xoá hết"><Trash2 size={18} aria-hidden="true" /></button>
+        </div>}
+        {/* Size slider on the photo's left edge, shown while the signature is selected (like Instagram's text size). */}
+        {step === 'place' && mark && selected && <input
+          type="range"
+          className={styles.sizeSlider}
+          min={SIGNATURE_SCALE.min} max={SIGNATURE_SCALE.max} step={0.01} value={pos.scale}
+          onChange={(event) => setPos((current) => ({ ...current, scale: Number(event.target.value) }))}
+          onPointerDown={(event) => event.stopPropagation()}
+          aria-label="Kích thước chữ ký"
+        />}
+        {/* Ink and font pickers under the size slider: each collapses to its current value, tap to open. */}
+        {step === 'place' && mark && selected && <div className={styles.sideTools} onPointerDown={(event) => event.stopPropagation()}>
+          <div className={styles.inkPicker} role="radiogroup" aria-label="Màu mực">
+            {inkOpen
+              ? signatureInks.map((key) => <button key={key} type="button" role="radio" aria-checked={ink === key} aria-label={inks[key].label} title={inks[key].label} className={`${styles.inkDot} ${styles[`ink_${key}`]}`} onClick={() => { setInk(key); setInkOpen(false); }} />)
+              : <button type="button" className={`${styles.inkDot} ${styles.inkCurrent} ${styles[`ink_${ink}`]}`} aria-expanded={false} aria-label={`Màu mực: ${inks[ink].label} — bấm để đổi`} onClick={() => setInkOpen(true)} />}
+          </div>
+          {mark.kind === 'text' && <button type="button" className={`${styles.fontToggle}${fontOpen ? ` ${styles.isOpen}` : ''}`} style={{ fontFamily: fontFamily(font) }} aria-expanded={fontOpen} aria-label={`Kiểu chữ: ${signatureFonts[font].label} — bấm để đổi`} onClick={() => { setFontOpen((open) => !open); setInkOpen(false); }}>Aa</button>}
+        </div>}
+        {step === 'place' && mark?.kind === 'text' && selected && fontOpen && <div className={styles.fontRow} role="radiogroup" aria-label="Kiểu chữ" onPointerDown={(event) => event.stopPropagation()}>
+          {signatureFontIds.map((key) => <button key={key} type="button" role="radio" aria-checked={font === key} aria-label={signatureFonts[key].label} className={styles.fontChip} style={{ fontFamily: fontFamily(key) }} onClick={() => { setFont(key); setMark(textSignature(mark.text, key)); }}>{signatureFonts[key].label}</button>)}
+        </div>}
+        {step === 'place' && !fontOpen && <p className={`${styles.placeHint}${onFace || onOther ? ` ${styles.isWarning}` : ''}`} role="status">
+          {onFace ? 'Chữ ký đang che mặt cô dâu chú rể' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />{selected ? 'Kéo để di chuyển · 2 ngón để chỉnh' : 'Chạm vào chữ ký để chỉnh sửa'}</>}
         </p>}
+      </div>
       </div>
 
       <div className={styles.controls}>
@@ -522,27 +612,26 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
               {signatureInks.map((key) => <button key={key} type="button" role="radio" aria-checked={ink === key} aria-label={inks[key].label} title={inks[key].label} className={`${styles.inkDot} ${styles[`ink_${key}`]}`} onClick={() => setInk(key)} />)}
             </div>
           </div>
-          {mode === 'type' && <input className={styles.field} value={typed} maxLength={SIGNATURE_LIMITS.textLength} onChange={(event) => { setTyped(event.target.value); setError(''); }} placeholder="Nguyễn Văn An" aria-label="Tên để tạo chữ ký" autoFocus />}
           {error && <p className={styles.error} role="alert">{error}</p>}
+          {/* Typing mode swaps the Continue button for the name field (same row height, so the photo does not resize). */}
           <div className={styles.actionRow}>
-            {mode === 'draw' && <>
-              <button type="button" className={styles.ghost} onClick={() => setStrokes((list) => list.slice(0, -1))} disabled={!strokes.length}><Undo2 size={14} aria-hidden="true" />Hoàn tác</button>
-              <button type="button" className={styles.ghost} onClick={() => setStrokes([])} disabled={!strokes.length}>Xoá</button>
-            </>}
-            <button type="button" className={styles.primary} onClick={goPlace}>Tiếp tục</button>
+            {mode === 'type'
+              ? <form className={styles.typeBar} onSubmit={(event) => { event.preventDefault(); goPlace(); }}>
+                <input className={styles.typeField} value={typed} maxLength={SIGNATURE_LIMITS.textLength} onChange={(event) => { setTyped(event.target.value); setError(''); }} placeholder="Nhập tên của bạn" aria-label="Tên để tạo chữ ký" enterKeyHint="next" autoComplete="name" autoFocus />
+                <button type="submit" className={styles.typeSubmit} disabled={!typed.trim()} aria-label="Tiếp tục"><ArrowRight size={16} aria-hidden="true" /></button>
+              </form>
+              : <button type="button" className={styles.primary} onClick={goPlace}>Tiếp tục</button>}
           </div>
         </> : <>
-          <div className={styles.sliders}>
-            <label>Kích thước<input type="range" min={SIGNATURE_SCALE.min} max={SIGNATURE_SCALE.max} step={0.01} value={pos.scale} onChange={(event) => setPos((current) => ({ ...current, scale: Number(event.target.value) }))} /></label>
-            <label>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>
-          </div>
+          {/* Touch screens tilt with a two-finger twist; the slider is only for mouse users. */}
+          <label className={styles.tiltSlider}>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>
           <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />
           {myWish
             ? <p className={styles.linkNote}><Link2 size={13} aria-hidden="true" />Chữ ký sẽ gắn với lời chúc bạn đã gửi — bấm vào chữ ký để xem lại.</p>
             : <p className={styles.linkNote}>Bạn chưa gửi lời chúc. {onGoToWishes && <button type="button" onClick={() => { onCancel(); onGoToWishes(); }}>Viết lời chúc ở phía trên</button>}</p>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={styles.actionRow}>
-            <button type="button" className={styles.ghost} onClick={() => { setStep('draw'); setError(''); }} disabled={submitting}>Ký lại</button>
+            <button type="button" className={`${styles.ghost} ${styles.redo}`} onClick={() => { setStep('draw'); setError(''); }} disabled={submitting}><PenLine size={14} aria-hidden="true" />Ký lại</button>
             <button type="button" className={styles.primary} onClick={submit} disabled={submitting}>{submitting ? 'Đang lưu...' : 'Ký tên'}</button>
           </div>
         </>}
