@@ -1,15 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { SignatureInk, SignatureMark } from '@/lib/signature-mark';
+import type { SignatureInk, SignatureMark, SignatureZone } from '@/lib/signature-mark';
+import { sharedWishSlugs } from '@/lib/wedding-wish-groups';
 import { SignatureMarkPreview } from './wedding/signature-board';
+import { AdminSignatureEditor, type SignatureEdit } from './admin-signature-editor';
 
 type Invitation = { id: string; slug: string; admin_title: string | null };
 type LinkedWish = { guest_name: string; message: string; status: string };
 type SignatureRow = {
   id: string; invitation_id: string; guest_name: string; mark: SignatureMark; ink: SignatureInk;
+  x: number; y: number; scale: number; rotate: number;
   status: 'approved' | 'hidden'; created_at: string; wish: LinkedWish | LinkedWish[] | null;
 };
+type Board = { id: string; slug: string; signature_image: string | null; signature_avoid_zones: SignatureZone[] | null };
 
 const linkedWish = (row: SignatureRow) => Array.isArray(row.wish) ? row.wish[0] : row.wish;
 
@@ -19,13 +23,15 @@ export function AdminSignatures({ invitations }: { invitations: Invitation[] }) 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [editing, setEditing] = useState<string | null>(null);
 
   async function refresh() {
     try {
       const response = await fetch('/api/admin/signatures', { cache: 'no-store' });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Không thể tải chữ ký.');
-      setError(''); setRows(data.signatures);
+      setError(''); setRows(data.signatures); setBoards(data.boards || []);
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'Không thể tải chữ ký.'); }
     finally { setLoading(false); }
   }
@@ -46,6 +52,26 @@ export function AdminSignatures({ invitations }: { invitations: Invitation[] }) 
     finally { setBusy(''); }
   }
 
+  async function patch(row: SignatureRow, edit: SignatureEdit) {
+    const response = await fetch('/api/admin/signatures/' + row.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(edit) });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Không thể lưu thay đổi.');
+    // Reload so the stored mark (re-measured on the server after a text/font change) is what we show.
+    await refresh();
+    setEditing(null);
+  }
+  async function remove(row: SignatureRow) {
+    const response = await fetch('/api/admin/signatures/' + row.id, { method: 'DELETE' });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Không thể xoá chữ ký.');
+    setRows(current => current.filter(item => item.id !== row.id));
+    setEditing(null);
+  }
+  // The editor shows the signature on its own board, with the rest of that board (Thọ & Thắm share one).
+  const editRow = rows.find(row => row.id === editing);
+  const editBoard = editRow && boards.find(board => board.id === editRow.invitation_id);
+  const boardIds = editBoard ? boards.filter(board => sharedWishSlugs(editBoard.slug).includes(board.slug)).map(board => board.id) : [];
+
   const visible = rows.filter(row => row.guest_name.toLocaleLowerCase('vi').includes(query.toLocaleLowerCase('vi')));
   return <section className="admin-response-panel">
     <div className="admin-toolbar">
@@ -63,6 +89,7 @@ export function AdminSignatures({ invitations }: { invitations: Invitation[] }) 
             <p>{wish ? `Lời chúc: “${wish.message}”${wish.status === 'approved' ? '' : ' (lời chúc đang ẩn)'}` : 'Không gắn lời chúc'}</p>
             <small>{invitations.find(item => item.id === row.invitation_id)?.admin_title || 'Thiệp cưới'} · {new Date(row.created_at).toLocaleString('vi-VN')}</small>
             <div className="moderation-actions">
+              <button disabled={!!busy} onClick={() => setEditing(row.id)}>Chỉnh sửa</button>
               <button disabled={!!busy} onClick={() => change(row, row.status === 'approved' ? 'hidden' : 'approved')}>{row.status === 'approved' ? 'Ẩn' : 'Hiển thị'}</button>
               <button disabled={!!busy} onClick={() => change(row)}>Xoá</button>
             </div>
@@ -71,5 +98,15 @@ export function AdminSignatures({ invitations }: { invitations: Invitation[] }) 
       })}
       {!rows.length && <p>Chưa có chữ ký.</p>}
     </div>}
+    {editRow && <AdminSignatureEditor
+      key={editRow.id}
+      signature={editRow}
+      others={rows.filter(row => row.id !== editRow.id && row.status === 'approved' && (boardIds.length ? boardIds.includes(row.invitation_id) : row.invitation_id === editRow.invitation_id))}
+      photo={editBoard?.signature_image ?? null}
+      avoidZones={editBoard?.signature_avoid_zones ?? []}
+      onSave={edit => patch(editRow, edit)}
+      onDelete={() => remove(editRow)}
+      onClose={() => setEditing(null)}
+    />}
   </section>;
 }

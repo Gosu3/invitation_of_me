@@ -54,7 +54,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .redo{border-color:rgba(48,83,15,.45);background:#eaf3de}
 .ghost:disabled{opacity:.45;cursor:default}
 .primary{flex:1;border:0;background:var(--w-primary,#30530f);color:var(--w-ivory,#fffaf7)}
-.primary:disabled{opacity:.7;cursor:progress}
+.primary:disabled{opacity:.45;cursor:not-allowed}
 
 .backdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(23,39,8,.55);backdrop-filter:blur(6px);animation:fade-in .2s ease-out}
 .sheet{display:flex;flex-direction:column;width:min(460px,100%);height:min(100%,880px);overflow:auto;overscroll-behavior:contain;border-radius:22px;background:var(--w-ivory,#fffaf7);color:var(--w-primary);font-family:var(--w-body);outline:none;animation:sheet-in .32s cubic-bezier(.2,.8,.2,1)}
@@ -119,6 +119,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .ink_moss{background:#30530f}
 .ink_ivory{background:#fffaf7}
 .ink_gold{background:radial-gradient(circle at 35% 30%,#e6c77a,#a87a2a 70%)}
+.ink_black{background:#1d1d1b}
 .actionRow{display:flex;gap:8px}
 /* Compact pill to sit level with the 36px action buttons; 16px keeps iOS Safari from zooming on focus. */
 .field{width:100%;padding:7px 14px;border:1px solid rgba(107,128,64,.3);border-radius:999px;background:#fff;color:var(--w-primary);font:16px/1.3 var(--w-body);resize:none}

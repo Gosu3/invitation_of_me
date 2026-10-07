@@ -7,8 +7,8 @@ export const SIGNATURE_LIMITS = { strokes: 40, numbersPerStroke: 800, numbersTot
 export const SIGNATURE_SCALE = { min: 0.2, max: 1.12 } as const;
 export const SIGNATURE_MAX_ROTATE = 30;
 
-export type SignatureInk = 'moss' | 'ivory' | 'gold';
-export const signatureInks: SignatureInk[] = ['moss', 'ivory', 'gold'];
+export type SignatureInk = 'moss' | 'ivory' | 'gold' | 'black';
+export const signatureInks: SignatureInk[] = ['moss', 'ivory', 'gold', 'black'];
 
 // Handwriting fonts for typed signatures (all include the Vietnamese subset). perChar/h approximate the rendered
 // size at 110px so the server can size the footprint without measuring; 'madi' is the default and is not stored.
@@ -117,6 +117,16 @@ function strokeBounds(strokes: number[][]) {
 
 function round1(value: number) {
   return Math.round(value * 10) / 10;
+}
+
+export function zonesOverlap(a: SignatureZone, b: SignatureZone, gap = 0) {
+  return a.x - gap < b.x + b.w && a.x + a.w + gap > b.x && a.y - gap < b.y + b.h && a.y + a.h + gap > b.y;
+}
+
+/** True when a placed signature touches any no-sign zone (faces, bouquet). Checked in the sheet and on save. */
+export function signatureCoversZone(sig: { mark: SignatureMark } & Pick<SignaturePlacement, 'x' | 'y' | 'scale'>, zones: SignatureZone[]) {
+  const box = signatureFootprint(sig);
+  return zones.some((zone) => zonesOverlap(box, zone));
 }
 
 export function signatureFootprint(sig: { mark: SignatureMark } & Pick<SignaturePlacement, 'x' | 'y' | 'scale'>): SignatureZone {

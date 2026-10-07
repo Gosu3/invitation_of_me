@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { signatureSchema } from '@/lib/validation';
 import { publicDb, serviceDb } from '@/lib/supabase';
 import { allowSubmission, submitterHash, verifyWishSignatureToken } from '@/lib/submission';
-import { measureMark, type PublicSignature, type SignatureMark } from '@/lib/signature-mark';
+import { measureMark, signatureCoversZone, type PublicSignature, type SignatureMark, type SignatureZone } from '@/lib/signature-mark';
 import { sharedWishRateLimitScope, sharedWishSlugs } from '@/lib/wedding-wish-groups';
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: 'Chữ ký không hợp lệ. Vui lòng ký lại.' }, { status: 400 });
   const input = parsed.data;
   if (input.website) return NextResponse.json({ ok: true });
-  const { data: invitation } = await db.from('wedding_invitations').select('id,slug,status,signatures_enabled').eq('id', input.invitationId).maybeSingle();
+  const { data: invitation } = await db.from('wedding_invitations').select('id,slug,status,signatures_enabled,signature_avoid_zones').eq('id', input.invitationId).maybeSingle();
   if (!invitation || invitation.status !== 'published' || !invitation.signatures_enabled) return NextResponse.json({ error: 'Thiệp không nhận chữ ký.' }, { status: 404 });
 
   const boardIds = await boardInvitationIds(db, invitation.slug, invitation.id);
@@ -69,11 +69,17 @@ export async function POST(request: NextRequest) {
     wishId = wish?.id ?? null;
   }
 
+  // Checked before the rate limit so a rejected placement does not use up an attempt.
+  const mark = measureMark({ ...input.mark, w: 0, h: 0 });
+  const zones = Array.isArray(invitation.signature_avoid_zones) ? invitation.signature_avoid_zones as SignatureZone[] : [];
+  if (signatureCoversZone({ mark, x: input.x, y: input.y, scale: input.scale }, zones)) {
+    return NextResponse.json({ error: 'Chữ ký đang nằm trong vùng không được ký. Hãy kéo ra khỏi vùng đỏ.' }, { status: 400 });
+  }
+
   const scope = `signature:${sharedWishRateLimitScope(invitation.slug, invitation.id)}`;
   const hash = submitterHash(request, scope);
   if (!await allowSubmission('signature', scope, hash)) return NextResponse.json({ error: 'Bạn đã ký quá nhiều lần. Vui lòng thử lại sau.' }, { status: 429 });
 
-  const mark = measureMark({ ...input.mark, w: 0, h: 0 });
   const { data: row, error } = await db.from('wedding_signatures').insert({
     invitation_id: invitation.id, wish_id: wishId, guest_name: input.guestName, mark, ink: input.ink,
     x: input.x, y: input.y, scale: input.scale, rotate: input.rotate, status: 'approved', submitter_hash: hash,

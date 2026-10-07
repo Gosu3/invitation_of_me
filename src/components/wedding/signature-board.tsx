@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ArrowRight, ChevronLeft, Hand, Link2, PenLine, RotateCcw, Trash2, Type, Undo2, X } from 'lucide-react';
 import {
   SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE as MAX_ROTATE, SIGNATURE_SCALE, SIGNATURE_VIEW_H as VIEW_H, SIGNATURE_VIEW_W as VIEW_W,
-  centreStrokes, signatureFontFamily as fontFamily, signatureFontIds, signatureFonts, signatureFootprint as footprint, signatureInks, signaturePath as pathFromPoints, textSignature,
+  centreStrokes, signatureCoversZone, zonesOverlap, signatureFontFamily as fontFamily, signatureFontIds, signatureFonts, signatureFootprint as footprint, signatureInks, signaturePath as pathFromPoints, textSignature,
   type PublicSignature, type SignatureFont, type SignatureInk as Ink, type SignatureMark as Mark, type SignaturePlacement, type SignatureZone as Zone,
 } from '@/lib/signature-mark';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
@@ -36,15 +36,14 @@ export type SignatureBoardProps = {
   onComposerChange?: (open: boolean) => void;
 };
 
-const inks: Record<Ink, { label: string; stroke: string; halo: string }> = {
+export const inks: Record<Ink, { label: string; stroke: string; halo: string }> = {
   moss: { label: 'Xanh rêu', stroke: '#30530f', halo: '#fffaf7' },
   ivory: { label: 'Trắng ngà', stroke: '#fffaf7', halo: 'rgba(48,83,15,.55)' },
   gold: { label: 'Nhũ vàng', stroke: '#a87a2a', halo: '#fffaf7' },
+  black: { label: 'Đen', stroke: '#1d1d1b', halo: '#fffaf7' },
 };
 
-function overlaps(a: Zone, b: Zone, gap = 0) {
-  return a.x - gap < b.x + b.w && a.x + a.w + gap > b.x && a.y - gap < b.y + b.h && a.y + a.h + gap > b.y;
-}
+const overlaps = zonesOverlap;
 
 function suggestSpot(mark: Mark, scale: number, avoid: Zone[], placed: PublicSignature[]) {
   let best = { x: 0.5, y: 0.1, score: -Infinity };
@@ -63,7 +62,7 @@ function suggestSpot(mark: Mark, scale: number, avoid: Zone[], placed: PublicSig
   return { x: best.x, y: best.y };
 }
 
-function MarkPaths({ mark, ink, animate, delay = 0, highlight }: { mark: Mark; ink: Ink; animate: boolean; delay?: number; highlight?: boolean }) {
+export function MarkPaths({ mark, ink, animate, delay = 0, highlight }: { mark: Mark; ink: Ink; animate: boolean; delay?: number; highlight?: boolean }) {
   const color = inks[ink];
   const cls = animate ? styles.writeOn : undefined;
   if (mark.kind === 'text') {
@@ -93,7 +92,7 @@ export function SignatureMarkPreview({ mark, ink, className }: { mark: Mark; ink
   </svg>;
 }
 
-function signatureTransform(sig: Pick<SignaturePlacement, 'x' | 'y' | 'scale' | 'rotate'>) {
+export function signatureTransform(sig: Pick<SignaturePlacement, 'x' | 'y' | 'scale' | 'rotate'>) {
   return `translate(${(sig.x * VIEW_W).toFixed(1)} ${(sig.y * VIEW_H).toFixed(1)}) rotate(${sig.rotate}) scale(${sig.scale})`;
 }
 
@@ -456,11 +455,12 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
   };
 
   const box = mark ? footprint({ mark, ...pos }) : null;
-  const onFace = !!box && avoidZones.some((zone) => overlaps(box, zone));
+  // Touching a red zone blocks saving (the server rejects it too); the zones stay visible until it is moved off.
+  const onFace = !!mark && signatureCoversZone({ mark, ...pos }, avoidZones);
   const onOther = !!box && placed.some((sig) => overlaps(box, footprint(sig)));
 
   const submit = async () => {
-    if (!mark || submitting) return;
+    if (!mark || submitting || onFace) return;
     if (!name.trim()) { setError('Hãy cho cô dâu chú rể biết bạn là ai nhé.'); return; }
     setSubmitting(true);
     setError('');
@@ -507,7 +507,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
             {placed.map((sig) => <g key={sig.id} transform={signatureTransform(sig)}><MarkPaths mark={sig.mark} ink={sig.ink} animate={false} /></g>)}
           </g>
 
-          {step === 'place' && dragging && avoidZones.map((zone, index) => <rect key={index} className={styles.avoidZone} x={zone.x * VIEW_W} y={zone.y * VIEW_H} width={zone.w * VIEW_W} height={zone.h * VIEW_H} rx={18} />)}
+          {step === 'place' && (dragging || onFace) && avoidZones.map((zone, index) => <rect key={index} className={styles.avoidZone} x={zone.x * VIEW_W} y={zone.y * VIEW_H} width={zone.w * VIEW_W} height={zone.h * VIEW_H} rx={18} />)}
 
           {step === 'draw' && mode === 'draw' && <g fill="none" strokeLinecap="round" strokeLinejoin="round">
             {strokes.map((stroke, index) => <g key={index}>
@@ -567,7 +567,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
           {signatureFontIds.map((key) => <button key={key} type="button" role="radio" aria-checked={font === key} aria-label={signatureFonts[key].label} className={styles.fontChip} style={{ fontFamily: fontFamily(key) }} onClick={() => { setFont(key); setMark(textSignature(mark.text, key)); }}>{signatureFonts[key].label}</button>)}
         </div>}
         {step === 'place' && !fontOpen && <p className={`${styles.placeHint}${onFace || onOther ? ` ${styles.isWarning}` : ''}`} role="status">
-          {onFace ? 'Chữ ký đang che mặt cô dâu chú rể' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />{selected ? 'Kéo để di chuyển · 2 ngón để chỉnh' : 'Chạm vào chữ ký để chỉnh sửa'}</>}
+          {onFace ? 'Kéo chữ ký ra khỏi vùng đỏ để lưu' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />{selected ? 'Kéo để di chuyển · 2 ngón để chỉnh' : 'Chạm vào chữ ký để chỉnh sửa'}</>}
         </p>}
       </div>
       </div>
@@ -603,7 +603,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={styles.actionRow}>
             <button type="button" className={`${styles.ghost} ${styles.redo}`} onClick={() => { setStep('draw'); setError(''); }} disabled={submitting}><PenLine size={14} aria-hidden="true" />Ký lại</button>
-            <button type="button" className={styles.primary} onClick={submit} disabled={submitting}>{submitting ? 'Đang lưu...' : 'Ký tên'}</button>
+            <button type="button" className={styles.primary} onClick={submit} disabled={submitting || onFace} title={onFace ? 'Chữ ký đang nằm trong vùng không được ký' : undefined}>{submitting ? 'Đang lưu...' : 'Ký tên'}</button>
           </div>
         </>}
       </div>
