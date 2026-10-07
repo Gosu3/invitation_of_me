@@ -29,12 +29,11 @@ const seedSignatures: LocalSignature[] = [
   { id: 's-4', guestName: 'Bảo Ngọc', mark: { kind: 'text', text: 'Bảo Ngọc', w: 304, h: 120 }, ink: 'moss', x: 0.86, y: 0.62, scale: 0.45, rotate: -8, createdAt: seedTime },
 ];
 
-// Cùng vùng tránh với migration 202610070001 cho ảnh Tho_MAIA7187.
+// Cùng vùng tránh với migration 202610070002 cho ảnh Tho_MAIA7187 (mặt + hoa cưới; tay được ký).
 const avoidZones = [
   { x: 0.27, y: 0.2, w: 0.22, h: 0.18 },
   { x: 0.49, y: 0.26, w: 0.2, h: 0.17 },
   { x: 0.69, y: 0.27, w: 0.24, h: 0.23 },
-  { x: 0.29, y: 0.55, w: 0.16, h: 0.09 },
 ];
 
 function read<T>(key: string, fallback: T): T {
