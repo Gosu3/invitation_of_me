@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Download, Hand, Link2, PenLine, RotateCcw, Type, Undo2, X } from 'lucide-react';
 import {
@@ -108,8 +109,13 @@ function BoardPhoto({ src, alt, sizes, priority }: { src: string; alt: string; s
 }
 
 export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish, onSign, onGoToWishes, onComposerChange }: SignatureBoardProps) {
-  const [composerOpen, setComposerOpenState] = useState(false);
-  const setComposerOpen = (open: boolean) => { setComposerOpenState(open); onComposerChange?.(open); };
+  // The sheet is portalled to the page's <main>: ancestors such as .paper02-flow use `isolation:isolate`,
+  // which would otherwise trap its z-index below later sections. <main> still carries the theme's --w-* vars.
+  const [composerHost, setComposerHost] = useState<Element | null>(null);
+  const setComposerOpen = (open: boolean) => {
+    setComposerHost(open ? boardRef.current?.closest('main') ?? document.body : null);
+    onComposerChange?.(open);
+  };
   const [active, setActive] = useState<string | null>(null);
   const [justSigned, setJustSigned] = useState<string | null>(null);
   const [inView, setInView] = useState(false);
@@ -218,7 +224,7 @@ export function SignatureBoard({ photo, photoAlt, avoidZones, signatures, myWish
     <button type="button" className={styles.cta} onClick={() => { setActive(null); setComposerOpen(true); }}><PenLine size={17} aria-hidden="true" />Ký tên lên ảnh</button>
     <p className={styles.steps}><span>1</span>Ký trên ảnh<i>·</i><span>2</span>Đặt vị trí</p>
 
-    {composerOpen && <SignatureComposer photo={photo} photoAlt={photoAlt} avoidZones={avoidZones} placed={signatures} myWish={myWish} onGoToWishes={onGoToWishes} onCancel={() => setComposerOpen(false)} onSubmit={sign} />}
+    {composerHost && createPortal(<SignatureComposer photo={photo} photoAlt={photoAlt} avoidZones={avoidZones} placed={signatures} myWish={myWish} onGoToWishes={onGoToWishes} onCancel={() => setComposerOpen(false)} onSubmit={sign} />, composerHost)}
   </section>;
 }
 
@@ -248,6 +254,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
   const svgRef = useRef<SVGSVGElement>(null);
   const drawingRef = useRef<number | null>(null);
   const dragOffset = useRef({ dx: 0, dy: 0 });
+  const dragPointer = useRef<number | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef(onCancel);
   useEffect(() => { cancelRef.current = onCancel; }, [onCancel]);
@@ -307,22 +314,26 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
     setStep('place');
   };
 
-  const startDrag = (event: ReactPointerEvent<SVGGElement>) => {
-    event.stopPropagation();
+  // Step 2: a finger anywhere on the photo moves the signature by the same amount (no need to hit the thin
+  // strokes, and no jump). The whole photo has touch-action:none so the sheet never scrolls mid-drag.
+  const startDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (dragPointer.current !== null) return;
     capturePointer(event.currentTarget, event.pointerId);
     const p = toView(event);
+    dragPointer.current = event.pointerId;
     dragOffset.current = { dx: pos.x - p.x / VIEW_W, dy: pos.y - p.y / VIEW_H };
     setDragging(true);
   };
 
-  const moveDrag = (event: ReactPointerEvent<SVGGElement>) => {
-    if (!dragging) return;
+  const moveDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (dragPointer.current !== event.pointerId) return;
     const p = toView(event);
     setPos((current) => ({ ...current, x: clamp(p.x / VIEW_W + dragOffset.current.dx, 0.04, 0.96), y: clamp(p.y / VIEW_H + dragOffset.current.dy, 0.03, 0.97) }));
   };
 
-  const endDrag = () => {
-    if (!dragging) return;
+  const endDrag = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (dragPointer.current !== event.pointerId) return;
+    dragPointer.current = null;
     setDragging(false);
     navigator.vibrate?.(8);
   };
@@ -366,12 +377,12 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
         <div className={`${styles.wash}${step === 'place' ? ` ${styles.washLight}` : ''}`} aria-hidden="true" />
         <svg
           ref={svgRef}
-          className={`${styles.overlay} ${step === 'draw' && mode === 'draw' ? styles.drawSurface : ''}`}
+          className={`${styles.overlay} ${step === 'draw' && mode === 'draw' ? styles.drawSurface : step === 'place' ? styles.placeSurface : ''}${dragging ? ` ${styles.isDragging}` : ''}`}
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-          onPointerDown={startStroke}
-          onPointerMove={moveStroke}
-          onPointerUp={endStroke}
-          onPointerCancel={endStroke}
+          onPointerDown={step === 'place' ? startDrag : startStroke}
+          onPointerMove={step === 'place' ? moveDrag : moveStroke}
+          onPointerUp={step === 'place' ? endDrag : endStroke}
+          onPointerCancel={step === 'place' ? endDrag : endStroke}
           aria-label={step === 'draw' ? 'Vùng ký tên trên ảnh' : 'Vị trí chữ ký trên ảnh'}
         >
           <g opacity={step === 'draw' ? 0.25 : 0.6}>
@@ -395,15 +406,11 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, onGoTo
 
           {step === 'place' && mark && <g
             transform={signatureTransform(pos)}
-            className={`${styles.draggable}${dragging ? ` ${styles.isDragging}` : ''}`}
+            className={styles.draggable}
             tabIndex={0}
             role="slider"
             aria-label="Chữ ký — kéo hoặc dùng phím mũi tên để di chuyển"
             aria-valuetext={`Ngang ${Math.round(pos.x * 100)}%, dọc ${Math.round(pos.y * 100)}%`}
-            onPointerDown={startDrag}
-            onPointerMove={moveDrag}
-            onPointerUp={endDrag}
-            onPointerCancel={endDrag}
             onKeyDown={nudge}
           >
             <rect className={`${styles.selection}${onFace ? ` ${styles.isWarning}` : ''}`} x={-mark.w / 2 - 22} y={-mark.h / 2 - 22} width={mark.w + 44} height={mark.h + 44} rx={14} vectorEffect="non-scaling-stroke" />

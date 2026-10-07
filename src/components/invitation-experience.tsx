@@ -199,7 +199,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
     setAutoScrollPaused((paused) => !paused);
   }
 
-  return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase} data-auto-scroll={autoScrollPaused ? 'paused' : 'playing'} onPointerDown={toggleAutoScroll}>
+  return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase} data-auto-scroll={autoScrollPaused ? 'paused' : 'playing'} data-signing={signing || undefined} onPointerDown={toggleAutoScroll}>
     {phase !== 'opened' && <EnvelopeIntro config={config} phase={phase} open={openInvitation} personalizedGuestName={guestName} />}
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
@@ -217,7 +217,8 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
       </div>
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} />}
-    {phase === 'opened' && <nav className="invitation-dock" aria-label="Điều hướng thiệp">
+    {/* While signing, only the music toggle stays on screen so the dock doesn't cover the signature sheet. */}
+    {phase === 'opened' && !signing && <nav className="invitation-dock" aria-label="Điều hướng thiệp">
       <a href="#bia-thiep" aria-label="Về đầu thiệp" onClick={() => setAutoScrollPaused(true)}><Heart size={18} /></a>
       {config.gallery.length > 0 && <a href="#album" aria-label="Album ảnh" onClick={() => setAutoScrollPaused(true)}><Images size={18} /></a>}
       {config.reception && <a href="#thoi-gian" aria-label="Thời gian và xác nhận tham dự" onClick={() => setAutoScrollPaused(true)}><CalendarCheck size={18} /></a>}

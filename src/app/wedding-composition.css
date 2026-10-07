@@ -122,6 +122,8 @@
 /* Compact corner trigger; the mobile dock stays in its own lane. */
 /* Bottom inset matches .invitation-dock; +5.5px = (57px dock - 46px button) / 2 so both centres align. */
 .wedding-music-player{position:fixed;right:20px;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 5.5px);z-index:45;color:#30530f}
+/* While a guest signs the photo (sheet backdrop z-index 50) the music toggle is the only control kept above it. */
+.invitation-page[data-signing] .wedding-music-player{z-index:55}
 .music-player-trigger{width:46px;height:46px;display:grid;place-items:center;border:1px solid #d0dac1;border-radius:50%;background:#fffaf7ed;box-shadow:0 6px 30px #203a0d22;backdrop-filter:blur(10px);color:#30530f;transition:transform .2s ease,box-shadow .2s ease}
 .music-player-trigger:hover{transform:translateY(-2px);box-shadow:0 8px 30px #203a0d33}.music-player-trigger:disabled{opacity:.55;cursor:wait}
 .music-player-trigger svg{color:#30530f;stroke:#30530f}.music-equalizer{display:flex;height:22px;align-items:flex-end;justify-content:center;gap:3px}.music-equalizer i{display:block;width:3px;height:7px;border-radius:3px;background:#30530f;transform-origin:50% 100%;animation:music-equalizer-beat .82s ease-in-out infinite}.music-equalizer i:nth-child(2){height:15px;animation-delay:-.42s}.music-equalizer i:nth-child(3){height:11px;animation-delay:-.2s}.music-equalizer i:nth-child(4){height:18px;animation-delay:-.61s}@keyframes music-equalizer-beat{0%,100%{transform:scaleY(.42);opacity:.72}45%{transform:scaleY(1);opacity:1}70%{transform:scaleY(.66);opacity:.88}}
