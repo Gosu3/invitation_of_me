@@ -50,6 +50,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     copied.set(item.id, mediaId);
   }
   if (source.cover_media_id && copied.has(source.cover_media_id)) await db.from('wedding_invitations').update({ cover_media_id: copied.get(source.cover_media_id) }).eq('id', newId);
+  if ('signatures_enabled' in source) {
+    // Copy the board setup (disabled); an uploaded board photo points at the copied media.
+    const image = typeof source.signature_image === 'string' ? source.signature_image : null;
+    const mediaId = image?.startsWith('/api/media/') ? image.slice('/api/media/'.length) : null;
+    const copiedImage = mediaId ? (copied.has(mediaId) ? `/api/media/${copied.get(mediaId)}` : null) : image;
+    await db.from('wedding_invitations').update({ signatures_enabled: false, signature_image: copiedImage, signature_avoid_zones: source.signature_avoid_zones ?? [] }).eq('id', newId);
+  }
   const { data: sourceGifts } = await db.from('wedding_gift_accounts').select('*').eq('invitation_id', id).order('sort_order');
   const { data: newGifts } = await db.from('wedding_gift_accounts').select('*').eq('invitation_id', newId).order('sort_order');
   for (let i = 0; i < Math.min(sourceGifts?.length || 0, newGifts?.length || 0); i++) {

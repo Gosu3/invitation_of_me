@@ -19,6 +19,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   return NextResponse.json({
     invitation: mapInvitation(row, { events: events.data || [], timeline: timeline.data || [], media: media.data || [], gifts: gifts.data || [], wishes: (wishes.data || []).filter((w) => w.status === 'approved') }),
     coverMediaId: row.cover_media_id,
+    // False until migration 202610070001 is applied; the editor then hides the signature settings.
+    signatureColumns: 'signatures_enabled' in row,
     giftQrMediaIds: (gifts.data || []).map((g) => ({ id: g.id, qrMediaId: g.qr_media_id })),
     allWishes: wishes.data || [],
   });

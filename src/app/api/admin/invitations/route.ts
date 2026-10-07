@@ -21,5 +21,14 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.code === '23505' ? 'Đường dẫn thiệp đã tồn tại.' : 'Không thể lưu thiệp.', detail: error.message }, { status: error.code === '23505' ? 409 : 500 });
   const titleUpdate = await admin.service.from('wedding_invitations').update({ admin_title: parsed.data.adminTitle || null }).eq('id', id);
   if (titleUpdate.error) return NextResponse.json({ error: 'Thiệp đã lưu nhưng chưa thể cập nhật tên phân biệt.' }, { status: 500 });
+  const { signaturesEnabled, signatureImage, signatureAvoidZones } = parsed.data;
+  if (signaturesEnabled !== undefined || signatureImage !== undefined || signatureAvoidZones !== undefined) {
+    const signatureUpdate = await admin.service.from('wedding_invitations').update({
+      ...(signaturesEnabled !== undefined && { signatures_enabled: signaturesEnabled }),
+      ...(signatureImage !== undefined && { signature_image: signatureImage || null }),
+      ...(signatureAvoidZones !== undefined && { signature_avoid_zones: signatureAvoidZones }),
+    }).eq('id', id);
+    if (signatureUpdate.error) return NextResponse.json({ error: 'Thiệp đã lưu nhưng chưa thể lưu phần chữ ký trên ảnh.' }, { status: 500 });
+  }
   return NextResponse.json({ id }, { status: parsed.data.id ? 200 : 201 });
 }

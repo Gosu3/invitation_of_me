@@ -7,6 +7,7 @@ import { createBrowserClient } from '@supabase/ssr';
 import { ArrowRight, Check, Copy, ExternalLink, FilePlus2, Link2, LogOut, Search, Trash2, UserRoundPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AdminResponses } from './admin-responses';
+import { AdminSignatures } from './admin-signatures';
 
 type ListRow = {
   id: string;
@@ -43,7 +44,7 @@ export function AdminDashboard() {
   const [guestLinkError, setGuestLinkError] = useState('');
   const [creatingLink, setCreatingLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState('');
-  const [tab, setTab] = useState<'invitations' | 'rsvps' | 'wishes'>('invitations');
+  const [tab, setTab] = useState<'invitations' | 'rsvps' | 'wishes' | 'signatures'>('invitations');
   const [deletingLink, setDeletingLink] = useState('');
 
   async function deleteLink(link: GuestLinkRow) {
@@ -150,8 +151,10 @@ export function AdminDashboard() {
         <button className={tab === 'invitations' ? 'active' : ''} onClick={() => setTab('invitations')}>Thiệp & link mời</button>
         <button className={tab === 'rsvps' ? 'active' : ''} onClick={() => setTab('rsvps')}>Xác nhận tham dự</button>
         <button className={tab === 'wishes' ? 'active' : ''} onClick={() => setTab('wishes')}>Tất cả lời chúc</button>
+        <button className={tab === 'signatures' ? 'active' : ''} onClick={() => setTab('signatures')}>Chữ ký trên ảnh</button>
       </div>
-      {tab !== 'invitations' && <AdminResponses invitations={items} tab={tab} />}
+      {(tab === 'rsvps' || tab === 'wishes') && <AdminResponses invitations={items} tab={tab} />}
+      {tab === 'signatures' && <AdminSignatures invitations={items} />}
       <div hidden={tab !== 'invitations'}>
       <section className="guest-link-builder" aria-labelledby="guest-link-title">
         <div className="guest-link-heading">

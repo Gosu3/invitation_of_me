@@ -56,6 +56,10 @@ const giftSchema = z.object({
   sortOrder: z.number().int().min(0).max(1000),
 });
 
+const unit = z.number().min(0).max(1);
+export const signatureImagePattern = /^\/photos\/[A-Za-z0-9._-]+$|^\/api\/media\/[0-9a-f-]{36}$/;
+const signatureZoneSchema = z.object({ x: unit, y: unit, w: unit, h: unit });
+
 export const invitationSchema = z.object({
   id: z.uuid().optional(), slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100),
   status: z.enum(['draft', 'published', 'archived']),
@@ -70,4 +74,8 @@ export const invitationSchema = z.object({
   rsvpEnabled: z.boolean(), rsvpDeadline: z.union([z.iso.datetime({ offset: true }), z.literal('')]).optional().nullable(),
   wishesEnabled: z.boolean(), giftsEnabled: z.boolean(),
   events: z.array(eventSchema).max(10), timeline: z.array(timelineSchema).max(30), gifts: z.array(giftSchema).max(4),
+  // Optional so saving still works before migration 202610070001 is applied (the editor omits them then).
+  signaturesEnabled: z.boolean().optional(),
+  signatureImage: z.union([z.string().regex(signatureImagePattern), z.literal('')]).optional().nullable(),
+  signatureAvoidZones: z.array(signatureZoneSchema).max(12).optional(),
 });

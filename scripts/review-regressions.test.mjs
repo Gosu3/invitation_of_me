@@ -136,7 +136,7 @@ test('CSV retains authentication and database error responses', async () => {
 });
 
 const signatureMark = loadSource('src/lib/signature-mark.ts');
-const { signatureSchema } = loadSource('src/lib/validation.ts', { zod, './signature-mark': signatureMark });
+const { signatureSchema, signatureImagePattern } = loadSource('src/lib/validation.ts', { zod, './signature-mark': signatureMark });
 const { SIGNATURE_LIMITS: limits } = signatureMark;
 
 test('drawn signatures are centred and thinned to the storage limits', () => {
@@ -168,4 +168,12 @@ test('signature payload validation rejects malformed or oversized marks', () => 
   assert.ok(!signatureSchema.safeParse({ ...base, mark: { kind: 'text', text: 'x'.repeat(limits.textLength + 1) } }).success, 'text too long');
   assert.ok(!signatureSchema.safeParse({ ...base, scale: 3, mark: { kind: 'text', text: 'A' } }).success, 'scale out of range');
   assert.ok(!signatureSchema.safeParse({ ...base, ink: 'red', mark: { kind: 'text', text: 'A' } }).success, 'unknown ink');
+});
+
+test('signature board image accepts only public photos or uploaded media', () => {
+  assert.ok(signatureImagePattern.test('/photos/signature-board-tho.webp'));
+  assert.ok(signatureImagePattern.test('/api/media/0f8fad5b-d9cb-469f-a165-70867728950e'));
+  for (const bad of ['https://evil.example/x.jpg', '/photos/../secret', '/photos/a b.jpg', 'javascript:alert(1)', '/api/media/abc']) {
+    assert.ok(!signatureImagePattern.test(bad), bad);
+  }
 });

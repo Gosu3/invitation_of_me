@@ -19,7 +19,7 @@ Visual regression (Playwright, `tests/visual/`, baseline trong `tests/visual/__s
 - `/thiep/[slug]` và `/m/[code]` (link mời ngắn, tên khách trong `wedding_guest_links`) → `getInvitation` (`src/lib/invitations.ts`: DB row → `Invitation`) → `createWeddingConfig` (`src/lib/wedding-config.ts`: config + feature flags) → `InvitationExperience` (client).
 - Thiếu env Supabase → dùng `src/lib/demo.ts`. Có DB: lỗi query thì throw (trang lỗi), không tìm thấy thì 404 — không bao giờ thay bằng nội dung demo; chỉ ảnh/cover còn thiếu mới mượn từ demo (`public/photos`).
 - Tên khách trên bìa chỉ đến từ link `/m/[code]` (tạo ở trang quản trị); `?guest=` đã bị gỡ.
-- Chữ ký trên ảnh: `wedding/signature-section.tsx` (GET/POST `/api/signatures`, realtime + polling 15s) → `signature-board.tsx` (UI thuần); hình học/giới hạn ở `src/lib/signature-mark.ts`. Bật theo thiệp bằng `signatures_enabled` + `signature_image`; chưa có UI admin. Trang thử không cần DB: `/thu-ky-ten`.
+- Chữ ký trên ảnh: `wedding/signature-section.tsx` (GET/POST `/api/signatures`, realtime + polling 15s) → `signature-board.tsx` (UI thuần); hình học/giới hạn ở `src/lib/signature-mark.ts`. Bật/chọn ảnh/khoanh vùng tránh ở form sửa thiệp mục 08 (`admin-signature-settings.tsx`, lưu bằng update riêng sau RPC như `admin_title`); kiểm duyệt ở tab "Chữ ký trên ảnh" (`admin-signatures.tsx`, `/api/admin/signatures`). Trang thử không cần DB: `/thu-ky-ten` (404 trên production).
 - Lời chúc: `POST /api/wishes` lưu `approved` ngay, realtime + polling 5s; `tho-va-tham` & `tham-va-tho` dùng chung lời chúc (`src/lib/wedding-wish-groups.ts`), RSVP/lịch/địa điểm riêng.
 - Admin: `/quan-tri/*` + `/api/admin/*` → `requireAdmin()` (`src/lib/supabase.ts`, bảng `wedding_admins`) → service-role client.
 

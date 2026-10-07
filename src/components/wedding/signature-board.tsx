@@ -79,6 +79,14 @@ function MarkPaths({ mark, ink, animate, delay = 0, highlight }: { mark: Mark; i
   </g>;
 }
 
+/** Static thumbnail of one signature, e.g. for the admin moderation list. */
+export function SignatureMarkPreview({ mark, ink, className }: { mark: Mark; ink: Ink; className?: string }) {
+  const pad = 24;
+  return <svg className={className} viewBox={`${-mark.w / 2 - pad} ${-mark.h / 2 - pad} ${mark.w + pad * 2} ${mark.h + pad * 2}`} role="img" aria-label="Chữ ký">
+    <MarkPaths mark={mark} ink={ink} animate={false} />
+  </svg>;
+}
+
 function signatureTransform(sig: Pick<SignaturePlacement, 'x' | 'y' | 'scale' | 'rotate'>) {
   return `translate(${(sig.x * VIEW_W).toFixed(1)} ${(sig.y * VIEW_H).toFixed(1)}) rotate(${sig.rotate}) scale(${sig.scale})`;
 }

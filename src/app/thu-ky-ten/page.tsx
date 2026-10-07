@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { SignaturePrototype } from './signature-prototype';
 
 export const metadata: Metadata = {
@@ -7,5 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default function SignaturePrototypePage() {
+  // Prototype for local/preview review only; production guests use the board inside the invitation.
+  if (process.env.VERCEL_ENV === 'production') notFound();
   return <SignaturePrototype />;
 }
