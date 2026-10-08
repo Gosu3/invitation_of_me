@@ -595,7 +595,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
             that starts on the signature never turns into a sheet scroll. */}
         {step === 'place' && mark && <div ref={handleRef} className={styles.handle} style={handleStyle(pos)} data-signature-handle aria-hidden="true" />}
         {/* Undo/clear float on the photo so they stay in reach while the photo fills the screen. */}
-        {step === 'draw' && mode === 'draw' && strokes.length > 0 && !desktop && <div className={styles.floatTools}>
+        {step === 'draw' && mode === 'draw' && strokes.length > 0 && <div className={styles.floatTools}>
           <button type="button" className={styles.floatButton} onClick={() => setStrokes((list) => list.slice(0, -1))} aria-label="Hoàn tác nét vừa ký" title="Hoàn tác"><Undo2 size={18} aria-hidden="true" /></button>
           <button type="button" className={styles.floatButton} onClick={() => setStrokes([])} aria-label="Xoá hết chữ ký" title="Xoá hết"><Trash2 size={18} aria-hidden="true" /></button>
         </div>}
@@ -637,16 +637,12 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
               {signatureInks.map((key) => <button key={key} type="button" role="radio" aria-checked={ink === key} aria-label={inks[key].label} title={inks[key].label} className={`${styles.inkDot} ${styles[`ink_${key}`]}`} onClick={() => setInk(key)} />)}
             </div>
           </div>
-          {/* Desktop: the first version's layout — name field on its own row, then Hoàn tác / Xoá / Tiếp tục. */}
+          {/* Desktop: the name field gets its own row and Continue keeps its full size (undo/clear float on the photo). */}
           {desktop && mode === 'type' && <form onSubmit={(event) => { event.preventDefault(); goPlace(); }}>
             <input className={styles.field} value={typed} maxLength={SIGNATURE_LIMITS.textLength} onChange={(event) => { setTyped(event.target.value); setError(''); }} placeholder="Nhập tên của bạn" aria-label="Tên để tạo chữ ký" autoComplete="name" autoFocus />
           </form>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           {desktop ? <div className={styles.actionRow}>
-            {mode === 'draw' && <>
-              <button type="button" className={styles.ghost} onClick={() => setStrokes((list) => list.slice(0, -1))} disabled={!strokes.length}><Undo2 size={14} aria-hidden="true" />Hoàn tác</button>
-              <button type="button" className={styles.ghost} onClick={() => setStrokes([])} disabled={!strokes.length}><Trash2 size={14} aria-hidden="true" />Xoá</button>
-            </>}
             <button type="button" className={styles.primary} onClick={goPlace}>Tiếp tục</button>
           </div>
           /* Typing mode swaps the Continue button for the name field (same row height, so the photo does not resize). */
