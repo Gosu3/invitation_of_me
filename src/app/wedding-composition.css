@@ -121,7 +121,9 @@
 .botanical-theme .invite-footer p{max-width:390px;margin:15px auto 0;color:#6b8040;font:italic 16px/1.8 var(--w-body)}
 /* Compact corner trigger; the mobile dock stays in its own lane. */
 /* Bottom inset matches .invitation-dock; +5.5px = (57px dock - 46px button) / 2 so both centres align. */
-.wedding-music-player{position:fixed;right:20px;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 5.5px);z-index:45;color:#30530f}
+/* Right edge follows the card (.invitation-paper, max 780px, centred), not the screen: 50% - 390px is the gap
+   beside the card on wide screens, so the button sits 20px inside the card's right edge. */
+.wedding-music-player{position:fixed;right:max(20px,calc(50% - 370px));bottom:calc(max(12px,env(safe-area-inset-bottom)) + 5.5px);z-index:45;color:#30530f}
 /* While a guest signs the photo (sheet backdrop z-index 50) the music toggle is the only control kept above it. */
 .invitation-page[data-signing] .wedding-music-player{z-index:55}
 .music-player-trigger{width:46px;height:46px;display:grid;place-items:center;border:1px solid #d0dac1;border-radius:50%;background:#fffaf7ed;box-shadow:0 6px 30px #203a0d22;backdrop-filter:blur(10px);color:#30530f;transition:transform .2s ease,box-shadow .2s ease}
