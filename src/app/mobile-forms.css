@@ -2,6 +2,8 @@
 @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
   html body input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='hidden']),
   html body textarea,
+  /* The guestbook's own 13px !important (wedding-composition.css) outranks the plain selectors on tablets. */
+  html body .guestbook-form textarea,
   html body select {
     font-size: 16px !important;
     min-width: 0;
@@ -27,6 +29,21 @@
   .admin-response-search { width: 100%; }
   .admin-toolbar { flex-wrap: wrap; }
   .guest-link-result a { overflow-wrap: anywhere; }
+}
+
+/* Tablets (iPad, touch, wider than the 650px phone layout): small invitation buttons keep their look but get a
+   ~44px invisible tap area. Phones are left as they are. */
+@media (hover: none) and (pointer: coarse) and (min-width: 651px) {
+  .botanical-theme .reception-calendar .calendar-link,
+  .botanical-theme .events-section .calendar-link,
+  .botanical-theme .reception-rsvp-button,
+  .botanical-theme .guestbook-form-actions .guestbook-ai-button,
+  .botanical-theme .guestbook-form-actions .guestbook-submit { position: relative; }
+  .botanical-theme .reception-calendar .calendar-link::after,
+  .botanical-theme .events-section .calendar-link::after { content: ''; position: absolute; inset: -12px -8px; }
+  .botanical-theme .reception-rsvp-button::after,
+  .botanical-theme .guestbook-form-actions .guestbook-ai-button::after,
+  .botanical-theme .guestbook-form-actions .guestbook-submit::after { content: ''; position: absolute; inset: -6px -4px; }
 }
 
 @media (max-width: 650px) {
