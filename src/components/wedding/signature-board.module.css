@@ -58,6 +58,11 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 
 .backdrop{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(23,39,8,.55);backdrop-filter:blur(6px);animation:fade-in .2s ease-out}
 .sheet{display:flex;flex-direction:column;width:min(460px,100%);height:min(100%,880px);overflow:auto;overscroll-behavior:contain;border-radius:22px;background:var(--w-ivory,#fffaf7);color:var(--w-primary);font-family:var(--w-body);outline:none;animation:sheet-in .32s cubic-bezier(.2,.8,.2,1)}
+/* Desktop: the composer sits in the section in place of the board photo, at the photo's page width. Two classes
+   so it also beats the ≤650px sheet rule when a desktop window is narrow. */
+.sheet.inline{width:100%;height:auto;border-radius:18px;overflow:clip;scroll-margin-top:16px;box-shadow:0 18px 40px -22px rgba(48,83,15,.55),0 0 0 1px var(--w-border);animation:fade-in .2s ease-out}
+.inline .canvasArea{display:block;flex:none;min-height:0;padding:0;container-type:normal}
+.inline .canvasWrap{width:100%;border-radius:0}
 @keyframes fade-in{from{opacity:0}}
 @keyframes sheet-in{from{opacity:0;transform:translateY(28px)}}
 .sheetHead{position:relative;display:flex;align-items:center;gap:10px;padding:14px 14px 12px 18px}
@@ -108,7 +113,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 @container (max-width:300px){.placeHint{gap:0;padding:6px 10px;font-size:11px}.placeHint svg{display:none}}
 .placeHint.isWarning{background:#fcebeb;color:#a32d2d}
 
-.controls{display:grid;gap:10px;padding:12px 14px 16px}
+.controls{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:12px 14px 16px}
 .toolRow{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .segmented{display:flex;padding:3px;border-radius:999px;background:rgba(107,128,64,.12)}
 .segmented button{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border:0;border-radius:999px;background:transparent;color:var(--w-secondary);font:500 12px/1 var(--w-ui);cursor:pointer}
@@ -128,14 +133,19 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .tiltSlider input{width:100%;accent-color:var(--w-primary)}
 @media (pointer:coarse){.tiltSlider{display:none}}
 /* Desktop step-2 controls (mouse/trackpad only; touch keeps the on-photo tools). */
-.toolLabel{font:500 12px var(--w-ui);color:var(--w-secondary)}
-.fontChoices{display:flex;flex-wrap:wrap;gap:6px}
-.fontChoices button{padding:5px 12px;border:1px solid rgba(107,128,64,.3);border-radius:999px;background:#fff;color:var(--w-primary);font-size:16px;line-height:1.25;white-space:nowrap;cursor:pointer}
-.fontChoices button:hover{border-color:var(--w-primary)}
-.fontChoices button[aria-checked=true]{border-color:var(--w-primary);background:#eaf3de}
-.sliders{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.sliders label{display:grid;gap:4px;font:500 12px var(--w-ui);color:var(--w-secondary);font-variant-numeric:tabular-nums}
-.sliders input{width:100%;accent-color:var(--w-primary);cursor:pointer}
+.fontPicker{position:relative}
+.fontButton{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border:1px solid rgba(107,128,64,.3);border-radius:999px;background:#fff;color:var(--w-primary);font:500 12px/1 var(--w-ui);cursor:pointer}
+.fontButton span{font-size:17px;line-height:1}
+.fontButton:hover,.fontButton[aria-expanded=true]{border-color:var(--w-primary)}
+/* Opens upward over the sliders so it never pushes the layout. */
+.fontMenu{position:absolute;right:0;bottom:calc(100% + 6px);z-index:3;display:grid;grid-template-columns:repeat(2,max-content);gap:6px;padding:8px;border-radius:14px;background:#fff;box-shadow:0 10px 28px -10px rgba(23,39,8,.45),0 0 0 1px rgba(107,128,64,.2);animation:pop-in .15s ease-out}
+.fontMenu button{padding:5px 12px;border:1px solid rgba(107,128,64,.3);border-radius:999px;background:#fff;color:var(--w-primary);font-size:16px;line-height:1.25;white-space:nowrap;cursor:pointer}
+.fontMenu button:hover{border-color:var(--w-primary)}
+.fontMenu button[aria-checked=true]{border-color:var(--w-primary);background:#eaf3de}
+.sliders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sliders label{display:flex;align-items:center;gap:8px;font:500 12px var(--w-ui);color:var(--w-secondary);white-space:nowrap}
+.sliders input{flex:1;min-width:0;margin:0;accent-color:var(--w-primary);cursor:pointer}
+.sliders output{min-width:3.2em;text-align:right;font-variant-numeric:tabular-nums}
 /* Vertical range: writing-mode turns it upright, direction:rtl puts the large end at the top. */
 .sizeSlider{position:absolute;left:4px;top:18%;z-index:2;width:32px;height:42%;margin:0;padding:0;writing-mode:vertical-lr;direction:rtl;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none;cursor:pointer;animation:pop-in .2s ease-out}
 .sizeSlider::-webkit-slider-runnable-track{width:4px;border-radius:2px;background:linear-gradient(to top,rgba(255,250,247,.55),#fffaf7);box-shadow:0 0 4px rgba(23,39,8,.45)}
@@ -156,7 +166,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 }
 
 @media (prefers-reduced-motion:reduce){
-  .writeOn,.typedInk,.justSigned,.cta,.ctaShine::before,.ctaPen,.cta::after,.hint text,.popover,.backdrop,.sheet,.floatTools,.sizeSlider,.sideTools,.fontRow{animation:none}
+  .writeOn,.typedInk,.justSigned,.cta,.ctaShine::before,.ctaPen,.cta::after,.hint text,.popover,.backdrop,.sheet,.sheet.inline,.floatTools,.sizeSlider,.sideTools,.fontRow{animation:none}
   .writeOn{stroke-dashoffset:0}
   text.writeOn{stroke-dashoffset:0}
   .typedInk{opacity:1}
