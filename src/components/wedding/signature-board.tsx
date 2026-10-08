@@ -301,7 +301,10 @@ function SignatureComposer({ inline, photo, photoAlt, avoidZones, placed, myWish
   // Live "on a red zone" while a gesture is in flight (null when idle), so the warning follows the drag.
   const [liveFace, setLiveFace] = useState<boolean | null>(null);
   const liveFaceRef = useRef<boolean | null>(null);
-  const wheelCommit = useRef(0);
+  // Ctrl/Shift+wheel: where the signature is heading and the frame loop easing it there.
+  const wheelTarget = useRef<SignaturePlacement | null>(null);
+  const wheelFrame = useRef(0);
+  const slidersRef = useRef<HTMLDivElement>(null);
   const onWheel = useRef<(event: WheelEvent) => void>(() => {});
   const backdropPress = useRef(false);
   const fontMenuRef = useRef<HTMLDivElement>(null);
@@ -414,6 +417,17 @@ function SignatureComposer({ inline, photo, photoAlt, avoidZones, placed, myWish
     if (!p) return;
     sigRef.current?.setAttribute('transform', signatureTransform(p));
     if (handleRef.current) Object.assign(handleRef.current.style, handleStyle(p));
+    // Desktop size/tilt readouts follow live. Each <output> holds a single text node that React also owns,
+    // so it is edited in place rather than replaced.
+    const sliders = slidersRef.current;
+    if (sliders) {
+      const [scaleInput, tiltInput] = sliders.querySelectorAll('input');
+      const [scaleOut, tiltOut] = sliders.querySelectorAll('output');
+      scaleInput.value = String(p.scale);
+      tiltInput.value = String(p.rotate);
+      if (scaleOut.firstChild) scaleOut.firstChild.nodeValue = `${Math.round(p.scale * 100)}%`;
+      if (tiltOut.firstChild) tiltOut.firstChild.nodeValue = `${Math.round(p.rotate)}°`;
+    }
     const face = !!mark && signatureCoversZone({ mark, ...p }, avoidZones);
     if (face !== liveFaceRef.current) { liveFaceRef.current = face; setLiveFace(face); }
   };
@@ -429,8 +443,19 @@ function SignatureComposer({ inline, photo, photoAlt, avoidZones, placed, myWish
     return moved;
   };
 
+  const stopWheel = () => {
+    cancelAnimationFrame(wheelFrame.current);
+    wheelFrame.current = 0;
+    const target = wheelTarget.current;
+    wheelTarget.current = null;
+    return target;
+  };
+
   const startGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!mark || pointers.current.size >= 2) return;
+    // A drag that starts mid-glide continues from where the wheel was heading.
+    const target = stopWheel();
+    if (target) livePos.current = target;
     if (event.pointerType === 'mouse') {
       if (event.button !== 0) return;
       // Stops the browser from selecting the photo/other signatures and then starting a native drag of that
@@ -493,19 +518,43 @@ function SignatureComposer({ inline, photo, photoAlt, avoidZones, placed, myWish
 
   // Desktop: the mouse wheel (or a trackpad pinch, sent as ctrl+wheel) resizes, Shift+wheel tilts. Needs a
   // non-passive listener so the page behind the sheet neither scrolls nor zooms. Inline the plain wheel is left
-  // to scroll the page, so only ctrl/Shift+wheel act on the signature.
+  // to scroll the page, so only ctrl/Shift+wheel act on the signature. Each event only moves a target (a mouse
+  // notch is capped at ~12%, a trackpad's small deltas stay fine-grained) and the signature eases toward it
+  // every frame, so coarse wheel steps glide instead of jumping; it is committed once it settles.
   useEffect(() => {
     onWheel.current = (event) => {
       if (!mark || (inline && !event.ctrlKey && !event.shiftKey)) return;
       event.preventDefault();
-      const from = livePos.current ?? pos;
-      const delta = event.deltaY || event.deltaX;
-      livePos.current = event.shiftKey
-        ? { ...from, rotate: clamp(Math.round(from.rotate - Math.sign(delta)), -MAX_ROTATE, MAX_ROTATE) }
-        : { ...from, scale: Math.round(clamp(from.scale * Math.exp(-delta * (event.ctrlKey ? 0.01 : 0.002)), SIGNATURE_SCALE.min, SIGNATURE_SCALE.max) * 100) / 100 };
-      if (!frame.current) frame.current = requestAnimationFrame(paint);
-      clearTimeout(wheelCommit.current);
-      wheelCommit.current = window.setTimeout(() => { if (!pointers.current.size) commitLive(); }, 160);
+      const from = wheelTarget.current ?? livePos.current ?? pos;
+      // deltaMode 1 (Firefox) counts lines, not pixels.
+      const delta = (event.deltaY || event.deltaX) * (event.deltaMode === 1 ? 33 : 1);
+      if (!delta) return;
+      const zoom = Math.sign(delta) * Math.min(Math.abs(delta) * (event.ctrlKey ? 0.01 : 0.002), 0.12);
+      wheelTarget.current = event.shiftKey
+        ? { ...from, rotate: clamp(from.rotate - Math.sign(delta), -MAX_ROTATE, MAX_ROTATE) }
+        : { ...from, scale: clamp(from.scale * Math.exp(-zoom), SIGNATURE_SCALE.min, SIGNATURE_SCALE.max) };
+      if (wheelFrame.current) return;
+      let last = performance.now();
+      const glide = (now: number) => {
+        const target = wheelTarget.current;
+        if (!target) { wheelFrame.current = 0; return; }
+        const current = livePos.current ?? pos;
+        // Covers ~95% of the remaining distance in 0.2s, whatever the frame rate.
+        const k = 1 - Math.exp(-Math.max(now - last, 0) / 70);
+        last = now;
+        const scale = current.scale + (target.scale - current.scale) * k;
+        const rotate = current.rotate + (target.rotate - current.rotate) * k;
+        const settled = Math.abs(target.scale - scale) < 0.003 && Math.abs(target.rotate - rotate) < 0.1;
+        livePos.current = settled
+          ? { ...target, scale: Math.round(target.scale * 100) / 100, rotate: Math.round(target.rotate) }
+          : { ...current, scale, rotate };
+        paint();
+        if (!settled) { wheelFrame.current = requestAnimationFrame(glide); return; }
+        wheelFrame.current = 0;
+        wheelTarget.current = null;
+        if (!pointers.current.size) commitLive();
+      };
+      wheelFrame.current = requestAnimationFrame(glide);
     };
   });
   useEffect(() => {
@@ -513,7 +562,12 @@ function SignatureComposer({ inline, photo, photoAlt, avoidZones, placed, myWish
     if (!desktop || step !== 'place' || !wrap) return;
     const listener = (event: WheelEvent) => onWheel.current(event);
     wrap.addEventListener('wheel', listener, { passive: false });
-    return () => { wrap.removeEventListener('wheel', listener); clearTimeout(wheelCommit.current); };
+    return () => {
+      wrap.removeEventListener('wheel', listener);
+      cancelAnimationFrame(wheelFrame.current);
+      wheelFrame.current = 0;
+      wheelTarget.current = null;
+    };
   }, [desktop, step]);
 
   // Desktop font menu: a click anywhere outside it closes it.
@@ -683,7 +737,7 @@ function SignatureComposer({ inline, photo, photoAlt, avoidZones, placed, myWish
         </div>}
       </> : <>
         {/* Desktop: the plain controls of the first version — ink, font, size and tilt — instead of on-photo tools. */}
-        {desktop && mark ? <>
+        {desktop && mark ? <div className={styles.deskTools}>
           {/* Ink dots and a collapsed font picker share one row so the photo keeps its height. */}
           <div className={styles.toolRow}>
             <div className={styles.inks} role="radiogroup" aria-label="Màu mực">
@@ -698,11 +752,11 @@ function SignatureComposer({ inline, photo, photoAlt, avoidZones, placed, myWish
               </div>}
             </div>}
           </div>
-          <div className={styles.sliders}>
-            <label>Cỡ<input type="range" min={SIGNATURE_SCALE.min} max={SIGNATURE_SCALE.max} step={0.01} value={pos.scale} onChange={(event) => setPos((current) => ({ ...current, scale: Number(event.target.value) }))} /><output>{Math.round(pos.scale * 100)}%</output></label>
-            <label>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /><output>{Math.round(pos.rotate)}°</output></label>
+          <div ref={slidersRef} className={styles.sliders}>
+            <label>Cỡ<input type="range" min={SIGNATURE_SCALE.min} max={SIGNATURE_SCALE.max} step={0.01} value={pos.scale} onChange={(event) => setPos((current) => ({ ...current, scale: Number(event.target.value) }))} /><output>{`${Math.round(pos.scale * 100)}%`}</output></label>
+            <label>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /><output>{`${Math.round(pos.rotate)}°`}</output></label>
           </div>
-        </>
+        </div>
           /* Touch screens tilt with a two-finger twist; the slider is only for mouse users. */
           : <label className={styles.tiltSlider}>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>}
         <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />

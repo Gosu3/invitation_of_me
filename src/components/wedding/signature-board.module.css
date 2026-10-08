@@ -142,8 +142,12 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .fontMenu button{padding:5px 12px;border:1px solid rgba(107,128,64,.3);border-radius:999px;background:#fff;color:var(--w-primary);font-size:16px;line-height:1.25;white-space:nowrap;cursor:pointer}
 .fontMenu button:hover{border-color:var(--w-primary)}
 .fontMenu button[aria-checked=true]{border-color:var(--w-primary);background:#eaf3de}
-.sliders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.sliders label{display:flex;align-items:center;gap:8px;font:500 12px var(--w-ui);color:var(--w-secondary);white-space:nowrap}
+/* Groups ink/font and size/tilt with room between rows, set off from the name field below. */
+.deskTools{display:grid;gap:20px;padding:8px 2px 18px;border-bottom:1px solid rgba(107,128,64,.15)}
+.deskTools .inks{gap:12px}
+.deskTools .inkDot{width:26px;height:26px}
+.sliders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+.sliders label{display:flex;align-items:center;gap:12px;font:500 12px var(--w-ui);color:var(--w-secondary);white-space:nowrap}
 .sliders input{flex:1;min-width:0;margin:0;accent-color:var(--w-primary);cursor:pointer}
 .sliders output{min-width:3.2em;text-align:right;font-variant-numeric:tabular-nums}
 /* Vertical range: writing-mode turns it upright, direction:rtl puts the large end at the top. */
