@@ -5,6 +5,12 @@ import type { WeddingMusic } from '@/lib/types';
 import { weddingPlaylist, type WeddingTrack } from '@/lib/wedding-playlist';
 
 const SHUFFLE_STORAGE_KEY = 'wedding-music-shuffle-v2';
+/** Fade-out/fade-in when the guest skips or a song hands over to the next. */
+const SWITCH_FADE_MS = 700;
+/** The last seconds of a song overlap the start of the next one. */
+const CROSSFADE_S = 1.5;
+/** Starts loading the next song this long before the current one ends. */
+const PRELOAD_LEAD_S = 40;
 
 type ShuffleState = {
   signature: string;
@@ -40,7 +46,19 @@ export function useWeddingMusic(config: WeddingMusic) {
     [...configured, ...weddingPlaylist].forEach((track) => unique.set(track.src, track));
     return [...unique.values()];
   }, [config.src, config.title]);
-  const audio = useRef<HTMLAudioElement | null>(null);
+  // Two players take turns: the next song loads into the idle one while the current song nears its end, so the
+  // switch starts at once, and the outgoing song fades out while the incoming one fades in instead of cutting.
+  const players = useRef<HTMLAudioElement[]>([]);
+  const active = useRef(0);
+  const fades = useRef(new Map<HTMLAudioElement, number>());
+  const canFade = useRef(false);
+  const level = useRef(config.volume);
+  const loopRef = useRef(true);
+  // The player whose song already handed over to the next one, so a song hands over once.
+  const handedOver = useRef<HTMLAudioElement | null>(null);
+  const advance = useRef<() => void>(() => {});
+  const preloadNext = useRef<() => void>(() => {});
+  const onFailed = useRef<() => void>(() => {});
   const request = useRef(0);
   const currentIndex = useRef(0);
   const failedTrackIds = useRef(new Set<string>());
@@ -53,48 +71,132 @@ export function useWeddingMusic(config: WeddingMusic) {
   const [loop, setLoop] = useState(true);
   const [error, setError] = useState('');
 
+  const stopFade = useCallback((player: HTMLAudioElement) => {
+    const timer = fades.current.get(player);
+    if (timer !== undefined) { window.clearInterval(timer); fades.current.delete(player); }
+  }, []);
+  // A timer rather than animation frames: music keeps playing in a background tab, where frames stop.
+  const fade = useCallback((player: HTMLAudioElement, to: number, ms: number, done?: () => void) => {
+    stopFade(player);
+    if (!canFade.current || ms <= 0) { if (canFade.current) player.volume = to; done?.(); return; }
+    const from = player.volume;
+    const start = performance.now();
+    const timer = window.setInterval(() => {
+      const t = Math.min(1, (performance.now() - start) / ms);
+      player.volume = from + (to - from) * t;
+      if (t < 1) return;
+      stopFade(player);
+      done?.();
+    }, 30);
+    fades.current.set(player, timer);
+  }, [stopFade]);
+
   useEffect(() => {
-    const player = new Audio();
-    player.preload = 'none';
-    player.onplay = () => setPlaying(true);
-    player.onpause = () => setPlaying(false);
-    player.onerror = null;
-    audio.current = player;
+    const created = [new Audio(), new Audio()];
+    // iOS keeps media volume read-only (always 1): there songs switch directly instead of overlapping.
+    created[0].volume = 0.5;
+    canFade.current = created[0].volume === 0.5;
+    const fadeTimers = fades.current;
+    const isActive = (player: HTMLAudioElement) => player === players.current[active.current];
+    created.forEach((player) => {
+      player.preload = 'none';
+      player.volume = level.current;
+      player.onplay = () => { if (isActive(player)) setPlaying(true); };
+      player.onpause = () => { if (isActive(player)) setPlaying(false); };
+      player.ontimeupdate = () => {
+        if (!isActive(player) || !Number.isFinite(player.duration)) return;
+        const left = player.duration - player.currentTime;
+        if (left < PRELOAD_LEAD_S) preloadNext.current();
+        // Crossfade into the next song; without volume control the switch waits for the real end instead.
+        if (left < CROSSFADE_S && canFade.current && handedOver.current !== player) { handedOver.current = player; advance.current(); }
+      };
+      player.onended = () => {
+        if (!isActive(player) || handedOver.current === player) return;
+        handedOver.current = player;
+        advance.current();
+      };
+      player.onerror = () => { if (isActive(player)) onFailed.current(); };
+    });
+    players.current = created;
     return () => {
       request.current += 1;
-      player.onplay = player.onpause = player.onerror = player.onended = null;
-      player.pause(); player.removeAttribute('src'); player.load(); audio.current = null;
+      fadeTimers.forEach((timer) => window.clearInterval(timer));
+      fadeTimers.clear();
+      created.forEach((player) => {
+        player.onplay = player.onpause = player.ontimeupdate = player.onended = player.onerror = null;
+        player.pause(); player.removeAttribute('src'); player.load();
+      });
+      players.current = [];
     };
   }, []);
-  useEffect(() => { if (audio.current) { audio.current.volume = volume; audio.current.muted = muted; } }, [volume, muted]);
+  useEffect(() => {
+    level.current = volume;
+    players.current.forEach((player, slot) => {
+      player.muted = muted;
+      if (slot === active.current && !fades.current.has(player)) player.volume = volume;
+    });
+  }, [volume, muted]);
+  useEffect(() => { loopRef.current = loop; }, [loop]);
 
   const selectTrack = useCallback(async (nextIndex: number, autoplay = true) => {
-    const player = audio.current;
-    if (!config.enabled || !player || !tracks.length) return;
+    const outgoing = players.current[active.current];
+    if (!config.enabled || !outgoing || !tracks.length) return;
     const next = (nextIndex + tracks.length) % tracks.length;
     const token = ++request.current;
     const src = new URL(tracks[next].src, window.location.href).href;
     currentIndex.current = next;
-    if (player.src !== src) { player.pause(); player.src = tracks[next].src; }
+    let player = outgoing;
+    // The same song (resume after a pause) stays on its player; another song goes to the idle player, which may
+    // already hold it from preloading. The outgoing song fades out underneath.
+    if (outgoing.src !== src) {
+      const idle = players.current[1 - active.current];
+      stopFade(idle);
+      idle.pause();
+      if (idle.src === src) idle.currentTime = 0;
+      else idle.src = tracks[next].src;
+      const audible = outgoing.paused === false;
+      active.current = 1 - active.current;
+      handedOver.current = null;
+      player = idle;
+      fade(idle, audible ? 0 : level.current, 0);
+      if (audible) fade(outgoing, 0, SWITCH_FADE_MS, () => outgoing.pause());
+      else outgoing.pause();
+    }
     setIndex(next); setError(''); setBlocked(false);
-    if (!autoplay) { setBusy(false); return; }
+    if (!autoplay) { setPlaying(false); setBusy(false); return; }
     setBusy(true);
-    try { await player.play(); failedTrackIds.current.delete(tracks[next].id); }
+    try {
+      await player.play();
+      if (token === request.current) fade(player, level.current, SWITCH_FADE_MS);
+      failedTrackIds.current.delete(tracks[next].id);
+    }
     catch (reason) {
       if (token !== request.current) return;
       if (reason instanceof DOMException && reason.name === 'NotAllowedError') setBlocked(true);
       else setError('Không thể phát bài nhạc này.');
       setPlaying(false);
     } finally { if (token === request.current) setBusy(false); }
-  }, [config.enabled, tracks]);
+  }, [config.enabled, tracks, fade, stopFade]);
+
   useEffect(() => {
-    if (!audio.current) return;
-    audio.current.onended = () => {
-      if (index + 1 < tracks.length) void selectTrack(index + 1);
-      else if (loop) void selectTrack(0);
-      else setPlaying(false);
+    const following = () => {
+      const nextIndex = currentIndex.current + 1;
+      return nextIndex < tracks.length ? nextIndex : loopRef.current ? 0 : -1;
     };
-  }, [index, loop, tracks.length, selectTrack]);
+    advance.current = () => {
+      const nextIndex = following();
+      if (nextIndex >= 0) void selectTrack(nextIndex);
+    };
+    preloadNext.current = () => {
+      const nextIndex = following();
+      const idle = players.current[1 - active.current];
+      // Not while the idle player is still fading out the previous song.
+      if (nextIndex < 0 || !idle || fades.current.has(idle)) return;
+      if (idle.src === new URL(tracks[nextIndex].src, window.location.href).href) return;
+      idle.preload = 'auto';
+      idle.src = tracks[nextIndex].src;
+    };
+  }, [selectTrack, tracks]);
 
   const play = useCallback(() => selectTrack(index), [index, selectTrack]);
   const playRandom = useCallback(() => {
@@ -132,9 +234,7 @@ export function useWeddingMusic(config: WeddingMusic) {
   }, [selectTrack, tracks]);
 
   useEffect(() => {
-    const player = audio.current;
-    if (!player) return;
-    player.onerror = () => {
+    onFailed.current = () => {
       const failedIndex = currentIndex.current;
       const failedId = tracks[failedIndex]?.id;
       if (failedId) failedTrackIds.current.add(failedId);
@@ -148,9 +248,13 @@ export function useWeddingMusic(config: WeddingMusic) {
         setBusy(false);
       }
     };
-    return () => { player.onerror = null; };
   }, [selectTrack, tracks]);
-  const pause = useCallback(async () => { request.current += 1; audio.current?.pause(); setBusy(false); }, []);
+  // Also silences a song still fading out from a skip.
+  const pause = useCallback(async () => {
+    request.current += 1;
+    players.current.forEach((player) => { stopFade(player); player.pause(); });
+    setBusy(false);
+  }, [stopFade]);
   const togglePlaying = useCallback(async () => { if (playing) await pause(); else await play(); }, [pause, play, playing]);
   const setVolume = (value: number) => setVolumeState(Math.min(1, Math.max(0, value)));
   return { playing, muted, blocked, busy, play, playRandom, pause, togglePlaying, toggleMuted: () => setMuted((value) => !value),
