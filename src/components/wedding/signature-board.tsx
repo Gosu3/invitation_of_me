@@ -678,7 +678,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
           <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />
           {myWish
             ? <p className={styles.linkNote}><Link2 size={13} aria-hidden="true" />Chữ ký sẽ gắn với lời chúc bạn đã gửi — bấm vào chữ ký để xem lại.</p>
-            : <p className={styles.linkNote}>Đã gửi lời chúc trước đó? Nhập đúng tên lúc gửi (cả chữ hoa, khoảng trắng), chữ ký sẽ tự gắn với lời chúc. {onGoToWishes && <button type="button" onClick={() => mark && onGoToWishes({ mode, ink, font, strokes, typed, mark, pos, name })}>Chưa gửi? Viết lời chúc</button>}</p>}
+            : <p className={styles.linkNote}>Nhập đúng tên đã gửi lời chúc để gắn với chữ ký. {onGoToWishes && <button type="button" onClick={() => mark && onGoToWishes({ mode, ink, font, strokes, typed, mark, pos, name })}>Chưa gửi? Viết lời chúc</button>}</p>}
           {nameTaken && <p className={styles.error} role="status">Tên “{name.trim()}” đã có người ký. Bạn vẫn lưu được — nếu là khách khác, nên thêm chi tiết để phân biệt.</p>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={styles.actionRow}>
