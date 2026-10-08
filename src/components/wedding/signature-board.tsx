@@ -96,17 +96,18 @@ export function signatureTransform(sig: Pick<SignaturePlacement, 'x' | 'y' | 'sc
   return `translate(${(sig.x * VIEW_W).toFixed(1)} ${(sig.y * VIEW_H).toFixed(1)}) rotate(${sig.rotate}) scale(${sig.scale})`;
 }
 
-const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
-
-function subscribeReducedMotion(onChange: () => void) {
-  const query = window.matchMedia(REDUCED_MOTION);
-  query.addEventListener('change', onChange);
-  return () => query.removeEventListener('change', onChange);
+function useMediaQuery(media: string) {
+  const subscribe = useCallback((onChange: () => void) => {
+    const query = window.matchMedia(media);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, [media]);
+  return useSyncExternalStore(subscribe, () => window.matchMedia(media).matches, () => false);
 }
 
-function usePrefersReducedMotion() {
-  return useSyncExternalStore(subscribeReducedMotion, () => window.matchMedia(REDUCED_MOTION).matches, () => false);
-}
+const usePrefersReducedMotion = () => useMediaQuery('(prefers-reduced-motion: reduce)');
+/** Mouse/trackpad as the primary pointer: the composer swaps the on-photo touch tools for plain controls. */
+const useDesktopPointer = () => useMediaQuery('(hover: hover) and (pointer: fine)');
 
 function BoardPhoto({ src, alt, sizes, priority }: { src: string; alt: string; sizes: string; priority?: boolean }) {
   return <Image className={styles.photo} src={src} alt={alt} width={1400} height={2100} sizes={sizes} priority={priority} unoptimized={src.startsWith('/api/')} />;
@@ -280,6 +281,15 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
   const frame = useRef(0);
   const oneFingerMoves = useRef(false);
   const tap = useRef<{ id: number; x: number; y: number } | null>(null);
+  // Live "on a red zone" while a gesture is in flight (null when idle), so the warning follows the drag.
+  const [liveFace, setLiveFace] = useState<boolean | null>(null);
+  const liveFaceRef = useRef<boolean | null>(null);
+  const wheelCommit = useRef(0);
+  const onWheel = useRef<(event: WheelEvent) => void>(() => {});
+  const backdropPress = useRef(false);
+  const desktop = useDesktopPointer();
+  // On desktop the signature is always editable (as in the first version); touch keeps tap-to-select.
+  const editing = selected || desktop;
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef(onCancel);
   useEffect(() => { cancelRef.current = onCancel; }, [onCancel]);
@@ -381,13 +391,33 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
     if (!p) return;
     sigRef.current?.setAttribute('transform', signatureTransform(p));
     if (handleRef.current) Object.assign(handleRef.current.style, handleStyle(p));
+    const face = !!mark && signatureCoversZone({ mark, ...p }, avoidZones);
+    if (face !== liveFaceRef.current) { liveFaceRef.current = face; setLiveFace(face); }
+  };
+
+  const commitLive = () => {
+    const moved = livePos.current;
+    cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    livePos.current = null;
+    liveFaceRef.current = null;
+    setLiveFace(null);
+    if (moved) setPos(moved);
+    return moved;
   };
 
   const startGesture = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!mark || pointers.current.size >= 2) return;
+    if (event.pointerType === 'mouse') {
+      if (event.button !== 0) return;
+      // Stops the browser from selecting the photo/other signatures and then starting a native drag of that
+      // selection, which cancels our pointer stream: the signature "slipped" and the photo got dragged away.
+      event.preventDefault();
+      window.getSelection()?.removeAllRanges();
+    }
     if (pointers.current.size === 0) {
       const onSignature = !!(event.target as Element).closest('[data-signature-handle]');
-      if (!onSignature && !selected) return; // chưa chọn chữ ký: để khung cuộn bình thường
+      if (!onSignature && !editing) return; // chưa chọn chữ ký: để khung cuộn bình thường
       oneFingerMoves.current = onSignature;
       tap.current = onSignature ? null : { id: event.pointerId, x: event.clientX, y: event.clientY };
       if (onSignature) { setSelected(true); setDragging(true); }
@@ -432,18 +462,35 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
       if (event.type === 'pointerup') { setSelected(false); setInkOpen(false); setFontOpen(false); }
       tap.current = null;
     }
-    const moved = livePos.current;
-    rebaseGesture(moved ?? pos);
+    rebaseGesture(livePos.current ?? pos);
     if (pointers.current.size) return;
-    if (moved) {
-      cancelAnimationFrame(frame.current);
-      frame.current = 0;
-      livePos.current = null;
-      setPos(moved);
-      navigator.vibrate?.(8);
-    }
+    if (commitLive()) navigator.vibrate?.(8);
     setDragging(false);
   };
+
+  // Desktop: the mouse wheel (or a trackpad pinch, sent as ctrl+wheel) resizes, Shift+wheel tilts. Needs a
+  // non-passive listener so the page behind the sheet neither scrolls nor zooms.
+  useEffect(() => {
+    onWheel.current = (event) => {
+      if (!mark) return;
+      event.preventDefault();
+      const from = livePos.current ?? pos;
+      const delta = event.deltaY || event.deltaX;
+      livePos.current = event.shiftKey
+        ? { ...from, rotate: clamp(Math.round(from.rotate - Math.sign(delta)), -MAX_ROTATE, MAX_ROTATE) }
+        : { ...from, scale: Math.round(clamp(from.scale * Math.exp(-delta * (event.ctrlKey ? 0.01 : 0.002)), SIGNATURE_SCALE.min, SIGNATURE_SCALE.max) * 100) / 100 };
+      if (!frame.current) frame.current = requestAnimationFrame(paint);
+      clearTimeout(wheelCommit.current);
+      wheelCommit.current = window.setTimeout(() => { if (!pointers.current.size) commitLive(); }, 160);
+    };
+  });
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!desktop || step !== 'place' || !wrap) return;
+    const listener = (event: WheelEvent) => onWheel.current(event);
+    wrap.addEventListener('wheel', listener, { passive: false });
+    return () => { wrap.removeEventListener('wheel', listener); clearTimeout(wheelCommit.current); };
+  }, [desktop, step]);
 
   const nudge = (event: KeyboardEvent<SVGGElement>) => {
     const step = event.shiftKey ? 0.05 : 0.01;
@@ -456,7 +503,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
 
   const box = mark ? footprint({ mark, ...pos }) : null;
   // Touching a red zone blocks saving (the server rejects it too); the zones stay visible until it is moved off.
-  const onFace = !!mark && signatureCoversZone({ mark, ...pos }, avoidZones);
+  const onFace = liveFace ?? (!!mark && signatureCoversZone({ mark, ...pos }, avoidZones));
   const onOther = !!box && placed.some((sig) => overlaps(box, footprint(sig)));
 
   const submit = async () => {
@@ -472,7 +519,13 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
     }
   };
 
-  return <div ref={backdropRef} className={styles.backdrop} onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
+  // Closes only on a click that both starts and ends on the backdrop: a drag released outside the sheet must not.
+  return <div
+    ref={backdropRef}
+    className={styles.backdrop}
+    onPointerDown={(event) => { backdropPress.current = event.target === event.currentTarget; }}
+    onClick={(event) => { if (event.target === event.currentTarget && backdropPress.current) onCancel(); }}
+  >
     <div ref={dialogRef} className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="signature-composer-title" tabIndex={-1}>
       <header className={styles.sheetHead}>
         <div className={styles.progress} aria-hidden="true"><span className={styles.isDone} /><span className={step === 'place' ? styles.isDone : undefined} /></div>
@@ -485,7 +538,8 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
       <div className={styles.canvasArea}>
       <div
         ref={wrapRef}
-        className={`${styles.canvasWrap}${step === 'place' && !selected ? ` ${styles.canScroll}` : ''}${dragging ? ` ${styles.isDragging}` : ''}`}
+        className={`${styles.canvasWrap}${step === 'place' && !editing ? ` ${styles.canScroll}` : ''}${dragging ? ` ${styles.isDragging}` : ''}`}
+        onDragStart={(event) => event.preventDefault()}
         onPointerDown={step === 'place' ? startGesture : undefined}
         onPointerMove={step === 'place' ? moveGesture : undefined}
         onPointerUp={step === 'place' ? endGesture : undefined}
@@ -516,7 +570,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
             </g>)}
           </g>}
           {step === 'draw' && mode === 'draw' && strokes.length === 0 && <g className={styles.hint} aria-hidden="true">
-            <text x={VIEW_W / 2} y={VIEW_H * 0.5} textAnchor="middle">Dùng ngón tay ký thẳng lên ảnh</text>
+            <text x={VIEW_W / 2} y={VIEW_H * 0.5} textAnchor="middle">{desktop ? 'Giữ chuột và ký thẳng lên ảnh' : 'Dùng ngón tay ký thẳng lên ảnh'}</text>
           </g>}
           {step === 'draw' && mode === 'type' && <g transform={`translate(${VIEW_W / 2} ${VIEW_H * 0.7}) rotate(-4)`}>
             {typed.trim() && <MarkPaths mark={textSignature(typed.trim(), font)} ink={ink} animate={false} />}
@@ -533,7 +587,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
             onKeyDown={nudge}
             onFocus={() => setSelected(true)}
           >
-            {(selected || onFace) && <rect className={`${styles.selection}${onFace ? ` ${styles.isWarning}` : ''}`} x={-mark.w / 2 - 22} y={-mark.h / 2 - 22} width={mark.w + 44} height={mark.h + 44} rx={14} vectorEffect="non-scaling-stroke" />}
+            {(editing || onFace) && <rect className={`${styles.selection}${onFace ? ` ${styles.isWarning}` : ''}`} x={-mark.w / 2 - 22} y={-mark.h / 2 - 22} width={mark.w + 44} height={mark.h + 44} rx={14} vectorEffect="non-scaling-stroke" />}
             <MarkPaths mark={mark} ink={ink} animate={false} />
           </g>}
         </svg>
@@ -546,7 +600,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
           <button type="button" className={styles.floatButton} onClick={() => setStrokes([])} aria-label="Xoá hết chữ ký" title="Xoá hết"><Trash2 size={18} aria-hidden="true" /></button>
         </div>}
         {/* Size slider on the photo's left edge, shown while the signature is selected (like Instagram's text size). */}
-        {step === 'place' && mark && selected && <input
+        {step === 'place' && mark && selected && !desktop && <input
           type="range"
           className={styles.sizeSlider}
           min={SIGNATURE_SCALE.min} max={SIGNATURE_SCALE.max} step={0.01} value={pos.scale}
@@ -555,7 +609,7 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
           aria-label="Kích thước chữ ký"
         />}
         {/* Ink and font pickers under the size slider: each collapses to its current value, tap to open. */}
-        {step === 'place' && mark && selected && <div className={styles.sideTools} onPointerDown={(event) => event.stopPropagation()}>
+        {step === 'place' && mark && selected && !desktop && <div className={styles.sideTools} onPointerDown={(event) => event.stopPropagation()}>
           <div className={styles.inkPicker} role="radiogroup" aria-label="Màu mực">
             {inkOpen
               ? signatureInks.map((key) => <button key={key} type="button" role="radio" aria-checked={ink === key} aria-label={inks[key].label} title={inks[key].label} className={`${styles.inkDot} ${styles[`ink_${key}`]}`} onClick={() => { setInk(key); setInkOpen(false); }} />)
@@ -563,11 +617,11 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
           </div>
           {mark.kind === 'text' && <button type="button" className={`${styles.fontToggle}${fontOpen ? ` ${styles.isOpen}` : ''}`} style={{ fontFamily: fontFamily(font) }} aria-expanded={fontOpen} aria-label={`Kiểu chữ: ${signatureFonts[font].label} — bấm để đổi`} onClick={() => { setFontOpen((open) => !open); setInkOpen(false); }}>Aa</button>}
         </div>}
-        {step === 'place' && mark?.kind === 'text' && selected && fontOpen && <div className={styles.fontRow} role="radiogroup" aria-label="Kiểu chữ" onPointerDown={(event) => event.stopPropagation()}>
+        {step === 'place' && mark?.kind === 'text' && selected && fontOpen && !desktop && <div className={styles.fontRow} role="radiogroup" aria-label="Kiểu chữ" onPointerDown={(event) => event.stopPropagation()}>
           {signatureFontIds.map((key) => <button key={key} type="button" role="radio" aria-checked={font === key} aria-label={signatureFonts[key].label} className={styles.fontChip} style={{ fontFamily: fontFamily(key) }} onClick={() => { setFont(key); setMark(textSignature(mark.text, key)); }}>{signatureFonts[key].label}</button>)}
         </div>}
-        {step === 'place' && !fontOpen && <p className={`${styles.placeHint}${onFace || onOther ? ` ${styles.isWarning}` : ''}`} role="status">
-          {onFace ? 'Kéo chữ ký ra khỏi vùng đỏ để lưu' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />{selected ? 'Kéo để di chuyển · 2 ngón để chỉnh' : 'Chạm vào chữ ký để chỉnh sửa'}</>}
+        {step === 'place' && (!fontOpen || desktop) && <p className={`${styles.placeHint}${onFace || onOther ? ` ${styles.isWarning}` : ''}`} role="status">
+          {onFace ? 'Kéo chữ ký ra khỏi vùng đỏ để lưu' : onOther ? 'Đang chồng lên chữ ký khác' : <><Hand size={13} aria-hidden="true" />{desktop ? 'Giữ chuột để kéo · lăn chuột để đổi cỡ' : selected ? 'Kéo để di chuyển · 2 ngón để chỉnh' : 'Chạm vào chữ ký để chỉnh sửa'}</>}
         </p>}
       </div>
       </div>
@@ -594,8 +648,24 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
               : <button type="button" className={styles.primary} onClick={goPlace}>Tiếp tục</button>}
           </div>
         </> : <>
-          {/* Touch screens tilt with a two-finger twist; the slider is only for mouse users. */}
-          <label className={styles.tiltSlider}>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>
+          {/* Desktop: the plain controls of the first version — ink, font, size and tilt — instead of on-photo tools. */}
+          {desktop && mark ? <>
+            <div className={styles.toolRow}>
+              <span className={styles.toolLabel}>Màu mực</span>
+              <div className={styles.inks} role="radiogroup" aria-label="Màu mực">
+                {signatureInks.map((key) => <button key={key} type="button" role="radio" aria-checked={ink === key} aria-label={inks[key].label} title={inks[key].label} className={`${styles.inkDot} ${styles[`ink_${key}`]}`} onClick={() => setInk(key)} />)}
+              </div>
+            </div>
+            {mark.kind === 'text' && <div className={styles.fontChoices} role="radiogroup" aria-label="Kiểu chữ">
+              {signatureFontIds.map((key) => <button key={key} type="button" role="radio" aria-checked={font === key} style={{ fontFamily: fontFamily(key) }} onClick={() => { setFont(key); setMark(textSignature(mark.text, key)); }}>{signatureFonts[key].label}</button>)}
+            </div>}
+            <div className={styles.sliders}>
+              <label>Kích thước · {Math.round(pos.scale * 100)}%<input type="range" min={SIGNATURE_SCALE.min} max={SIGNATURE_SCALE.max} step={0.01} value={pos.scale} onChange={(event) => setPos((current) => ({ ...current, scale: Number(event.target.value) }))} /></label>
+              <label>Nghiêng · {Math.round(pos.rotate)}°<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>
+            </div>
+          </>
+            /* Touch screens tilt with a two-finger twist; the slider is only for mouse users. */
+            : <label className={styles.tiltSlider}>Nghiêng<input type="range" min={-MAX_ROTATE} max={MAX_ROTATE} step={1} value={pos.rotate} onChange={(event) => setPos((current) => ({ ...current, rotate: Number(event.target.value) }))} /></label>}
           <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />
           {myWish
             ? <p className={styles.linkNote}><Link2 size={13} aria-hidden="true" />Chữ ký sẽ gắn với lời chúc bạn đã gửi — bấm vào chữ ký để xem lại.</p>

@@ -68,7 +68,7 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .iconButton{display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:rgba(107,128,64,.1);color:var(--w-primary);cursor:pointer}
 
 .canvasArea{display:grid;flex:1 1 0;place-items:center;min-height:120px;padding:0 12px;container-type:size}
-.canvasWrap{position:relative;width:min(100cqw,calc(100cqh * 2 / 3));container-type:inline-size;border-radius:16px;overflow:hidden;touch-action:none}
+.canvasWrap{position:relative;width:min(100cqw,calc(100cqh * 2 / 3));container-type:inline-size;border-radius:16px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 .wash{position:absolute;inset:0;background:rgba(255,250,247,.22);pointer-events:none;transition:background .3s}
 .washLight{background:rgba(255,250,247,.08)}
 .drawSurface{cursor:crosshair;touch-action:none}
@@ -127,6 +127,15 @@ text.writeOn{stroke-dasharray:1200;stroke-dashoffset:1200;animation-duration:1.8
 .tiltSlider{display:grid;gap:4px;font:500 12px var(--w-ui);color:var(--w-secondary)}
 .tiltSlider input{width:100%;accent-color:var(--w-primary)}
 @media (pointer:coarse){.tiltSlider{display:none}}
+/* Desktop step-2 controls (mouse/trackpad only; touch keeps the on-photo tools). */
+.toolLabel{font:500 12px var(--w-ui);color:var(--w-secondary)}
+.fontChoices{display:flex;flex-wrap:wrap;gap:6px}
+.fontChoices button{padding:5px 12px;border:1px solid rgba(107,128,64,.3);border-radius:999px;background:#fff;color:var(--w-primary);font-size:16px;line-height:1.25;white-space:nowrap;cursor:pointer}
+.fontChoices button:hover{border-color:var(--w-primary)}
+.fontChoices button[aria-checked=true]{border-color:var(--w-primary);background:#eaf3de}
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sliders label{display:grid;gap:4px;font:500 12px var(--w-ui);color:var(--w-secondary);font-variant-numeric:tabular-nums}
+.sliders input{width:100%;accent-color:var(--w-primary);cursor:pointer}
 /* Vertical range: writing-mode turns it upright, direction:rtl puts the large end at the top. */
 .sizeSlider{position:absolute;left:4px;top:18%;z-index:2;width:32px;height:42%;margin:0;padding:0;writing-mode:vertical-lr;direction:rtl;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none;cursor:pointer;animation:pop-in .2s ease-out}
 .sizeSlider::-webkit-slider-runnable-track{width:4px;border-radius:2px;background:linear-gradient(to top,rgba(255,250,247,.55),#fffaf7);box-shadow:0 0 4px rgba(23,39,8,.45)}
