@@ -4,6 +4,7 @@ import { publicDb, serviceDb } from '@/lib/supabase';
 import { allowSubmission, submitterHash, verifyWishSignatureToken } from '@/lib/submission';
 import { measureMark, signatureCoversZone, type PublicSignature, type SignatureMark, type SignatureZone } from '@/lib/signature-mark';
 import { sharedWishRateLimitScope, sharedWishSlugs } from '@/lib/wedding-wish-groups';
+import { openWishForName } from '@/lib/wish-signature-link';
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const columns = 'id,guest_name,mark,ink,x,y,scale,rotate,created_at,wish:wedding_wishes(guest_name,message,status)';
@@ -62,12 +63,15 @@ export async function POST(request: NextRequest) {
   if (!invitation || invitation.status !== 'published' || !invitation.signatures_enabled) return NextResponse.json({ error: 'Thiệp không nhận chữ ký.' }, { status: 404 });
 
   const boardIds = await boardInvitationIds(db, invitation.slug, invitation.id);
+  const wishIds = sharedWishSlugs(invitation.slug).length > 1 ? boardIds : [invitation.id];
   let wishId: string | null = null;
   if (input.wishId && input.wishToken && verifyWishSignatureToken(input.wishId, input.wishToken)) {
-    const wishIds = sharedWishSlugs(invitation.slug).length > 1 ? boardIds : [invitation.id];
     const { data: wish } = await db.from('wedding_wishes').select('id').eq('id', input.wishId).in('invitation_id', wishIds).maybeSingle();
     wishId = wish?.id ?? null;
   }
+  // No token (left and came back, other device, in-app browser): link to a wish sent under the exact same name.
+  const matchedByName = !wishId;
+  if (!wishId) wishId = await openWishForName(db, wishIds, input.guestName, submitterHash(request, sharedWishRateLimitScope(invitation.slug, invitation.id)));
 
   // Checked before the rate limit so a rejected placement does not use up an attempt.
   const mark = measureMark({ ...input.mark, w: 0, h: 0 });
@@ -80,10 +84,13 @@ export async function POST(request: NextRequest) {
   const hash = submitterHash(request, scope);
   if (!await allowSubmission('signature', scope, hash)) return NextResponse.json({ error: 'Bạn đã ký quá nhiều lần. Vui lòng thử lại sau.' }, { status: 429 });
 
-  const { data: row, error } = await db.from('wedding_signatures').insert({
-    invitation_id: invitation.id, wish_id: wishId, guest_name: input.guestName, mark, ink: input.ink,
+  const insert = (linkTo: string | null) => db.from('wedding_signatures').insert({
+    invitation_id: invitation.id, wish_id: linkTo, guest_name: input.guestName, mark, ink: input.ink,
     x: input.x, y: input.y, scale: input.scale, rotate: input.rotate, status: 'approved', submitter_hash: hash,
   }).select(columns).single();
+  let { data: row, error } = await insert(wishId);
+  // A name match is best effort: if that wish got a signature meanwhile, save this one unlinked instead.
+  if (error?.code === '23505' && matchedByName) ({ data: row, error } = await insert(null));
   if (error?.code === '23505') return NextResponse.json({ error: 'Lời chúc này đã có chữ ký đi kèm.' }, { status: 409 });
   if (error || !row) return NextResponse.json({ error: 'Chưa thể lưu chữ ký. Vui lòng thử lại.' }, { status: 500 });
 

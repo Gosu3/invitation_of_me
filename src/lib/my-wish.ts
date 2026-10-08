@@ -3,14 +3,16 @@
 import { useMemo, useSyncExternalStore } from 'react';
 
 // Remembers the wish this browser sent so the signature board can link to it (token proves ownership server-side).
+// Keyed by the wish scope (sharedWishRateLimitScope), so a wish sent on one of the invitations sharing a guestbook
+// (Thọ & Thắm) is remembered on the other too. Without it the server still links by the signer's name.
 
 export type MyWish = { wishId: string; token: string; guestName: string };
 
 const EVENT = 'net-duyen:my-wish';
-const storageKey = (invitationId: string) => `net-duyen:my-wish:${invitationId}`;
+const storageKey = (scope: string) => `net-duyen:my-wish:${scope}`;
 
-export function rememberMyWish(invitationId: string, wish: MyWish) {
-  try { window.localStorage.setItem(storageKey(invitationId), JSON.stringify(wish)); } catch { /* private mode: board just won't link */ }
+export function rememberMyWish(scope: string, wish: MyWish) {
+  try { window.localStorage.setItem(storageKey(scope), JSON.stringify(wish)); } catch { /* private mode: board just won't link */ }
   window.dispatchEvent(new Event(EVENT));
 }
 
@@ -46,9 +48,10 @@ export function useGuestName(invitationId: string) {
   }, () => '');
 }
 
-export function useMyWish(invitationId: string) {
+/** `legacyKey`: the per-invitation key wishes were stored under before scopes, still read as a fallback. */
+export function useMyWish(scope: string, legacyKey?: string) {
   const raw = useSyncExternalStore(subscribe, () => {
-    try { return window.localStorage.getItem(storageKey(invitationId)); } catch { return null; }
+    try { return window.localStorage.getItem(storageKey(scope)) ?? (legacyKey ? window.localStorage.getItem(storageKey(legacyKey)) : null); } catch { return null; }
   }, () => null);
   return useMemo(() => parse(raw), [raw]);
 }

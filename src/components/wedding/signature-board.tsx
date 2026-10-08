@@ -505,6 +505,8 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
   // Touching a red zone blocks saving (the server rejects it too); the zones stay visible until it is moved off.
   const onFace = liveFace ?? (!!mark && signatureCoversZone({ mark, ...pos }, avoidZones));
   const onOther = !!box && placed.some((sig) => overlaps(box, footprint(sig)));
+  // Exact same name (case and spacing) as a signature already on the photo: warn, but still allow saving.
+  const nameTaken = !!name.trim() && placed.some((sig) => sig.guestName === name.trim());
 
   const submit = async () => {
     if (!mark || submitting || onFace) return;
@@ -676,7 +678,8 @@ function SignatureComposer({ photo, photoAlt, avoidZones, placed, myWish, knownN
           <input className={styles.field} value={name} maxLength={100} onChange={(event) => { setName(event.target.value); setError(''); }} placeholder="Tên của bạn" aria-label="Tên của bạn" />
           {myWish
             ? <p className={styles.linkNote}><Link2 size={13} aria-hidden="true" />Chữ ký sẽ gắn với lời chúc bạn đã gửi — bấm vào chữ ký để xem lại.</p>
-            : <p className={styles.linkNote}>Bạn chưa gửi lời chúc. {onGoToWishes && <button type="button" onClick={() => mark && onGoToWishes({ mode, ink, font, strokes, typed, mark, pos, name })}>Viết lời chúc ở phía trên</button>}</p>}
+            : <p className={styles.linkNote}>Đã gửi lời chúc trước đó? Nhập đúng tên lúc gửi (cả chữ hoa, khoảng trắng), chữ ký sẽ tự gắn với lời chúc. {onGoToWishes && <button type="button" onClick={() => mark && onGoToWishes({ mode, ink, font, strokes, typed, mark, pos, name })}>Chưa gửi? Viết lời chúc</button>}</p>}
+          {nameTaken && <p className={styles.error} role="status">Tên “{name.trim()}” đã có người ký. Bạn vẫn lưu được — nếu là khách khác, nên thêm chi tiết để phân biệt.</p>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={styles.actionRow}>
             <button type="button" className={`${styles.ghost} ${styles.redo}`} onClick={() => { setStep('draw'); setError(''); }} disabled={submitting}><PenLine size={14} aria-hidden="true" />Ký lại</button>

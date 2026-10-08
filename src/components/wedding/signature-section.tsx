@@ -6,13 +6,14 @@ import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import type { PublicSignature } from '@/lib/signature-mark';
 import { useMyWish, useGuestName } from '@/lib/my-wish';
 import { weddingSubmissions } from '@/lib/wedding-submissions';
+import { sharedWishRateLimitScope } from '@/lib/wedding-wish-groups';
 import { SignatureBoard, type SignatureDraft } from './signature-board';
 
 export function SignatureSection({ config, connected, onSigningChange }: { config: WeddingInvitationConfig; connected: boolean; onSigningChange?: (open: boolean) => void }) {
   const board = config.signatureBoard;
   const [signatures, setSignatures] = useState<PublicSignature[]>([]);
   const revision = useRef(0);
-  const myWish = useMyWish(config.id);
+  const myWish = useMyWish(sharedWishRateLimitScope(config.slug, config.id), config.id);
   const rsvpName = useGuestName(config.id);
 
   useEffect(() => {

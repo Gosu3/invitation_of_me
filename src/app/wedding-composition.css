@@ -402,6 +402,7 @@
 .guestbook-form-actions button:hover{transform:scale(1.06)}
 .guestbook-form-actions .guestbook-submit:hover{background:#24420e}
 .guestbook-status{display:block;min-height:0;margin:10px auto 0;color:#526b34;font:400 12px/1.5 'Times New Roman',serif;text-align:center}
+.guestbook-status.is-warning{color:#a32d2d}
 .guestbook-wishes{width:min(88%,600px);max-width:600px;max-height:500px;min-height:0;margin:30px auto 0;padding:0 8px 0 0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#6b804080 transparent;text-align:left;font:400 14px/1.55 'Times New Roman',serif;color:#3d5128;overflow-wrap:anywhere}
 .guestbook-wishes>p{margin:0;padding:6px 4px;text-align:center;color:#6b8040;font-style:italic}
 .guestbook-wishes::-webkit-scrollbar{width:8px}

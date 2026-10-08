@@ -7,6 +7,7 @@ import { Check, Heart, Navigation, X } from 'lucide-react';
 import type { WeddingInvitationConfig } from '@/lib/wedding-config';
 import { weddingSubmissions, type PublicWish } from '@/lib/wedding-submissions';
 import { rememberGuestName, rememberMyWish } from '@/lib/my-wish';
+import { sharedWishRateLimitScope } from '@/lib/wedding-wish-groups';
 import { dateParts, formatTime } from '@/lib/utils';
 import { ArchitectureSection, CardFlower, CeremonyFlowers, ReceptionFlower, TimelineFlowers, weddingArtwork } from './decorations';
 import { Modal } from './shared';
@@ -441,7 +442,7 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
     setStatus('');
     try {
       const result = await weddingSubmissions.wish({ invitationId: config.id, guestName: name.trim(), message: message.trim(), website: '' });
-      rememberMyWish(config.id, { wishId: result.wish.id, token: result.signatureToken, guestName: result.wish.guestName });
+      rememberMyWish(sharedWishRateLimitScope(config.slug, config.id), { wishId: result.wish.id, token: result.signatureToken, guestName: result.wish.guestName });
       wishesRevision.current += 1;
       setWishes((current) => [result.wish, ...current.filter((wish) => wish.id !== result.wish.id)]
         .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
@@ -468,6 +469,8 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
       window.setTimeout(() => setJustSentId(null), 4500),
     ];
   }
+  // Exact same name (case and spacing) as a wish already in the guestbook: warn, but still allow sending.
+  const nameTaken = !!name.trim() && wishes.some((wish) => wish.guestName === name.trim());
   const wishDate = (value: string) => new Intl.DateTimeFormat('vi-VN', {
     timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit',
     day: 'numeric', month: 'numeric', year: 'numeric', hour12: false,
@@ -488,7 +491,7 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
             </div>
           </div>
         </form>
-        <span className={`guestbook-status${status === sentWishStatus ? ' is-success' : ''}`} role="status">{status}</span>
+        <span className={`guestbook-status${status === sentWishStatus ? ' is-success' : ''}${!status && nameTaken ? ' is-warning' : ''}`} role="status">{status || (nameTaken ? `Tên “${name.trim()}” đã có trong sổ lưu bút. Bạn vẫn gửi được — nếu là khách khác, nên thêm chi tiết để phân biệt.` : '')}</span>
       </div>
     </div>
     {wishes.length > 0 && <div ref={wishesRef} className="guestbook-wishes" tabIndex={0} aria-label="Danh sách lời chúc"><div className="guestbook-wishes-track" data-wish-scroll-track>
