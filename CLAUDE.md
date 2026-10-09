@@ -22,6 +22,8 @@ Visual regression (Playwright, `tests/visual/`, baseline trong `tests/visual/__s
 - Chữ ký trên ảnh: `wedding/signature-section.tsx` (GET/POST `/api/signatures`, realtime + polling 15s) → `signature-board.tsx` (UI thuần); hình học/giới hạn ở `src/lib/signature-mark.ts`. Bật/chọn ảnh/khoanh vùng tránh ở form sửa thiệp mục 08 (`admin-signature-settings.tsx`, lưu bằng update riêng sau RPC như `admin_title`); kiểm duyệt ở tab "Chữ ký trên ảnh" (`admin-signatures.tsx`, `/api/admin/signatures`). Trang thử không cần DB: `/thu-ky-ten` (404 trên production).
 - Lời chúc: `POST /api/wishes` lưu `approved` ngay, realtime + polling 5s; `tho-va-tham` & `tham-va-tho` dùng chung lời chúc (`src/lib/wedding-wish-groups.ts`), RSVP/lịch/địa điểm riêng.
 - Admin: `/quan-tri/*` + `/api/admin/*` → `requireAdmin()` (`src/lib/supabase.ts`, bảng `wedding_admins`) → service-role client.
+- Lưu thiệp: tạo mới = `POST /api/admin/invitations` (RPC ghi toàn bộ); sửa = `PATCH /api/admin/invitations/[id]` chỉ gửi trường/dòng đã đổi (`changesSince` trong `admin-editor.tsx`), dòng sự kiện/lịch trình/tài khoản không đổi thì không ghi và không kiểm tra lại.
+- Chữ trên thiệp lấy từ dữ liệu: tiêu đề + nội dung lời mời (in hoa, thẻ lễ cưới), vai vế `partner_*_role`, địa điểm lễ, dress code (♥ cuối → trái tim), lời kết (dưới hộp quà). Trống thì ẩn.
 
 ## File chính
 | Việc | Vị trí |
@@ -34,7 +36,7 @@ Visual regression (Playwright, `tests/visual/`, baseline trong `tests/visual/__s
 | CSS thiệp (import order trong `layout.tsx`, đừng đổi) | `src/app/invitation-motion.css`, `wedding-composition.css`, `wedding-typography.css`, `wedding-mobile.css`, `mobile-forms.css`; `globals.css` cho home/admin |
 | Kiểu dữ liệu / validation | `src/lib/types.ts` / `src/lib/validation.ts` |
 | Admin UI | `src/components/admin-{dashboard,editor,responses}.tsx` |
-| Schema | `supabase/migrations/` (21 file; core = `202609210001_wedding_core.sql`) |
+| Schema | `supabase/migrations/` (22 file; core = `202609210001_wedding_core.sql`) |
 
 Thêm trường thiệp: migration mới → `types.ts` → `invitations.ts` → form admin → template → docs.
 

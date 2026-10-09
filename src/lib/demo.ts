@@ -13,13 +13,15 @@ export const demoInvitations: Invitation[] = [
     partnerTwoParents: 'Trương Nguyên Ngọc · Đỗ Thị Thủy',
     partnerOneAddress: 'Tiên Lãng, Hải Phòng',
     partnerTwoAddress: 'Khoái Châu, Hưng Yên',
+    partnerOneRole: 'Út nam',
+    partnerTwoRole: 'Trưởng nữ',
     headline: 'Trân trọng kính mời',
-    message: 'Văn Thọ và Hồng Thắm cùng gia đình hân hạnh mời bạn đến chung vui trong ngày bắt đầu hành trình mới của chúng mình.',
+    message: 'Tới dự lễ thành hôn chung vui cùng gia đình chúng tôi',
     story: 'Giữa rất nhiều cuộc gặp gỡ, chúng mình đã tìm thấy một người để cùng đi qua những ngày bình thường đẹp nhất.',
     coverImage: '/photos/wedding-05.webp?v=20260923-2',
     coverAlt: 'Văn Thọ và Hồng Thắm trong bộ ảnh cưới',
-    dressCode: 'Trang phục lịch sự - Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất ♥',
-    closingMessage: 'Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình.',
+    dressCode: 'Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất ♥',
+    closingMessage: 'Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình ♡',
     rsvpEnabled: true,
     rsvpDeadline: '2026-11-23T23:59:00+07:00',
     wishesEnabled: true,
@@ -28,7 +30,7 @@ export const demoInvitations: Invitation[] = [
     events: [
       {
         id: 'demo-ceremony', title: 'Lễ thành hôn', dateTime: '2026-11-29T09:00:00+07:00',
-        lunarDate: 'Tức ngày 21 tháng 10 năm Bính Ngọ', venue: 'Tư gia nhà gái',
+        lunarDate: 'Tức ngày 21 tháng 10 năm Bính Ngọ', venue: 'Tư gia',
         address: 'Cầu Giấy, Hà Nội', mapUrl: 'https://www.google.com/maps/search/?api=1&query=C%E1%BA%A7u+Gi%E1%BA%A5y+H%C3%A0+N%E1%BB%99i', sortOrder: 0,
       },
       {

@@ -41,6 +41,7 @@ export function mapInvitation(row: Row, relations: {
     id: str(row.id), slug: str(row.slug), status: str(row.status) as Invitation['status'], adminTitle: opt(row.admin_title),
     partnerOne: str(row.partner_one), partnerTwo: str(row.partner_two),
     partnerOneFullName: opt(row.partner_one_full_name), partnerTwoFullName: opt(row.partner_two_full_name),
+    partnerOneRole: opt(row.partner_one_role), partnerTwoRole: opt(row.partner_two_role),
     partnerOneParents: opt(row.partner_one_parents), partnerTwoParents: opt(row.partner_two_parents),
     partnerOneAddress: opt(row.partner_one_address), partnerTwoAddress: opt(row.partner_two_address),
     headline: str(row.headline), message: str(row.message), story: opt(row.story),

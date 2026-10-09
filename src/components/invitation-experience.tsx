@@ -229,8 +229,8 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
         {config.features.showTimeline && <TimelineSection config={config} />}
         {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
         {config.features.showSignatures && <SignatureSection config={config} connected={connected} onSigningChange={setSigning} />}
-        {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} showClosingMessage={config.features.showThankYou} showQr={config.features.showGiftQr} />}
-        {config.features.showThankYou && !config.features.showBank && <ThankYouSection />}
+        {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} closingMessage={config.features.showThankYou ? config.content.closingMessage : ''} showQr={config.features.showGiftQr} />}
+        {config.features.showThankYou && !config.features.showBank && <ThankYouSection message={config.content.closingMessage} />}
       </div>
     </div>}
     {phase === 'opened' && config.music.enabled && <MusicController music={music} />}

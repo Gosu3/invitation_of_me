@@ -82,6 +82,9 @@ export type Invitation = {
   partnerTwo: string;
   partnerOneFullName?: string;
   partnerTwoFullName?: string;
+  /** Family rank under the full name on the ceremony card, e.g. "Út nam" / "Trưởng nữ". */
+  partnerOneRole?: string;
+  partnerTwoRole?: string;
   partnerOneParents?: string;
   partnerTwoParents?: string;
   partnerOneAddress?: string;

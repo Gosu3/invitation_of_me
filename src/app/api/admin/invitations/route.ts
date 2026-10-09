@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/supabase';
-import { invitationSchema } from '@/lib/validation';
+import { describeInvitationIssues, invitationSchema } from '@/lib/validation';
 
 export async function GET() {
   const admin = await requireAdmin();
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: 'Dữ liệu không hợp lệ.' }, { status: 400 }); }
   const parsed = invitationSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: 'Vui lòng kiểm tra các trường bắt buộc.', details: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: `Vui lòng kiểm tra: ${describeInvitationIssues(parsed.error.issues)}.`, details: parsed.error.flatten() }, { status: 400 });
   const { data: id, error } = await admin.service.rpc('wedding_save_invitation', { p_data: parsed.data, p_owner: admin.user.id });
   if (error) return NextResponse.json({ error: error.code === '23505' ? 'Đường dẫn thiệp đã tồn tại.' : 'Không thể lưu thiệp.', detail: error.message }, { status: error.code === '23505' ? 409 : 500 });
   const titleUpdate = await admin.service.from('wedding_invitations').update({ admin_title: parsed.data.adminTitle || null }).eq('id', id);
@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
       ...(signatureAvoidZones !== undefined && { signature_avoid_zones: signatureAvoidZones }),
     }).eq('id', id);
     if (signatureUpdate.error) return NextResponse.json({ error: 'Thiệp đã lưu nhưng chưa thể lưu phần chữ ký trên ảnh.' }, { status: 500 });
+  }
+  const { partnerOneRole, partnerTwoRole } = parsed.data;
+  if (partnerOneRole !== undefined || partnerTwoRole !== undefined) {
+    const roleUpdate = await admin.service.from('wedding_invitations').update({
+      ...(partnerOneRole !== undefined && { partner_one_role: partnerOneRole || null }),
+      ...(partnerTwoRole !== undefined && { partner_two_role: partnerTwoRole || null }),
+    }).eq('id', id);
+    if (roleUpdate.error) return NextResponse.json({ error: 'Thiệp đã lưu nhưng chưa thể lưu vai vế của cô dâu chú rể.' }, { status: 500 });
   }
   if (parsed.data.giftQrHidden !== undefined) {
     const giftQrUpdate = await admin.service.from('wedding_invitations').update({ gift_qr_hidden: parsed.data.giftQrHidden }).eq('id', id);

@@ -96,8 +96,8 @@ function BankCard({ account, fallbackRole, fallbackQr, showQr }: { account: Gift
   </article>;
 }
 
-export function GiftSection({ accounts, inline, open, showClosingMessage = false, showQr = true }: { accounts: GiftAccount[]; inline: boolean; open: () => void; showClosingMessage?: boolean; showQr?: boolean }) {
-  return <section className="invite-section gift-section" id="qua-mung"><h2><span dir="auto">Hộp quà mừng</span></h2>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" fallbackQr="/assets/wedding/qr/chu-re.png" showQr={showQr} /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" fallbackQr="/assets/wedding/qr/co-dau.png" showQr={showQr} /></div> : <GiftBox open={open} />}{showClosingMessage && <p><span dir="auto">Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình ♡</span></p>}</section>;
+export function GiftSection({ accounts, inline, open, closingMessage = '', showQr = true }: { accounts: GiftAccount[]; inline: boolean; open: () => void; closingMessage?: string; showQr?: boolean }) {
+  return <section className="invite-section gift-section" id="qua-mung"><h2><span dir="auto">Hộp quà mừng</span></h2>{inline ? <div className="gift-accounts inline"><BankCard account={accounts[0] || null} fallbackRole="Chú rể" fallbackQr="/assets/wedding/qr/chu-re.png" showQr={showQr} /><BankCard account={accounts[1] || null} fallbackRole="Cô dâu" fallbackQr="/assets/wedding/qr/co-dau.png" showQr={showQr} /></div> : <GiftBox open={open} />}{closingMessage && <p><span dir="auto">{closingMessage}</span></p>}</section>;
 }
 
 export function GiftModal({ accounts, close, showQr = true }: { accounts: GiftAccount[]; close: () => void; showQr?: boolean }) {

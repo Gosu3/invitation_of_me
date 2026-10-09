@@ -13,6 +13,9 @@ import { ArchitectureSection, CardFlower, CeremonyFlowers, ReceptionFlower, Time
 import { Modal } from './shared';
 import styles from './hero-cover.module.css';
 
+// The card design sets these lines in capitals; the admin stores normal sentence case.
+const upper = (text: string) => text.toLocaleUpperCase('vi-VN');
+
 export function WeddingHero({ config, headingRef }: { config: WeddingInvitationConfig; headingRef: RefObject<HTMLDivElement | null> }) {
   const { theme, couple, content } = config;
   return <section id="bia-thiep" className={`letter-story ${styles.cover}`} aria-label={`Thiệp cưới ${couple.names}`}>
@@ -80,10 +83,10 @@ export function FamilyCeremonySection({ config }: { config: WeddingInvitationCon
       <i aria-hidden="true" />
       <ParentsColumn parents={config.family.brideParents} address={config.family.brideAddress} side="Nhà gái" />
     </div>}
-    <p className="wedding-invitation-copy"><span dir="auto">TRÂN TRỌNG KÍNH MỜI</span><span className="wedding-invitation-detail" dir="auto">TỚI DỰ LỄ THÀNH HÔN CHUNG VUI CÙNG GIA ĐÌNH CHÚNG TÔI</span></p>
-    <div className="wedding-couple-names"><h3 className="groom-name">{config.couple.groomFullName}</h3><span>{config.couple.groomRole}</span><em>&</em><h3 className="bride-name">{config.couple.brideFullName}</h3><span>{config.couple.brideRole}</span></div>
+    <p className="wedding-invitation-copy"><span dir="auto">{upper(config.content.headline)}</span>{config.content.message && <span className="wedding-invitation-detail" dir="auto">{upper(config.content.message)}</span>}</p>
+    <div className="wedding-couple-names"><h3 className="groom-name">{config.couple.groomFullName}</h3>{config.couple.groomRole && <span>{config.couple.groomRole}</span>}<em>&</em><h3 className="bride-name">{config.couple.brideFullName}</h3>{config.couple.brideRole && <span>{config.couple.brideRole}</span>}</div>
     {event && <div className="wedding-event-details ceremony-event-details">
-      <div className="ceremony-venue"><span dir="auto">{'LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI\nTƯ GIA'}</span></div>
+      {event.venue && <div className="ceremony-venue"><span dir="auto">{`LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI\n${upper(event.venue)}`}</span></div>}
       <WeddingDateDisplay dateTime={event.dateTime} ceremony />
       {event.lunarDate && <p className="wedding-lunar-date">({event.lunarDate})</p>}
     </div>}
@@ -215,6 +218,9 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   // The map can search a different place name than the address shown (e.g. a nearby landmark Google knows).
   const mapPlace = config.venue.mapQuery || destination;
   const embed = `https://www.google.com/maps?q=${encodeURIComponent(mapPlace)}&output=embed`;
+  // A trailing ♥ in the admin text becomes the styled heart.
+  const dressCodeText = config.content.dressCode?.trim();
+  const dressCode = dressCodeText ? { text: dressCodeText.replace(/\s*♥$/, ''), heart: dressCodeText.endsWith('♥') } : undefined;
   const directions = config.venue.mapUrl || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapPlace)}`;
   return <section id="dia-diem" className="venue-invitation-section" data-landing-screenshot-id="invite-map">
     <div className="venue-invitation-copy">
@@ -226,15 +232,15 @@ export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
       {config.features.showMap && <iframe className="venue-map" title={`Bản đồ ${config.venue.title}`} src={embed} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" />}
       <a className="venue-directions" href={directions} target="_blank" rel="noopener noreferrer" onClick={(event) => openDirections(event, mapPlace)}><Navigation size={16} aria-hidden="true" /><span>Chỉ đường</span></a>
     </div>
-    <div className="venue-dress-code">
+    {dressCode && <div className="venue-dress-code">
       <div className="venue-dress-code-copy">
         <h2>DRESS CODE</h2>
-        <p>Bạn hãy cứ diện bộ đồ cảm thấy đẹp và tự tin nhất <span className="dress-code-heart" aria-label="trái tim">♥</span></p>
+        <p>{dressCode.text}{dressCode.heart && <> <span className="dress-code-heart" aria-label="trái tim">♥</span></>}</p>
       </div>
       <div className="venue-dress-code-swatches" aria-label="Bảng màu trang phục phối nhiều màu">
         <span className="dress-swatch dress-swatch-multicolor" title="Phối màu" aria-hidden="true" />
       </div>
-    </div>
+    </div>}
   </section>;
 }
 
@@ -512,6 +518,6 @@ export function GuestbookSection({ config, connected }: { config: WeddingInvitat
   </section>;
 }
 
-export function ThankYouSection() {
-  return <footer className="invite-footer"><Heart size={22} strokeWidth={1.3} /><p>Sự hiện diện của bạn là món quà quý giá nhất đối với chúng mình</p></footer>;
+export function ThankYouSection({ message }: { message: string }) {
+  return <footer className="invite-footer"><Heart size={22} strokeWidth={1.3} />{message && <p>{message}</p>}</footer>;
 }

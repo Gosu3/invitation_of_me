@@ -3,6 +3,8 @@ import { SIGNATURE_LIMITS, SIGNATURE_MAX_ROTATE, SIGNATURE_SCALE, signatureFontI
 
 const safeText = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => z.string().trim().max(max).optional().nullable();
+// The editor sends '' for "no image"; the save RPC turns '' into null (nullif).
+const optionalMediaId = z.union([z.uuid(), z.literal('')]).optional().nullable();
 const optionalUrl = z.union([z.url().startsWith('https://'), z.literal('')]).optional().nullable();
 
 export const rsvpSchema = z.object({
@@ -41,18 +43,18 @@ export const guestLinkSchema = z.object({
   guestName: safeText(100),
 });
 
-const eventSchema = z.object({
+export const eventSchema = z.object({
   title: safeText(100), dateTime: z.iso.datetime({ offset: true }), arrivalTime: optionalText(30),
-  lunarDate: optionalText(120), venue: safeText(200), address: safeText(400), mapUrl: optionalUrl, mapQuery: optionalText(400),
+  lunarDate: optionalText(120), venue: z.string().trim().max(200), address: safeText(400), mapUrl: optionalUrl, mapQuery: optionalText(400),
   sortOrder: z.number().int().min(0).max(1000),
 });
-const timelineSchema = z.object({
+export const timelineSchema = z.object({
   time: safeText(20), title: safeText(100), description: optionalText(300),
   sortOrder: z.number().int().min(0).max(1000),
 });
-const giftSchema = z.object({
+export const giftSchema = z.object({
   recipient: safeText(100), bankName: safeText(100), accountNumber: safeText(50),
-  accountHolder: safeText(100), qrMediaId: z.uuid().optional().nullable(),
+  accountHolder: safeText(100), qrMediaId: optionalMediaId,
   sortOrder: z.number().int().min(0).max(1000),
 });
 
@@ -66,10 +68,12 @@ export const invitationSchema = z.object({
   adminTitle: optionalText(150),
   partnerOne: safeText(100), partnerTwo: safeText(100),
   partnerOneFullName: optionalText(150), partnerTwoFullName: optionalText(150),
+  // Optional so saving still works before migration 202610090002 is applied.
+  partnerOneRole: optionalText(60), partnerTwoRole: optionalText(60),
   partnerOneParents: optionalText(200), partnerTwoParents: optionalText(200),
   partnerOneAddress: optionalText(200), partnerTwoAddress: optionalText(200),
   headline: safeText(120), message: safeText(1200), story: optionalText(1200),
-  coverMediaId: z.uuid().optional().nullable(), coverAlt: optionalText(200),
+  coverMediaId: optionalMediaId, coverAlt: optionalText(200),
   dressCode: optionalText(300), closingMessage: safeText(500),
   rsvpEnabled: z.boolean(), rsvpDeadline: z.union([z.iso.datetime({ offset: true }), z.literal('')]).optional().nullable(),
   wishesEnabled: z.boolean(), giftsEnabled: z.boolean(),
@@ -81,3 +85,22 @@ export const invitationSchema = z.object({
   // Optional so saving still works before migration 202610090001 is applied.
   giftQrHidden: z.boolean().optional(),
 });
+
+const fieldLabels: Record<string, string> = {
+  slug: 'Đường dẫn thiệp', partnerOne: 'Tên chú rể', partnerTwo: 'Tên cô dâu', partnerOneRole: 'Vai vế chú rể', partnerTwoRole: 'Vai vế cô dâu', headline: 'Tiêu đề lời mời', message: 'Nội dung lời mời',
+  closingMessage: 'Lời kết', rsvpDeadline: 'Hạn nhận RSVP', coverMediaId: 'Ảnh bìa', signatureImage: 'Ảnh chữ ký',
+  title: 'Tên', dateTime: 'Ngày giờ', venue: 'Địa điểm', address: 'Địa chỉ', mapUrl: 'Link Google Maps', time: 'Giờ',
+  story: 'Câu chuyện', dressCode: 'Dress code', coverAlt: 'Mô tả ảnh bìa', arrivalTime: 'Giờ đón khách', lunarDate: 'Ngày âm lịch',
+  mapQuery: 'Địa chỉ cho bản đồ', description: 'Mô tả', recipient: 'Người nhận', bankName: 'Ngân hàng', accountNumber: 'Số tài khoản', accountHolder: 'Tên chủ tài khoản', qrMediaId: 'Ảnh QR',
+};
+const groupLabels: Record<string, string> = { events: 'Sự kiện', timeline: 'Mốc giờ', gifts: 'Tài khoản' };
+
+// "Sự kiện 2 – Ngày giờ" instead of a generic message, so the admin knows which field blocks the save.
+export function describeInvitationIssues(issues: { path: PropertyKey[] }[]) {
+  const names = issues.map(({ path }) => {
+    const [head, index, field] = path.map(String);
+    if (head in groupLabels && index !== undefined) return `${groupLabels[head]} ${Number(index) + 1}${field ? ` – ${fieldLabels[field] || field}` : ''}`;
+    return fieldLabels[head] || head;
+  });
+  return [...new Set(names)].join(', ');
+}
