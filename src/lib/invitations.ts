@@ -48,7 +48,7 @@ export function mapInvitation(row: Row, relations: {
     coverAlt: opt(row.cover_alt), dressCode: opt(row.dress_code),
     closingMessage: str(row.closing_message), rsvpEnabled: bool(row.rsvp_enabled),
     rsvpDeadline: opt(row.rsvp_deadline), wishesEnabled: bool(row.wishes_enabled),
-    giftsEnabled: bool(row.gifts_enabled),
+    giftsEnabled: bool(row.gifts_enabled), giftQrHidden: bool(row.gift_qr_hidden),
     signaturesEnabled: bool(row.signatures_enabled), signatureImage: opt(row.signature_image),
     signatureAvoidZones: zones(row.signature_avoid_zones), events, timeline, media, gifts, wishes,
     createdAt: opt(row.created_at), updatedAt: opt(row.updated_at),

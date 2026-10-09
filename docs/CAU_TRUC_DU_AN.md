@@ -71,6 +71,7 @@ Khi thiếu biến môi trường Supabase, `src/lib/invitations.ts` dùng `src/
 - `wedding_wishes`: lời chúc, chỉ dòng `approved` được công khai.
 - `wedding_signatures`: chữ ký khách ký lên ảnh cưới (vector, viewBox 1000×1500), tách riêng khỏi lời chúc; `wish_id` liên kết tới lời chúc của chính khách đó (xác thực bằng token HMAC trả về khi gửi lời chúc). Chỉ hiện khi thiệp bật `signatures_enabled` và có `signature_image` (ảnh dọc tỉ lệ 2:3); `signature_avoid_zones` là các vùng không nên ký (mặt, bó hoa…). Migration `202610070001_wedding_signatures.sql`.
 - `wedding_gift_accounts`: thông tin hộp quà bật/tắt theo thiệp.
+- `wedding_invitations.gift_qr_hidden`: ẩn ảnh QR trong hộp quà (giữ khung và hình cô dâu chú rể); bật cho thiệp nhà trai `tho-va-tham` (migration `202610090001`).
 - `wedding_submission_limits`: giới hạn tần suất gửi biểu mẫu.
 - `wedding_guest_links`: link mời ngắn kèm tên khách.
 

@@ -24,6 +24,7 @@ export const demoInvitations: Invitation[] = [
     rsvpDeadline: '2026-11-23T23:59:00+07:00',
     wishesEnabled: true,
     giftsEnabled: true,
+    giftQrHidden: true,
     events: [
       {
         id: 'demo-ceremony', title: 'Lễ thành hôn', dateTime: '2026-11-29T09:00:00+07:00',

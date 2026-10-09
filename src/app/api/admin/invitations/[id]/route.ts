@@ -21,6 +21,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     coverMediaId: row.cover_media_id,
     // False until migration 202610070001 is applied; the editor then hides the signature settings.
     signatureColumns: 'signatures_enabled' in row,
+    // False until migration 202610090001 is applied; the editor then hides the QR toggle.
+    giftQrColumn: 'gift_qr_hidden' in row,
     giftQrMediaIds: (gifts.data || []).map((g) => ({ id: g.id, qrMediaId: g.qr_media_id })),
     allWishes: wishes.data || [],
   });

@@ -229,7 +229,7 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
         {config.features.showTimeline && <TimelineSection config={config} />}
         {config.features.showGuestbook && <GuestbookSection config={config} connected={connected} />}
         {config.features.showSignatures && <SignatureSection config={config} connected={connected} onSigningChange={setSigning} />}
-        {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} showClosingMessage={config.features.showThankYou} />}
+        {config.features.showBank && <GiftSection accounts={config.bankAccounts} inline={config.features.showQRInline} open={() => setGiftOpen(true)} showClosingMessage={config.features.showThankYou} showQr={config.features.showGiftQr} />}
         {config.features.showThankYou && !config.features.showBank && <ThankYouSection />}
       </div>
     </div>}
@@ -243,6 +243,6 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
       {config.features.showBank && !config.features.showQRInline && <button onClick={() => setGiftOpen(true)} aria-label="Mở hộp quà mừng"><Gift size={18} /></button>}
     </nav>}
     {photoIndex !== null && <GalleryLightbox photos={config.gallery} initial={photoIndex} close={() => setPhotoIndex(null)} />}
-    {giftOpen && <GiftModal accounts={config.bankAccounts} close={() => setGiftOpen(false)} />}
+    {giftOpen && <GiftModal accounts={config.bankAccounts} close={() => setGiftOpen(false)} showQr={config.features.showGiftQr} />}
   </main>;
 }

@@ -30,5 +30,9 @@ export async function POST(request: NextRequest) {
     }).eq('id', id);
     if (signatureUpdate.error) return NextResponse.json({ error: 'Thiệp đã lưu nhưng chưa thể lưu phần chữ ký trên ảnh.' }, { status: 500 });
   }
+  if (parsed.data.giftQrHidden !== undefined) {
+    const giftQrUpdate = await admin.service.from('wedding_invitations').update({ gift_qr_hidden: parsed.data.giftQrHidden }).eq('id', id);
+    if (giftQrUpdate.error) return NextResponse.json({ error: 'Thiệp đã lưu nhưng chưa thể lưu tùy chọn ẩn mã QR.' }, { status: 500 });
+  }
   return NextResponse.json({ id }, { status: parsed.data.id ? 200 : 201 });
 }

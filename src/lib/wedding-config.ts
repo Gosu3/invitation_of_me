@@ -20,6 +20,7 @@ export function createWeddingConfig(invitation: Invitation) {
     showGuestbook: invitation.wishesEnabled,
     showTimeline: invitation.timeline.length > 0,
     showThankYou: true,
+    showGiftQr: !invitation.giftQrHidden,
     showSignatures: Boolean(invitation.signaturesEnabled && invitation.signatureImage),
     showFamilyInfo: Boolean(invitation.partnerOneParents || invitation.partnerTwoParents || invitation.partnerOneFullName || invitation.partnerTwoFullName),
     ...invitation.features,

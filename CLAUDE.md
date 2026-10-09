@@ -34,7 +34,7 @@ Visual regression (Playwright, `tests/visual/`, baseline trong `tests/visual/__s
 | CSS thiệp (import order trong `layout.tsx`, đừng đổi) | `src/app/invitation-motion.css`, `wedding-composition.css`, `wedding-typography.css`, `wedding-mobile.css`, `mobile-forms.css`; `globals.css` cho home/admin |
 | Kiểu dữ liệu / validation | `src/lib/types.ts` / `src/lib/validation.ts` |
 | Admin UI | `src/components/admin-{dashboard,editor,responses}.tsx` |
-| Schema | `supabase/migrations/` (20 file; core = `202609210001_wedding_core.sql`) |
+| Schema | `supabase/migrations/` (21 file; core = `202609210001_wedding_core.sql`) |
 
 Thêm trường thiệp: migration mới → `types.ts` → `invitations.ts` → form admin → template → docs.
 

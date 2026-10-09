@@ -56,6 +56,7 @@ export type InvitationFeatures = {
   showThankYou: boolean;
   showFamilyInfo: boolean;
   showSignatures: boolean;
+  showGiftQr: boolean;
 };
 
 export type WeddingMusic = {
@@ -96,6 +97,7 @@ export type Invitation = {
   rsvpDeadline?: string;
   wishesEnabled: boolean;
   giftsEnabled: boolean;
+  giftQrHidden?: boolean;
   signaturesEnabled?: boolean;
   signatureImage?: string;
   signatureAvoidZones?: SignatureZone[];

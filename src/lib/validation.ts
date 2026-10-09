@@ -78,4 +78,6 @@ export const invitationSchema = z.object({
   signaturesEnabled: z.boolean().optional(),
   signatureImage: z.union([z.string().regex(signatureImagePattern), z.literal('')]).optional().nullable(),
   signatureAvoidZones: z.array(signatureZoneSchema).max(12).optional(),
+  // Optional so saving still works before migration 202610090001 is applied.
+  giftQrHidden: z.boolean().optional(),
 });
