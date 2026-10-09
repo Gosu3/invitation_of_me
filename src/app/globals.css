@@ -68,7 +68,8 @@
 .admin-response-search{padding:12px;border:1px solid #ded1c9;background:#fffaf5;min-width:0}
 .admin-wish-edit{display:flex;flex-wrap:wrap;gap:12px}
 .admin-wish-edit label{width:100%;font-size:13px}
-.admin-wish-edit input,.admin-wish-edit textarea{display:block;width:100%;padding:10px;margin-top:6px;border:1px solid #ded1c9;background:white}
+.admin-wish-edit input,.admin-wish-edit textarea,.admin-wish-edit select{display:block;width:100%;padding:10px;margin-top:6px;border:1px solid #ded1c9;background:white}
+.admin-rsvp-total{margin-bottom:24px;background:#fffaf5;border:1px solid #e8dcd3;padding:22px}.admin-rsvp-total h2{margin-bottom:14px;font:500 24px var(--serif);color:var(--burgundy)}.admin-family-column .responses-summary{margin:14px 0 8px}
 .admin-family-columns .guest-link-recent{min-width:0}
 .admin-family-columns .guest-link-recent>h3{margin-bottom:14px;color:var(--burgundy);font:500 24px/1.25 var(--serif);letter-spacing:0;text-transform:none}
 .admin-family-columns .guest-link-recent>div>div:last-child{flex-shrink:0}

@@ -15,6 +15,7 @@ export function AdminResponses({ invitations, tab }: { invitations: Invitation[]
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
   const [editing, setEditing] = useState<Wish | null>(null);
+  const [editingRsvp, setEditingRsvp] = useState<Rsvp | null>(null);
   async function refresh() {
     try {
       const response = await fetch('/api/admin/responses', { cache: 'no-store' });
@@ -40,6 +41,28 @@ export function AdminResponses({ invitations, tab }: { invitations: Invitation[]
     } catch (caught) { setError(caught instanceof Error ? caught.message : 'Không thể lưu thay đổi.'); }
     finally { setBusy(''); }
   }
+  async function changeRsvp(rsvp: Rsvp, changes?: Partial<Rsvp>) {
+    if (!changes && !window.confirm('Xoá vĩnh viễn xác nhận tham dự của ' + rsvp.guest_name + '?')) return;
+    setBusy(rsvp.id); setError('');
+    try {
+      const response = await fetch('/api/admin/rsvps/' + rsvp.id, { method: changes ? 'PATCH' : 'DELETE', headers: { 'Content-Type': 'application/json' }, body: changes ? JSON.stringify(changes) : undefined });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setRsvps(current => changes ? current.map(item => item.id === rsvp.id ? { ...item, ...changes, message: changes.message?.trim() || null } : item) : current.filter(item => item.id !== rsvp.id));
+      setEditingRsvp(null);
+    } catch (caught) { setError(caught instanceof Error ? caught.message : 'Không thể lưu thay đổi.'); }
+    finally { setBusy(''); }
+  }
+  // Totals for the wrap-up: everyone who replied, who is coming (and how many people), who is not.
+  const summary = (list: Rsvp[]) => {
+    const coming = list.filter(item => item.attendance === 'yes');
+    const people = coming.reduce((sum, item) => sum + item.guest_count, 0);
+    return <div className="responses-summary">
+      <div><strong>{list.length}</strong><span>Khách đã gửi</span></div>
+      <div><strong>{coming.length}</strong><span>Xác nhận đi{people !== coming.length ? ` · ${people} người` : ''}</span></div>
+      <div><strong>{list.filter(item => item.attendance === 'no').length}</strong><span>Vắng mặt</span></div>
+    </div>;
+  };
   const groups = ['tho-va-tham', 'tham-va-tho'].map((slug, index) => ({ title: index ? 'Nhà gái' : 'Nhà trai', ids: invitations.filter(item => item.slug === slug).map(item => item.id) }));
   const other = invitations.filter(item => !['tho-va-tham', 'tham-va-tho'].includes(item.slug));
   if (other.length) groups.push({ title: 'Thiệp khác', ids: other.map(item => item.id) });
@@ -47,15 +70,23 @@ export function AdminResponses({ invitations, tab }: { invitations: Invitation[]
   return <section className="admin-response-panel">
     <div className="admin-toolbar">
       <input className="admin-response-search" aria-label="Tìm người gửi" placeholder="Tìm tên khách…" value={query} onChange={event => setQuery(event.target.value)} />
-      {tab === 'rsvps' && <select aria-label="Lọc xác nhận tham dự" value={filter} onChange={event => setFilter(event.target.value)}><option value="all">Tất cả phản hồi</option><option value="yes">Sẽ tham dự</option><option value="no">Không thể tham dự</option><option value="maybe">Chưa chắc chắn</option></select>}
+      {tab === 'rsvps' && <select aria-label="Lọc xác nhận tham dự" value={filter} onChange={event => setFilter(event.target.value)}><option value="all">Tất cả phản hồi</option><option value="yes">Sẽ tham dự</option><option value="no">Vắng mặt</option></select>}
       <button className="admin-secondary" onClick={refresh}>Làm mới</button>
     </div>
     {error && <p className="admin-alert error" role="alert">{error}</p>}
-    {loading ? <p>Đang tải phản hồi…</p> : tab === 'rsvps' ? <div className="admin-family-columns">{groups.map(group => {
+    {loading ? <p>Đang tải phản hồi…</p> : tab === 'rsvps' ? <>{groups.length > 1 && <section className="admin-rsvp-total"><h2>Tổng cộng</h2>{summary(rsvps)}</section>}<div className="admin-family-columns">{groups.map(group => {
       const all = rsvps.filter(item => group.ids.includes(item.invitation_id));
       const rows = all.filter(item => (filter === 'all' || item.attendance === filter) && matches(item.guest_name));
-      return <section className="admin-family-column" key={group.title}><h2>{group.title}</h2><p>{all.filter(item => item.attendance === 'yes').length} xác nhận đến · {all.filter(item => item.attendance === 'yes').reduce((sum, item) => sum + item.guest_count, 0)} khách · {all.filter(item => item.attendance === 'no').length} vắng mặt</p>{rows.map(item => <article className="admin-response-card" key={item.id}><strong>{item.guest_name}</strong><span className={'status-chip ' + (item.attendance === 'yes' ? 'approved' : 'hidden')}>{item.attendance === 'yes' ? 'Sẽ tham dự' : item.attendance === 'no' ? 'Không thể tham dự' : 'Chưa chắc chắn'}</span><p>Số người: {item.guest_count}</p>{item.message && <p>{item.message}</p>}<small>{new Date(item.created_at).toLocaleString('vi-VN')}</small></article>)}{!rows.length && <p>Chưa có phản hồi phù hợp.</p>}</section>;
-    })}</div> : <div className="admin-all-wishes"><h2>Tất cả lời chúc ({wishes.length})</h2>{wishes.filter(item => matches(item.guest_name)).map(wish => <article className="admin-response-card" key={wish.id}>
+      return <section className="admin-family-column" key={group.title}><h2>{group.title}</h2>{summary(all)}{rows.map(item => <article className="admin-response-card" key={item.id}>
+        {editingRsvp?.id === item.id ? <form className="admin-wish-edit" onSubmit={event => { event.preventDefault(); void changeRsvp(item, { guest_name: editingRsvp.guest_name, attendance: editingRsvp.attendance, guest_count: editingRsvp.guest_count, message: editingRsvp.message ?? '' }); }}>
+          <label>Tên khách<input required minLength={2} maxLength={100} value={editingRsvp.guest_name} onChange={event => setEditingRsvp({ ...editingRsvp, guest_name: event.target.value })} /></label>
+          <label>Trạng thái<select value={editingRsvp.attendance} onChange={event => setEditingRsvp({ ...editingRsvp, attendance: event.target.value })}><option value="yes">Sẽ tham dự</option><option value="no">Vắng mặt</option></select></label>
+          <label>Số người<input type="number" required min={1} max={5} value={editingRsvp.guest_count} onChange={event => setEditingRsvp({ ...editingRsvp, guest_count: Number(event.target.value) })} /></label>
+          <label>Lời nhắn<textarea maxLength={500} rows={3} value={editingRsvp.message ?? ''} onChange={event => setEditingRsvp({ ...editingRsvp, message: event.target.value })} /></label>
+          <button className="admin-primary" disabled={!!busy}>Lưu thay đổi</button><button type="button" className="admin-secondary" disabled={!!busy} onClick={() => setEditingRsvp(null)}>Huỷ</button>
+        </form> : <><strong>{item.guest_name}</strong><span className={'status-chip ' + (item.attendance === 'yes' ? 'approved' : 'hidden')}>{item.attendance === 'yes' ? 'Sẽ tham dự' : 'Vắng mặt'}</span><p>Số người: {item.guest_count}</p>{item.message && <p>{item.message}</p>}<small>{new Date(item.created_at).toLocaleString('vi-VN')}</small><div className="moderation-actions"><button disabled={!!busy} onClick={() => setEditingRsvp({ ...item })}>Sửa</button><button disabled={!!busy} onClick={() => changeRsvp(item)}>Xoá</button></div></>}
+      </article>)}{!rows.length && <p>Chưa có phản hồi phù hợp.</p>}</section>;
+    })}</div></> :<div className="admin-all-wishes"><h2>Tất cả lời chúc ({wishes.length})</h2>{wishes.filter(item => matches(item.guest_name)).map(wish => <article className="admin-response-card" key={wish.id}>
       {editing?.id === wish.id ? <form className="admin-wish-edit" onSubmit={event => { event.preventDefault(); void change(wish, { guest_name: editing.guest_name, message: editing.message }); }}>
         <label>Tên người gửi<input required minLength={2} maxLength={100} value={editing.guest_name} onChange={event => setEditing({ ...editing, guest_name: event.target.value })} /></label>
         <label>Lời chúc<textarea required minLength={3} maxLength={1000} rows={4} value={editing.message} onChange={event => setEditing({ ...editing, message: event.target.value })} /></label>
