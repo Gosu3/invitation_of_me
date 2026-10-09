@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAdmin } from '@/lib/supabase';
 import { mapInvitation } from '@/lib/invitations';
 import { describeInvitationIssues, eventSchema, giftSchema, invitationSchema, timelineSchema } from '@/lib/validation';
+import { sharedWishSlugs } from '@/lib/wedding-wish-groups';
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();
@@ -119,6 +120,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { data: saved, error } = await db.from('wedding_invitations').update(update).eq('id', id).select('id');
     if (error) return NextResponse.json({ error: error.code === '23505' ? 'Đường dẫn thiệp đã tồn tại.' : 'Không thể lưu thiệp.', detail: error.message }, { status: error.code === '23505' ? 409 : 500 });
     if (!saved?.length) return NextResponse.json({ error: 'Không tìm thấy thiệp.' }, { status: 404 });
+  }
+  // Thọ & Thắm share one signature board, so the no-signing zones must stay identical on both invitations.
+  if (fields.signatureAvoidZones !== undefined) {
+    const { data: current } = await db.from('wedding_invitations').select('slug').eq('id', id).maybeSingle();
+    const partnerSlugs = sharedWishSlugs(String(current?.slug ?? '')).filter((slug) => slug !== current?.slug);
+    if (partnerSlugs.length) {
+      const { error } = await db.from('wedding_invitations').update({ signature_avoid_zones: fields.signatureAvoidZones }).in('slug', partnerSlugs);
+      if (error) return NextResponse.json({ error: 'Đã lưu thiệp này nhưng chưa đồng bộ được vùng tránh sang thiệp còn lại.', detail: error.message }, { status: 500 });
+    }
   }
 
   // Inserts and updates before deletes: a failure part-way never loses rows that were meant to stay.
