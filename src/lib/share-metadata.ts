@@ -7,3 +7,8 @@ export function shareImage(invitation: Pick<Invitation, 'partnerOne' | 'partnerT
   return { url: `${siteUrl()}/photos/og-cover.jpg`, width: 1200, height: 630, alt: `Ảnh cưới ${invitation.partnerOne} & ${invitation.partnerTwo}` };
 }
 
+// Not `message`: that is now the short line printed on the ceremony card ("Tới dự lễ thành hôn…"), which reads oddly as a preview.
+export function shareDescription(invitation: Pick<Invitation, 'partnerOne' | 'partnerTwo'>) {
+  return `${invitation.partnerOne} và ${invitation.partnerTwo} cùng gia đình hân hạnh mời bạn đến chung vui trong ngày bắt đầu hành trình mới của chúng mình.`;
+}
+

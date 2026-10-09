@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { InvitationExperience } from '@/components/invitation-experience';
 import { getInvitation } from '@/lib/invitations';
 import { isDatabaseConfigured, serviceDb } from '@/lib/supabase';
-import { shareImage } from '@/lib/share-metadata';
+import { shareDescription, shareImage } from '@/lib/share-metadata';
 import { siteUrl } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!result) return { title: 'Không tìm thấy thiệp', robots: { index: false, follow: false } };
   const { code } = await params;
   const title = `Thiệp cưới ${result.invitation.partnerOne} & ${result.invitation.partnerTwo}`;
-  const description = result.invitation.message;
+  const description = shareDescription(result.invitation);
   return {
     title, description,
     robots: { index: false, follow: false },

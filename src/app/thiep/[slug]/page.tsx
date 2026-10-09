@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { getInvitation } from '@/lib/invitations';
-import { shareImage } from '@/lib/share-metadata';
+import { shareDescription, shareImage } from '@/lib/share-metadata';
 import { siteUrl } from '@/lib/utils';
 import { InvitationExperience } from '@/components/invitation-experience';
 import { isDatabaseConfigured } from '@/lib/supabase';
@@ -13,10 +13,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const invitation = await getInvitation(slug);
   if (!invitation) return { title: 'Không tìm thấy thiệp', robots: { index: false, follow: false } };
   const title = `Thiệp cưới ${invitation.partnerOne} & ${invitation.partnerTwo}`;
+  const description = shareDescription(invitation);
   return {
-    title, description: invitation.message,
+    title, description,
     robots: { index: false, follow: false },
-    openGraph: { title, description: invitation.message, type: 'website', url: `${siteUrl()}/thiep/${slug}`, images: [shareImage(invitation)] },
+    openGraph: { title, description, type: 'website', url: `${siteUrl()}/thiep/${slug}`, images: [shareImage(invitation)] },
   };
 }
 
