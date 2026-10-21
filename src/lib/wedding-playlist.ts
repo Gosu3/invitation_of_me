@@ -8,4 +8,5 @@ export const weddingPlaylist: WeddingTrack[] = [
   { id: 'the-gioi-cua-anh', title: 'Thế Giới Của Anh', artist: 'Tinh Hà', src: '/music/THẾ GIỚI CỦA ANH - TINH HÀ SAY HI - OFFICIAL VISUALIZER.mp3' },
   { id: 'nothings-gonna-change-my-love-for-you', title: "Nothing's Gonna Change My Love for You", artist: 'Music Travel Love ft. Bugoy Drilon', src: "/music/Nothing's Gonna Change My Love For You - Music Travel Love ft. Bugoy Drilon.mp3" },
   { id: 'thien-duong-voi-nguoi-thuong', title: 'Thiên Đường Với Người Thương', src: '/music/thien-duong-voi-nguoi-thuong-diep-khuc-1787814882783-b1a24msg.mp3' },
+  { id: 'thanh-than', title: 'Thành Thân', artist: 'Vương Bình', src: '/music/Thành-Thân - VƯƠNG BÌNH.mp3' },
 ];
