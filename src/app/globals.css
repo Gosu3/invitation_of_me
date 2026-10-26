@@ -74,6 +74,7 @@
 .admin-family-columns .guest-link-recent>h3{margin-bottom:14px;color:var(--burgundy);font:500 24px/1.25 var(--serif);letter-spacing:0;text-transform:none}
 .admin-family-columns .guest-link-recent>div>div:last-child{flex-shrink:0}
 .guest-link-recent .guest-link-delete{color:#9a3e48}
+.guest-link-recent .guest-link-pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px}.guest-link-recent .guest-link-pager span{color:#735b60;font-size:11px}.guest-link-recent .guest-link-pager button:disabled{opacity:.4;cursor:default}
 .admin-page .editor-tabs{overflow-x:auto;gap:24px}
 .admin-page .editor-tabs button{white-space:nowrap}
 .admin-card-image img{object-position:center}

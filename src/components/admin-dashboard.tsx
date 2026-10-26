@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createBrowserClient } from '@supabase/ssr';
-import { ArrowRight, Check, Copy, ExternalLink, FilePlus2, Link2, LogOut, Search, Trash2, UserRoundPlus } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Copy, ExternalLink, FilePlus2, Link2, LogOut, Search, Trash2, UserRoundPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AdminResponses } from './admin-responses';
 import { AdminSignatures } from './admin-signatures';
@@ -29,6 +29,27 @@ type GuestLinkRow = {
 };
 
 const labels = { draft: 'Bản nháp', published: 'Đã xuất bản', archived: 'Lưu trữ' };
+const LINKS_PER_PAGE = 10;
+
+type GuestLinkGroupProps = {
+  title: string;
+  links: GuestLinkRow[];
+  invitationTitles: Map<string, string>;
+  page: number;
+  copiedCode: string;
+  deletingLink: string;
+  onPageChange: (title: string, page: number) => void;
+  onCopy: (path: string, code: string) => void;
+  onDelete: (link: GuestLinkRow) => void;
+};
+
+// Memo: typing in the create form must not re-render every link row.
+const GuestLinkGroup = memo(function GuestLinkGroup({ title, links, invitationTitles, page, copiedCode, deletingLink, onPageChange, onCopy, onDelete }: GuestLinkGroupProps) {
+  const totalPages = Math.max(1, Math.ceil(links.length / LINKS_PER_PAGE));
+  const current = Math.min(page, totalPages);
+  const visible = links.slice((current - 1) * LINKS_PER_PAGE, current * LINKS_PER_PAGE);
+  return <section className="guest-link-recent"><h3>{title} - {links.length} link đã tạo</h3>{visible.map((link) => <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitationTitles.get(link.invitation_id) || 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => onCopy(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a><button className="guest-link-delete" disabled={!!deletingLink} type="button" onClick={() => onDelete(link)} aria-label={`Xoá link của ${link.guest_name}`} title="Xoá link"><Trash2 size={15} /></button></div></div>)}{!links.length && <p>Chưa có link mời.</p>}{totalPages > 1 && <nav className="guest-link-pager" aria-label={`Phân trang link ${title}`}><button type="button" disabled={current === 1} onClick={() => onPageChange(title, current - 1)} aria-label="Trang trước"><ChevronLeft size={15} /></button><span>Trang {current}/{totalPages}</span><button type="button" disabled={current === totalPages} onClick={() => onPageChange(title, current + 1)} aria-label="Trang sau"><ChevronRight size={15} /></button></nav>}</section>;
+});
 
 export function AdminDashboard() {
   const router = useRouter();
@@ -46,8 +67,9 @@ export function AdminDashboard() {
   const [copiedCode, setCopiedCode] = useState('');
   const [tab, setTab] = useState<'invitations' | 'rsvps' | 'wishes' | 'signatures'>('invitations');
   const [deletingLink, setDeletingLink] = useState('');
+  const [linkPages, setLinkPages] = useState<Record<string, number>>({});
 
-  async function deleteLink(link: GuestLinkRow) {
+  const deleteLink = useCallback(async (link: GuestLinkRow) => {
     if (!window.confirm('Xoá link mời của ' + link.guest_name + '? Link này sẽ không mở được nữa.')) return;
     setDeletingLink(link.id);
     setGuestLinkError('');
@@ -56,10 +78,12 @@ export function AdminDashboard() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
       setGuestLinks(current => current.filter(item => item.id !== link.id));
-      if (generatedUrl.endsWith('/m/' + link.code)) setGeneratedUrl('');
+      setGeneratedUrl(current => current.endsWith('/m/' + link.code) ? '' : current);
     } catch (caught) { setGuestLinkError(caught instanceof Error ? caught.message : 'Không thể xoá link.'); }
     finally { setDeletingLink(''); }
-  }
+  }, []);
+
+  const changeLinkPage = useCallback((title: string, page: number) => setLinkPages(current => ({ ...current, [title]: page })), []);
 
   useEffect(() => {
     fetch('/api/admin/invitations')
@@ -96,12 +120,24 @@ export function AdminDashboard() {
     router.refresh();
   }
 
-  async function copyLink(path: string, code: string) {
+  const copyLink = useCallback(async (path: string, code: string) => {
     const url = new URL(path, window.location.origin).toString();
     await navigator.clipboard.writeText(url);
     setCopiedCode(code);
     window.setTimeout(() => setCopiedCode(''), 1800);
-  }
+  }, []);
+
+  const invitationTitles = useMemo(() => new Map(items.map(item => [item.id, item.admin_title || `${item.partner_one} & ${item.partner_two}`])), [items]);
+
+  // Newest first inside each group; recomputed only when links or invitations change.
+  const linkGroups = useMemo(() => {
+    const sorted = [...guestLinks].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return [
+      { title: 'Nhà Trai', ids: items.filter(item => item.slug === 'tho-va-tham').map(item => item.id) },
+      { title: 'Nhà Gái', ids: items.filter(item => item.slug === 'tham-va-tho').map(item => item.id) },
+      ...items.filter(item => !['tho-va-tham', 'tham-va-tho'].includes(item.slug)).map(item => ({ title: item.admin_title || item.slug, ids: [item.id] })),
+    ].map(group => ({ title: group.title, links: sorted.filter(link => group.ids.includes(link.invitation_id)) }));
+  }, [guestLinks, items]);
 
   async function createGuestLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,6 +155,7 @@ export function AdminDashboard() {
       const url = new URL(data.path, window.location.origin).toString();
       setGeneratedUrl(url);
       setGuestLinks((current) => [data.link, ...current]);
+      setLinkPages({});
       setGuestName('');
       await navigator.clipboard.writeText(url);
       setCopiedCode(data.link.code);
@@ -168,14 +205,7 @@ export function AdminDashboard() {
         </form>
         {guestLinkError && <div className="admin-alert error">{guestLinkError}</div>}
         {generatedUrl && <div className="guest-link-result"><div><Check size={17} /><span>Đã tạo và sao chép link</span></div><a href={generatedUrl} target="_blank" rel="noreferrer">{generatedUrl}</a></div>}
-        <div className="admin-family-columns">{[
-          { title: 'Nhà Trai', ids: items.filter(item => item.slug === 'tho-va-tham').map(item => item.id) },
-          { title: 'Nhà Gái', ids: items.filter(item => item.slug === 'tham-va-tho').map(item => item.id) },
-          ...items.filter(item => !['tho-va-tham', 'tham-va-tho'].includes(item.slug)).map(item => ({ title: item.admin_title || item.slug, ids: [item.id] })),
-        ].map(group => <section key={group.title} className="guest-link-recent"><h3>{group.title} - {guestLinks.filter(link => group.ids.includes(link.invitation_id)).length} link đã tạo</h3>{guestLinks.filter(link => group.ids.includes(link.invitation_id)).map((link) => {
-          const invitation = items.find((item) => item.id === link.invitation_id);
-          return <div key={link.id}><div><strong>{link.guest_name}</strong><span>{invitation ? invitation.admin_title || `${invitation.partner_one} & ${invitation.partner_two}` : 'Thiệp cưới'} · /m/{link.code}</span></div><div><button type="button" onClick={() => copyLink(`/m/${link.code}`, link.code)} aria-label={`Sao chép link của ${link.guest_name}`}>{copiedCode === link.code ? <Check size={15} /> : <Copy size={15} />}</button><a href={`/m/${link.code}`} target="_blank" rel="noreferrer" aria-label={`Mở thiệp của ${link.guest_name}`}><ExternalLink size={15} /></a><button className="guest-link-delete" disabled={!!deletingLink} type="button" onClick={() => deleteLink(link)} aria-label={`Xoá link của ${link.guest_name}`} title="Xoá link"><Trash2 size={15} /></button></div></div>;
-        })}{!guestLinks.some(link => group.ids.includes(link.invitation_id)) && <p>Chưa có link mời.</p>}</section>)}</div>
+        <div className="admin-family-columns">{linkGroups.map(group => <GuestLinkGroup key={group.title} title={group.title} links={group.links} invitationTitles={invitationTitles} page={linkPages[group.title] || 1} copiedCode={copiedCode} deletingLink={deletingLink} onPageChange={changeLinkPage} onCopy={copyLink} onDelete={deleteLink} />)}</div>
       </section>
 
       <div className="admin-toolbar">
