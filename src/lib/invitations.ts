@@ -80,7 +80,9 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
   if (!invitation) return null;
   const id = invitation.id;
   const { data: wishInvitations } = await db.from('wedding_invitations')
-    .select('id,slug').in('slug', sharedWishSlugs(invitation.slug));
+    .select('id,slug,cover_media_id').in('slug', sharedWishSlugs(invitation.slug));
+  // Ảnh bìa không xuất hiện trong album; lấy bìa của cả nhóm để hai thiệp luôn có cùng album.
+  const coverIds = new Set([invitation.cover_media_id, ...(wishInvitations || []).map((item) => item.cover_media_id)].filter(Boolean));
   const wishInvitationIds = (wishInvitations || []).map((item) => item.id);
   const albumId = (wishInvitations || []).find((item) => item.slug === albumOwnerSlug(invitation.slug))?.id ?? id;
   const [events, timeline, media, gifts, wishes] = await Promise.all([
@@ -94,7 +96,7 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
   const detailError = events.error || timeline.error;
   if (detailError) throw new Error(`Failed to load details for "${slug}": ${detailError.message}`);
   const mapped = mapInvitation(invitation, {
-    events: arr(events.data), timeline: arr(timeline.data), media: arr(media.data),
+    events: arr(events.data), timeline: arr(timeline.data), media: arr(media.data).filter((item) => !coverIds.has(str(item.id))),
     gifts: arr(gifts.data), wishes: arr(wishes.data),
   });
   const designFallback = localFallback || demoInvitations[0];
