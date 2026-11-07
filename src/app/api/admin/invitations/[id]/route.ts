@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAdmin } from '@/lib/supabase';
-import { mapInvitation } from '@/lib/invitations';
+import { albumOwnerId, mapInvitation } from '@/lib/invitations';
 import { describeInvitationIssues, eventSchema, giftSchema, invitationSchema, timelineSchema } from '@/lib/validation';
 import { sharedWishSlugs } from '@/lib/wedding-wish-groups';
 
@@ -12,10 +12,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const db = admin.service;
   const { data: row } = await db.from('wedding_invitations').select('*').eq('id', id).maybeSingle();
   if (!row) return NextResponse.json({ error: 'Không tìm thấy thiệp.' }, { status: 404 });
+  const albumId = await albumOwnerId(db, id, row.slug);
   const [events, timeline, media, gifts, wishes] = await Promise.all([
     db.from('wedding_events').select('*').eq('invitation_id', id).order('sort_order'),
     db.from('wedding_timeline_items').select('*').eq('invitation_id', id).order('sort_order'),
-    db.from('wedding_media').select('*').eq('invitation_id', id).eq('status', 'ready').order('sort_order'),
+    db.from('wedding_media').select('*').eq('invitation_id', albumId).eq('status', 'ready').order('sort_order'),
     db.from('wedding_gift_accounts').select('*').eq('invitation_id', id).order('sort_order'),
     db.from('wedding_wishes').select('*').eq('invitation_id', id).order('created_at', { ascending: false }),
   ]);

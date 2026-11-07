@@ -2,7 +2,16 @@ import { demoInvitations } from './demo';
 import { isDatabaseConfigured, publicDb, serviceDb } from './supabase';
 import type { SignatureZone } from './signature-mark';
 import type { GiftAccount, Invitation, WeddingEvent, WeddingMedia, TimelineItem, Wish } from './types';
-import { sharedWishSlugs } from './wedding-wish-groups';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { albumOwnerSlug, sharedWishSlugs } from './wedding-wish-groups';
+
+/** Id of the invitation that owns the album photos (itself unless it shares an album). */
+export async function albumOwnerId(db: SupabaseClient, id: string, slug: string) {
+  const owner = albumOwnerSlug(slug);
+  if (owner === slug) return id;
+  const { data } = await db.from('wedding_invitations').select('id').eq('slug', owner).maybeSingle();
+  return (data?.id as string | undefined) ?? id;
+}
 
 type Row = Record<string, unknown>;
 const str = (value: unknown) => typeof value === 'string' ? value : '';
@@ -71,12 +80,13 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
   if (!invitation) return null;
   const id = invitation.id;
   const { data: wishInvitations } = await db.from('wedding_invitations')
-    .select('id').in('slug', sharedWishSlugs(invitation.slug));
+    .select('id,slug').in('slug', sharedWishSlugs(invitation.slug));
   const wishInvitationIds = (wishInvitations || []).map((item) => item.id);
+  const albumId = (wishInvitations || []).find((item) => item.slug === albumOwnerSlug(invitation.slug))?.id ?? id;
   const [events, timeline, media, gifts, wishes] = await Promise.all([
     db.from('wedding_events').select('*').eq('invitation_id', id),
     db.from('wedding_timeline_items').select('*').eq('invitation_id', id),
-    db.from('wedding_media').select('*').eq('invitation_id', id).eq('status', 'ready'),
+    db.from('wedding_media').select('*').eq('invitation_id', albumId).eq('status', 'ready'),
     db.from('wedding_gift_accounts').select('*').eq('invitation_id', id),
     db.from('wedding_wishes').select('*').in('invitation_id', wishInvitationIds.length ? wishInvitationIds : [id]).eq('status', 'approved').order('created_at', { ascending: false }).limit(20),
   ]);
