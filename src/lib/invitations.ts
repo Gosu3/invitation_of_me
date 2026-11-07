@@ -80,9 +80,13 @@ export async function getInvitation(slug: string, includeDraft = false): Promise
   if (!invitation) return null;
   const id = invitation.id;
   const { data: wishInvitations } = await db.from('wedding_invitations')
-    .select('id,slug,cover_media_id').in('slug', sharedWishSlugs(invitation.slug));
-  // Ảnh bìa không xuất hiện trong album; lấy bìa của cả nhóm để hai thiệp luôn có cùng album.
-  const coverIds = new Set([invitation.cover_media_id, ...(wishInvitations || []).map((item) => item.cover_media_id)].filter(Boolean));
+    .select('*').in('slug', sharedWishSlugs(invitation.slug));
+  // Ảnh bìa và ảnh chữ ký không xuất hiện trong album; lấy của cả nhóm để hai thiệp luôn có cùng album.
+  const signatureMediaId = (value: unknown) => typeof value === 'string' && value.startsWith('/api/media/') ? value.slice('/api/media/'.length) : null;
+  const coverIds = new Set([
+    invitation.cover_media_id, signatureMediaId(invitation.signature_image),
+    ...(wishInvitations || []).flatMap((item) => [item.cover_media_id, signatureMediaId(item.signature_image)]),
+  ].filter(Boolean));
   const wishInvitationIds = (wishInvitations || []).map((item) => item.id);
   const albumId = (wishInvitations || []).find((item) => item.slug === albumOwnerSlug(invitation.slug))?.id ?? id;
   const [events, timeline, media, gifts, wishes] = await Promise.all([

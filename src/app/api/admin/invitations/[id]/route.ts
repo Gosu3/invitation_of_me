@@ -123,12 +123,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!saved?.length) return NextResponse.json({ error: 'Không tìm thấy thiệp.' }, { status: 404 });
   }
   // Thọ & Thắm share one signature board, so the no-signing zones must stay identical on both invitations.
-  if (fields.signatureAvoidZones !== undefined) {
+  // The board photo is shared the same way (its zones only make sense on that photo).
+  if (fields.signatureAvoidZones !== undefined || fields.signatureImage !== undefined) {
     const { data: current } = await db.from('wedding_invitations').select('slug').eq('id', id).maybeSingle();
     const partnerSlugs = sharedWishSlugs(String(current?.slug ?? '')).filter((slug) => slug !== current?.slug);
     if (partnerSlugs.length) {
-      const { error } = await db.from('wedding_invitations').update({ signature_avoid_zones: fields.signatureAvoidZones }).in('slug', partnerSlugs);
-      if (error) return NextResponse.json({ error: 'Đã lưu thiệp này nhưng chưa đồng bộ được vùng tránh sang thiệp còn lại.', detail: error.message }, { status: 500 });
+      const shared: Row = {};
+      if (fields.signatureAvoidZones !== undefined) shared.signature_avoid_zones = fields.signatureAvoidZones;
+      if (fields.signatureImage !== undefined) shared.signature_image = fields.signatureImage === '' ? null : fields.signatureImage;
+      const { error } = await db.from('wedding_invitations').update(shared).in('slug', partnerSlugs);
+      if (error) return NextResponse.json({ error: 'Đã lưu thiệp này nhưng chưa đồng bộ được ảnh/vùng chữ ký sang thiệp còn lại.', detail: error.message }, { status: 500 });
     }
   }
 

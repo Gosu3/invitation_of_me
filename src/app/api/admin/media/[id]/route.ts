@@ -24,6 +24,9 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   const { data: cover } = await admin.service.from('wedding_invitations').select('id').eq('cover_media_id', id).limit(1);
   const { data: gift } = await admin.service.from('wedding_gift_accounts').select('id').eq('qr_media_id', id).limit(1);
   if (cover?.length || gift?.length) return NextResponse.json({ error: 'Hãy gỡ ảnh khỏi bìa hoặc hộp quà trước khi xóa.' }, { status: 409 });
+  // Cột signature_image chỉ có sau migration chữ ký; lỗi truy vấn nghĩa là chưa có ảnh nào được dùng.
+  const { data: board } = await admin.service.from('wedding_invitations').select('id').eq('signature_image', `/api/media/${id}`).limit(1);
+  if (board?.length) return NextResponse.json({ error: 'Hãy chọn ảnh khác cho bảng chữ ký trước khi xóa ảnh này.' }, { status: 409 });
   const removed = await admin.service.storage.from('wedding-media').remove([media.storage_path]);
   if (removed.error) return NextResponse.json({ error: 'Không thể xóa tệp ảnh.' }, { status: 500 });
   const { error } = await admin.service.from('wedding_media').update({ status: 'deleted' }).eq('id', id);

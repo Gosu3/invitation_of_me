@@ -2,7 +2,7 @@
 
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import Image from 'next/image';
-import { X } from 'lucide-react';
+import { ImagePlus, X } from 'lucide-react';
 import type { SignatureZone } from '@/lib/signature-mark';
 import type { WeddingMedia } from '@/lib/types';
 
@@ -11,9 +11,12 @@ const round = (value: number) => Math.round(value * 1000) / 1000;
 
 export type SignatureSettings = { signaturesEnabled: boolean; signatureImage: string; signatureAvoidZones: SignatureZone[] };
 
-export function AdminSignatureSettings({ value, media, onChange }: {
+export function AdminSignatureSettings({ value, media, uploading, onUpload, shared, onChange }: {
   value: SignatureSettings;
   media: WeddingMedia[];
+  uploading: boolean;
+  onUpload: (file: File) => void;
+  shared: boolean;
   onChange: (next: Partial<SignatureSettings>) => void;
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -59,7 +62,10 @@ export function AdminSignatureSettings({ value, media, onChange }: {
         <option value="">Chưa chọn</option>
         {choices.map((choice) => <option key={choice.url} value={choice.url}>{choice.label}</option>)}
       </select>
-      <small>Nên dùng ảnh dọc tỉ lệ 2:3 (ảnh khác tỉ lệ sẽ bị cắt). Tải ảnh ở mục 04 rồi chọn tại đây.</small>
+      <small>Nên dùng ảnh dọc tỉ lệ 2:3 (ảnh khác tỉ lệ sẽ bị cắt).{shared ? ' Ảnh chữ ký dùng chung cho thiệp nhà trai và nhà gái: lưu ở thiệp này sẽ cập nhật cả thiệp còn lại.' : ''}</small>
+    </label>
+    <label className="upload-zone"><ImagePlus size={25} /><strong>{uploading ? 'Đang xử lý ảnh…' : 'Tải lên ảnh chữ ký mới'}</strong><span>JPG, PNG hoặc WebP, tối đa 12 MB · ảnh này không hiện trong album</span>
+      <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) onUpload(file); }} />
     </label>
     {value.signaturesEnabled && !value.signatureImage && <div className="admin-help">Bảng chữ ký chỉ hiện khi đã chọn ảnh.</div>}
     {value.signatureImage && <div className="admin-field"><span>Vùng không nên ký ({zones.length}/{MAX_ZONES})</span>
