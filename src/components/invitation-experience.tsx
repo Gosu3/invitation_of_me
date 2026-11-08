@@ -2,7 +2,8 @@
 
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { CalendarCheck, Gift, Heart, Images, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { CalendarCheck,Gift, Heart, Images, MapPin } from 'lucide-react';
 import type { Invitation } from '@/lib/types';
 import { createWeddingConfig } from '@/lib/wedding-config';
 import { themeVariables } from '@/lib/wedding-theme';
@@ -217,6 +218,11 @@ export function InvitationExperience({ invitation, connected, guestName }: { inv
   }
 
   return <main className="invitation-page botanical-theme" style={themeVariables(config.theme)} data-opening-phase={phase} data-auto-scroll={autoScrollPaused ? 'paused' : 'playing'} data-signing={signing || undefined} onPointerDown={startTap} onPointerUp={toggleAutoScroll} onPointerCancel={() => { tapStart.current = null; }}>
+    {/* The hero only mounts once the invitation opens, so its cover photo would start downloading then.
+        Fetch the exact same optimized URL (same sizes → same srcset candidate) while the envelope is shown. */}
+    {!contentVisible && config.content.coverImage && <div aria-hidden="true" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }}>
+      <Image src={config.content.coverImage} alt="" fill sizes="(max-width: 650px) 55vw, 320px" loading="eager" fetchPriority="low" unoptimized={config.content.coverImage.startsWith('/api/')} />
+    </div>}
     {phase !== 'opened' && <EnvelopeIntro config={config} phase={phase} open={openInvitation} personalizedGuestName={guestName} />}
     {contentVisible && <div className={`invitation-content invitation-paper ${phase === 'revealing' ? 'is-revealing' : 'is-opened'}`}>
       <WeddingHero config={config} headingRef={heading} />
