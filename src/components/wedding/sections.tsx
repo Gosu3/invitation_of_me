@@ -212,12 +212,19 @@ function openDirections(event: MouseEvent, destination: string) {
   window.location.href = `comgooglemaps://?daddr=${query}&directionsmode=driving`;
 }
 
+// A full Google Maps place link carries the place's feature id ("0x…:0x…"); its second half is the place's cid.
+// Embedding by cid drops a single labelled pin on that exact place instead of a name search that can show several matches.
+function placeEmbedFromMapUrl(mapUrl?: string) {
+  const match = mapUrl && /0x[0-9a-f]+(?::|%3A)0x([0-9a-f]+)/i.exec(mapUrl);
+  return match ? `https://www.google.com/maps?cid=${BigInt(`0x${match[1]}`).toString()}&output=embed` : undefined;
+}
+
 export function VenueSection({ config }: { config: WeddingInvitationConfig }) {
   if (!config.venue) return null;
   const destination = [config.venue.title, config.venue.address].filter(Boolean).join(', ');
   // The map can search a different place name than the address shown (e.g. a nearby landmark Google knows).
   const mapPlace = config.venue.mapQuery || destination;
-  const embed = `https://www.google.com/maps?q=${encodeURIComponent(mapPlace)}&output=embed`;
+  const embed = placeEmbedFromMapUrl(config.venue.mapUrl) || `https://www.google.com/maps?q=${encodeURIComponent(mapPlace)}&output=embed`;
   // A trailing ♥ in the admin text becomes the styled heart.
   const dressCodeText = config.content.dressCode?.trim();
   const dressCode = dressCodeText ? { text: dressCodeText.replace(/\s*♥$/, ''), heart: dressCodeText.endsWith('♥') } : undefined;
